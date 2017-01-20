@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
     <link rel="stylesheet" href="css/bootstrap-select.css">
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Lato:100,700" rel="stylesheet">
 
     <link href="css/bootstrap-glyphicons.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
@@ -133,7 +134,14 @@
                     selected_shapes[s] = false;
                 }
                 is_mouse_down = true;
-                var shape = new Rectangle(xm - 40, ym - 20, 80, 40, 2, 10, 3, $("#layerName").val(), fill_colors[current_color_idx], border_colors[current_color_idx]);
+                var layer_type = $("#layerType");
+                var shape;
+                if ($(layer_type).val() == "DataPlaceholder") {
+                    shape = new Rectangle(xm - 40, ym - 20, 80, 40, 3, 10, 3, $("#layerName").val(), fill_colors[current_color_idx], border_colors[current_color_idx]);
+                } else {
+                    shape = new Rectangle(xm - 40, ym - 20, 80, 40, 10, 0, 3, $("#layerName").val(), fill_colors[current_color_idx], border_colors[current_color_idx]);
+                }
+
                 shapes.push(shape);
                 selected_shapes.push(true);
                 primary_selected_shape = shapes.length - 1;
@@ -489,18 +497,16 @@
             canvas.addEventListener('mousedown', mouseDown);
             document.addEventListener('mousemove', mouseMove);
             document.addEventListener('mouseup', mouseUp);
-            //canvas.addEventListener('dblclick', config);
-
         }
     </script>
 </head>
 <body onload="run()" style="overflow: hidden;" oncontextmenu="return false">
-<div class="col-lg-2 divContainer"
-     style="padding: 20px; height: 100%; background-color: #FF533D; border-style: none solid none none; border-color: #FEFEFE; border-width: 3px;">
+<div class="col-lg-2 divContainer side-bar">
     <div>
-        <h1 style="font-size: 50px; margin:0; text-shadow: -2px 2px #ff0000;"><b>neuralizer</b></h1>
-        <b>visual neural network designer</b>
-        <br>
+        <div class="appName">
+            <h1>neuralizer</h1>
+            <b style="font-size: 17px;text-align: center;">visual neural network designer</b>
+        </div>
         <br>
         <div class="form-group">
             <label for="layerName" style="color:white">Name</label>
@@ -509,6 +515,9 @@
         <div class="form-group">
             <label for="layerType" style="color:white">Type</label>
             <select id="layerType" class="form-control selectpicker" onchange="toggle_params(this)">
+                <optgroup label="Data">
+                    <option value="DataPlaceholder">Data Placeholder</option>
+                </optgroup>
                 <optgroup label="Feedforward">
                     <option value="Convolution">Convolution</option>
                     <option value="Pooling">Pooling</option>
@@ -535,6 +544,7 @@
                 </optgroup>
             </select>
         </div>
+        <hr class="separator">
 
         <!-- Convolution -->
         <div class="form-group" style="display: none;" id="convolutionParams">
@@ -601,7 +611,7 @@
                 <option value="Average">Average</option>
                 <option value="Stochastic">Stochastic</option>
             </select>
-            <br>
+            <br><br>
             <label for="windowSize" style="color:white; margin-bottom: 20px">Window Properties</label>
             <div class="row">
                 <div class="col-lg-3">
