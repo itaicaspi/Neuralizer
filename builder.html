@@ -57,6 +57,30 @@
             }
         }
 
+        function toggle_params(select) {
+            select = $("#layerType");
+
+            var types = {
+                "Pooling": "#poolingParams",
+                "Convolution": "#convolutionParams",
+                "Activation": "#activationParams",
+                "Regularization": "#regularizationParams",
+                "ElementWise": "#elementWiseParams",
+                "InnerProduct": "#innerProductParams"
+            };
+
+            for (var key in types) {
+                if ($(select).val() == key) {
+                    $(types[key]).show("fast");
+                } else {
+                    $(types[key]).hide("fast");
+                }
+            }
+
+        }
+
+
+
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             draw_all_shapes(ctx);
@@ -484,22 +508,20 @@
         </div>
         <div class="form-group">
             <label for="layerType" style="color:white">Type</label>
-            <select id="layerType" class="form-control selectpicker" onkeyup="update_shape()">
+            <select id="layerType" class="form-control selectpicker" onchange="toggle_params(this)">
                 <optgroup label="Feedforward">
                     <option value="Convolution">Convolution</option>
-                    <option value="Inner Product">Inner Product</option>
+                    <option value="Pooling">Pooling</option>
+                    <option value="InnerProduct">Inner Product</option>
                     <option value="Deconvolution">Deconvolution</option>
                     <option value="Activation">Activation</option>
-                    <option value="Dropout">Dropout</option>
-                    <option value="Concatanate">Concatanate</option>
-                    <option value="ElementWiseMultiplication">Element-Wise Multiplication</option>
-                    <option value="Add">Add</option>
-                    <option value="Pooling">Pooling</option>
+                    <option value="Regularization">Regularization</option>
+                    <option value="Concatenate">Concatenate</option>
+                    <option value="ElementWise">Element-Wise</option>
                 </optgroup>
                 <optgroup label="Normalization">
                     <option value="Batch Normalization">Batch Normalization</option>
                     <option value="LRN">LRN</option>
-
                 </optgroup>
                 <optgroup label="Recurrent">
                     <option value="RNN">RNN</option>
@@ -511,10 +533,137 @@
                     <option value="L2 Loss">L2 Loss</option>
                     <option value="LSTM">LSTM</option>
                 </optgroup>
-
-
             </select>
         </div>
+
+        <!-- Convolution -->
+        <div class="form-group" style="display: none;" id="convolutionParams">
+            <label for="kernelSize" style="color:white; margin-bottom: 20px">Kernel Properties</label>
+            <div class="row">
+                <div class="col-lg-3">
+                    <label for="kernelWidth" style="color:white">Width</label>
+                </div>
+                <div class="col-lg-3" style="padding:0">
+                    <input id="kernelWidth" type="number" min="1" max="100" value="1" style="width:70%;">
+                </div>
+                <div class="col-lg-3">
+                    <label for="kernelHeight" style="color:white">Height</label>
+                </div>
+                <div class="col-lg-3" style="padding:0">
+                    <input id="kernelHeight" type="number" min="1" max="100" value="1" style="width:70%;">
+                </div>
+            </div>
+            <br>
+            <div class="row">
+                <div class="col-lg-3">
+                    <label for="kernelStride" style="color:white">Stride</label>
+                </div>
+                <div class="col-lg-3" style="padding:0">
+                    <input id="kernelStride" type="number" min="1" max="100" value="1" style="width:70%;">
+                </div>
+                <div class="col-lg-3">
+                    <label for="kernelDilation" style="color:white">Dilation</label>
+                </div>
+                <div class="col-lg-3" style="padding:0">
+                    <input id="kernelDilation" type="number" min="1" max="100" value="1" style="width:70%;">
+                </div>
+            </div>
+            <br>
+            <div class="row">
+                <div class="col-lg-6">
+                    <label for="numOfms" style="color:white">Number of OFMs</label>
+                </div>
+                <div class="col-lg-6" style="text-align: right; padding-right: 22px">
+                    <input id="numOfms" type="number" min="1" max="100000" value="1" style="width:70%;">
+                </div>
+            </div>
+        </div>
+
+
+        <!-- InnerProduct -->
+        <div class="form-group" style="display: none;" id="innerProductParams">
+            <div class="row">
+                <div class="col-lg-6">
+                    <label for="numOutputs" style="color:white">Output Size</label>
+                </div>
+                <div class="col-lg-6" style="padding:0; ">
+                    <input id="numOutputs" type="number" min="1" max="10000" value="1" style="width:70%;">
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Pooling -->
+        <div class="form-group " style="display: none;" id="poolingParams">
+            <label for="poolingType" style="color:white">Pooling Type</label>
+            <select id="poolingType" class="form-control selectpicker">
+                <option value="Max">Max</option>
+                <option value="Average">Average</option>
+                <option value="Stochastic">Stochastic</option>
+            </select>
+            <br>
+            <label for="windowSize" style="color:white; margin-bottom: 20px">Window Properties</label>
+            <div class="row">
+                <div class="col-lg-3">
+                    <label for="windowWidth" style="color:white">Width</label>
+                </div>
+                <div class="col-lg-3" style="padding:0">
+                    <input id="windowWidth" type="number" min="1" max="100" value="1" style="width:70%;">
+                </div>
+                <div class="col-lg-3">
+                    <label for="windowHeight" style="color:white">Height</label>
+                </div>
+                <div class="col-lg-3" style="padding:0">
+                    <input id="windowHeight" type="number" min="1" max="100" value="1" style="width:70%;">
+                </div>
+            </div>
+            <br>
+            <div class="row">
+                <div class="col-lg-3">
+                    <label for="windowStride" style="color:white">Stride</label>
+                </div>
+                <div class="col-lg-3" style="padding:0">
+                    <input id="windowStride" type="number" min="1" max="100" value="1" style="width:70%;">
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Activation -->
+        <div class="form-group" style="display: none;" id="activationParams">
+            <label for="activationType" style="color:white">Activation Type</label>
+            <select id="activationType" class="form-control selectpicker">
+                <option value="ReLU">ReLU</option>
+                <option value="LeakyReLU">Leaky ReLU</option>
+                <option value="pReLU">Parametrized ReLU</option>
+                <option value="Sigmoid">Sigmoid</option>
+                <option value="HardSigmoid">Hard Sigmoid</option>
+                <option value="TanH">TanH</option>
+                <option value="ELU">ELU</option>
+            </select>
+        </div>
+
+
+        <!-- Regularization -->
+        <div class="form-group" style="display: none;" id="regularizationParams">
+            <label for="regularizationType" style="color:white">Regularization Type</label>
+            <select id="regularizationType" class="form-control selectpicker">
+                <option value="Dropout">Dropout</option>
+                <option value="Maxout">Maxout</option>
+                <option value="Zoneout">Zoneout</option>
+            </select>
+        </div>
+
+
+        <!-- Regularization -->
+        <div class="form-group" style="display: none;" id="elementWiseParams">
+            <label for="elementWiseOperator" style="color:white">Element-wise Operator</label>
+            <select id="elementWiseOperator" class="form-control selectpicker">
+                <option value="Add">Add</option>
+                <option value="Multiply">Multiply</option>
+            </select>
+        </div>
+
         <div class="form-group">
             <label for="layerColor" style="color:white">Color</label>
             <div style="width:100%;cursor:pointer;" id="layerColor">
@@ -597,6 +746,8 @@
         $('select.selectpicker').selectpicker();
         // Initiate tooltip
         $('[data-toggle="tooltip"]').tooltip();
+
+        toggle_params();
     });
 </script>
 </body>
