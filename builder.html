@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DeepFlow</title>
+
+    <!--jQuery-->
+    <script src="jquery-3.0.0.min.js"></script>
+    <!-- bootstrap -->
+    <script src="bootstrap.min.js"></script>
+    <link href="bootstrap.min.css" rel="stylesheet">
+    <!--<link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" rel="stylesheet">-->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/bootstrap-select.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+
+    <link href="css/bootstrap-glyphicons.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="utils.js"></script>
+    <script src="definitions.js"></script>
+    <script src="objects.js"></script>
+    <script src="nn.js"></script>
+    <script src="transforms.js"></script>
+    <script src="shapes.js"></script>
+    <script type="text/javascript">
+        function nextColor(color) {
+            var colors = [orange, green, blue, red, purple, yellow, cyan, grey];
+            for (var i = 0; i < colors.length; i++) {
+                if (color == colors[i]) {
+                    return colors[(i + 1) % colors.length];
+                }
+            }
+        }
+
+
+        var canvas;
+        var ctx;
+        var button;
+        var is_mouse_down;
+        var pointer_is_on_shape_border;
+        var need_draw;
+        var init_arrow;
+        var current_arrow;
+        var arrows;
+        var shapes_and_arrows;
+        var degree;
+        var xm = 0, ym = 0;
+        var primary_selected_shape = -1;
+        var shapes = [];
+        var selected_shapes = [];
+        var current_color_idx = 0;
+        var selection_box = new Rectangle(0, 0, 0, 0, 2, 0, 2, "", new Color(0, 0, 0, 0), new Color(255, 255, 255, 1), true);
+
+        function draw_all_shapes(ctx) {
+            for (var s = 0; s < shapes.length; s++) {
+                shapes[s].draw(ctx);
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            draw_all_shapes(ctx);
+            if (pointer_is_on_shape_border > -1) {
+                ctx.beginPath();
+                ctx.arc(xm, ym, 5, 0, 2 * Math.PI, false);
+                ctx.fillStyle = shapes_and_arrows[pointer_is_on_shape_border].border_color.to_string();
+                ctx.fill();
+            }
+            for (var a = 0; a < arrows.length; a++) {
+                arrows[a].draw(ctx);
+            }
+            current_arrow.draw(ctx);
+        }
+
+        function update_shape() {
+            if (primary_selected_shape > -1) {
+                shapes[primary_selected_shape].update_text($("#layerName").val());
+            }
+            draw();
+        }
+
+        function toggle_add_or_remove_button() {
+            var add_layer_icon = $("#addLayerIcon");
+            if ($(add_layer_icon).attr('data-original-title') == "Add") {
+                $(add_layer_icon).attr('data-original-title', "Remove");
+            } else {
+                $(add_layer_icon).attr('data-original-title', "Add");
+            }
+            $(add_layer_icon).toggleClass('rotated');
+        }
+
+        function add_or_remove_layer() {
+            var s = 0;
+            if ($("#addLayerIcon").hasClass('rotated')) {
+                for (s = selected_shapes.length - 1; s >= 0; s--) {
+                    if (selected_shapes[s] == true && shapes[s] != selection_box) {
+                        for (var a = arrows.length - 1; a >= 0; a--) {
+                            result = arrows[a].shapes_are_linked([shapes[s]]);
+                            if (result[0] == true || result[1] == true) {
+                                arrows.splice(a, 1);
+                            }
+                        }
+                        shapes.splice(s, 1);
+                        selected_shapes.splice(s, 1);
+                    }
+                }
+            } else {
+                for (s = 0; s < selected_shapes.length; s++) {
+                    selected_shapes[s] = false;
+                }
+                is_mouse_down = true;
+                var shape = new Rectangle(xm - 40, ym - 20, 80, 40, 2, 10, 3, $("#layerName").val(), fill_colors[current_color_idx], border_colors[current_color_idx]);
+                shapes.push(shape);
+                selected_shapes.push(true);
+                primary_selected_shape = shapes.length - 1;
+            }
+            toggle_add_or_remove_button();
+        }
+
+        var border_colors = [
+            new Color(230, 126, 34, 1),
+            new Color(231, 76, 60, 1),
+            new Color(142, 68, 173, 1),
+            new Color(52, 152, 219, 1),
+            new Color(39, 174, 96, 1),
+            new Color(241, 196, 15, 1)
+        ]
+
+        var fill_colors = []
+        for (var i = 0; i < border_colors.length; i++) {
+            border_color = border_colors[i];
+            var max_val = Math.max(Math.max(border_color.r, border_color.g), border_color.b);
+            fill_color = new Color(border_color.r + 0.5 * max_val, border_color.g + 0.5 * max_val, border_color.b + 0.5 * max_val, 0);
+            fill_colors.push(fill_color);
+        }
+
+        function change_color(colorIdx) {
+            current_color_idx = colorIdx;
+            r = border_colors[colorIdx].r;
+            g = border_colors[colorIdx].g;
+            b = border_colors[colorIdx].b;
+            for (var i = 0; i < 6; i++) {
+                if (i == colorIdx) {
+                    $('#color' + i.toString()).html('<i class="glyphicon glyphicon-ok" style="margin-top: 3px;margin-left:50%;left:-8px;color:rgba(255,255,255,0.7)"></i>');
+                } else {
+                    $('#color' + i.toString()).html('');
+                }
+            }
+            var max_val = Math.max(Math.max(r, g), b);
+
+            for (var s = 0; s < selected_shapes.length; s++) {
+                if (shapes[s] != selection_box && selected_shapes[s] == true) {
+                    var border_color = new Color(r, g, b, 1);
+                    var fill_color = new Color(r + 0.5 * max_val, g + 0.5 * max_val, b + 0.5 * max_val, 0);
+
+                    shapes[s].change_fill_color(fill_color);
+                    shapes[s].change_border_color(border_color);
+                    for (var a = 0; a < arrows.length; a++) {
+                        arrows[a].linked_shape_color_change(shapes[s], arrows);
+                    }
+                }
+            }
+
+            draw();
+        }
+
+        function run() {
+            // Fix the canvas width and height
+            canvas = document.getElementById('cnv');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+
+            // Objects style
+            ctx = canvas.getContext('2d');
+
+
+            degree = Math.PI / 180;
+
+            function find_selected_shapes(selection_box, shapes) {
+                var selected_shapes = [];
+                for (var i = 0; i < shapes.length; i++) {
+                    var left_check = shapes[i].x > selection_box.x;
+                    var top_check = shapes[i].y > selection_box.y;
+                    var right_check = shapes[i].x + shapes[i].width < selection_box.x + selection_box.width;
+                    var bottom_check = shapes[i].y + shapes[i].height < selection_box.y + selection_box.height;
+                    if ((left_check == true && top_check == true && right_check == true && bottom_check == true) ||
+                        (left_check == false && top_check == false && right_check == false && bottom_check == false) ||
+                        (left_check == true && top_check == false && right_check == true && bottom_check == false) ||
+                        (left_check == false && top_check == true && right_check == false && bottom_check == true)) {
+                        selected_shapes.push(true);
+                    } else {
+                        selected_shapes.push(false);
+                    }
+                }
+                return selected_shapes;
+            }
+
+            var rect1 = new Rectangle(100, 50, 80, 40, 2, 10, 3, "angle", fill_colors[0], border_colors[0]);
+            var rect2 = new Rectangle(200, 50, 80, 40, 10, 0, 3, "input", fill_colors[1], border_colors[1]);
+            var tri1 = new Triangle(300, 50, 40, 40, 2, 3, fill_colors[2], border_colors[2]);
+            var rect3 = new Rectangle(400, 50, 80, 40, 2, 10, 3, "flow", fill_colors[3], border_colors[3]);
+            var circ1 = new Circle(500, 50, 20, 3, "+", fill_colors[4], border_colors[4]);
+
+            selected_shapes =
+                shapes = [rect1, rect2, rect3, tri1, circ1];
+            draw_all_shapes(ctx);
+
+            button = 0;
+            is_mouse_down = false;
+            pointer_is_on_shape_border = -1;
+            need_draw = false;
+            init_arrow = new Line([], 5, new Color(0, 0, 0, 1), 3);
+            current_arrow = new Line([], 5, new Color(0, 0, 0, 1), 3);
+            arrows = [];
+            shapes_and_arrows = shapes.concat(arrows);
+
+            shapes.push(selection_box);
+
+            selected_shapes = find_selected_shapes(selection_box, shapes);
+
+            function mouseDown(evt) {
+
+                selection_box.hide();
+                selection_box.width = 0;
+                selection_box.height = 0;
+
+                is_mouse_down = true;
+                button = evt.button;
+
+                shapes_and_arrows = shapes.concat(arrows);
+
+                xm = evt.clientX - canvas.getBoundingClientRect().left;
+                ym = evt.clientY - canvas.getBoundingClientRect().top;
+
+                primary_selected_shape = -1;
+                var s = 0;
+                for (s = 0; s < shapes.length; s++) {
+                    if (selected_shapes.length < shapes.length) {
+                        selected_shapes[s] = false;
+                    }
+                    if (shapes[s].pointer_is_inside(xm, ym)) {
+                        primary_selected_shape = s;
+                        // if the currently selected shapes is not part of all the previously selected shapes, make it the only selected shape so that only it moves
+                        // otherwise we want to move all the selected shapes together
+                        if (selected_shapes[s] == false) {
+                            for (var i = 0; i < shapes.length; i++) {
+                                selected_shapes[i] = false;
+                            }
+                        }
+                        selected_shapes[s] = true;
+                    }
+                }
+
+
+                if (button == 0) {
+                    // add point to current arrow
+                    if (current_arrow.points >= 1) {
+                        current_arrow.points++;
+                    }
+                    // check if the pointer is on the border of any shape
+                    for (s = 0; s < shapes_and_arrows.length; s++) {
+                        var borderDir = shapes_and_arrows[s].pointer_is_on_the_border(xm, ym, ctx);
+                        if (borderDir) {
+                            pointer_is_on_shape_border = s;
+                            if (current_arrow.points == 0) {
+                                // start a new line
+                                current_arrow.startLine(new Vertex(xm, ym, 0), shapes_and_arrows[s].border_color, shapes_and_arrows[s], borderDir);
+                            } else {
+                                current_arrow.end_line(new Vertex(xm, ym, 0), shapes_and_arrows[s]);
+                                arrows.push(current_arrow);
+                                current_arrow = new Line([], 5, new Color(0, 0, 0, 1), 3);
+                            }
+                            break;
+                        }
+                    }
+
+                    if (current_arrow.points == 0 && pointer_is_on_shape_border == -1) {
+                        current_arrow = new Line([], 5, new Color(0, 0, 0, 1), 3);
+                    }
+
+
+                } else if (button == 2) {
+                    if (primary_selected_shape > -1) {
+                        var shape;
+                        var curr = shapes[primary_selected_shape];
+                        if (curr.type == "Rectangle") {
+                            shape = new Rectangle(curr.x, curr.y + 70, curr.width, curr.height, curr.radius, curr.offset, curr.stroke, curr.text, curr.default_color, curr.border_color);
+                        } else if (shapes[primary_selected_shape].type == "Triangle") {
+                            shape = new Triangle(curr.x, curr.y + 70, curr.width, curr.height, curr.radius, curr.stroke, curr.default_color, curr.border_color);
+                        } else if (shapes[primary_selected_shape].type == "Circle") {
+                            shape = new Circle(curr.x, curr.y + 70, curr.radius, curr.stroke, curr.text, curr.default_color, curr.border_color);
+                        }
+                        shapes.push(shape);
+                    }
+                }
+                var add_layer_icon = $("#addLayerIcon");
+                if (primary_selected_shape == -1) {
+                    selection_box.x = xm;
+                    selection_box.y = ym;
+                    selected_shapes = [];
+                    if ($(add_layer_icon).hasClass('rotated')) {
+                        toggle_add_or_remove_button();
+                    }
+                } else {
+                    if (!$(add_layer_icon).hasClass('rotated')) {
+                        toggle_add_or_remove_button();
+                    }
+                }
+                shapes_and_arrows = shapes.concat(arrows);
+
+                config(evt);
+            }
+
+            function snap_to_grid(step_size, counter, diff) {
+                var after = (counter + diff) / step_size;
+                var before = counter / step_size;
+                var change = 0;
+                if (after < 0) {
+                    change = Math.ceil(after) - Math.ceil(before);
+                } else {
+                    change = Math.floor(after) - Math.floor(before);
+                }
+                if (change != 0) {
+                    diff = change * step_size;
+                    counter = 0;
+                } else {
+                    counter += diff;
+                    diff = 0;
+                }
+                return [counter, diff];
+            }
+
+            var count_x = 0;
+            var count_y = 0;
+
+            function mouseMove(evt) {
+                $('body').css('cursor', 'default');
+                if (typeof xm == 'undefined') xm = evt.clientX - canvas.getBoundingClientRect().left;
+                if (typeof ym == 'undefined') ym = evt.clientY - canvas.getBoundingClientRect().top;
+                var diffX = evt.clientX - canvas.getBoundingClientRect().left - xm;
+                var diffY = evt.clientY - canvas.getBoundingClientRect().top - ym;
+                xm = evt.clientX - canvas.getBoundingClientRect().left;
+                ym = evt.clientY - canvas.getBoundingClientRect().top;
+
+
+                // snap to grid
+                var step_size = 1;
+                var res = snap_to_grid(step_size, count_x, diffX);
+                count_x = res[0];
+                diffX = res[1];
+                res = snap_to_grid(step_size, count_y, diffY);
+                count_y = res[0];
+                diffY = res[1];
+
+                if (is_mouse_down && primary_selected_shape == -1 && current_arrow.points == 0) {
+                    selection_box.width = xm - selection_box.x;
+                    selection_box.height = ym - selection_box.y;
+                    selection_box.show();
+                    selected_shapes = find_selected_shapes(selection_box, shapes);
+                    for (var s = 0; s < selected_shapes.length; s++) {
+                        if (selected_shapes[s] == true && shapes[s] != selection_box) {
+                            if (!$("#addLayerIcon").hasClass('rotated')) {
+                                toggle_add_or_remove_button();
+                            }
+                            break;
+                        }
+                    }
+                    need_draw = true;
+                }
+
+                pointer_is_on_shape_border = -1;
+                for (s = 0; s < shapes.length; s++) {
+                    if (shapes[s] == selection_box) continue;
+                    //$('body').css('cursor', 'default');
+
+                    if (shapes[s].pointer_is_inside(xm, ym)) {
+                        $('body').css('cursor', 'pointer');
+                    }
+                    if (shapes[s].pointer_is_inside(xm, ym) || (selected_shapes.length > s && selected_shapes[s] == true)) {
+                        shapes[s].color.a = 1;
+                        shapes[s].textColor = "black";
+                        need_draw = true;
+                    } else if (shapes[s].color.to_string() != shapes[s].default_color.to_string()) {
+                        shapes[s].textColor = "white";
+                        shapes[s].color.a = 0;
+                        need_draw = true;
+                    }
+                }
+                for (s = 0; s < shapes_and_arrows.length; s++) {
+                    if (shapes_and_arrows[s].pointer_is_on_the_border(xm, ym, ctx)) {
+                        pointer_is_on_shape_border = s;
+                        need_draw = true;
+                    }
+                }
+
+                if (is_mouse_down) {
+                    if (button == 0) {
+                        // move shapes
+                        if (primary_selected_shape > -1) {
+                            var moved_shapes = [];
+                            for (var i = 0; i < selected_shapes.length; i++) {
+                                if (selected_shapes[i] == true) {
+                                    shapes[i].translate(diffX, diffY);
+                                    moved_shapes.push(shapes[i]);
+                                }
+                            }
+                            for (var a = 0; a < arrows.length; a++) {
+                                arrows[a].linked_shapes_moved(diffX, diffY, moved_shapes);
+                            }
+
+                            need_draw = true;
+                        }
+                    } else if (button == 2) {
+                    }
+                }
+
+                if (current_arrow.vertices.length > 0) {
+                    current_arrow.add_point(new Vertex(xm, ym, 0));
+                }
+
+                if (need_draw == true) {
+                    draw();
+                }
+            }
+
+            function mouseUp() {
+                selection_box.hide();
+                if ((Math.abs(selection_box.width) < 10 || Math.abs(selection_box.height) < 10) && primary_selected_shape == -1) {
+                    selected_shapes = find_selected_shapes(selection_box, shapes);
+                }
+                is_mouse_down = false;
+            }
+
+
+            function config(evt) {
+                xm = evt.clientX - canvas.getBoundingClientRect().left;
+                ym = evt.clientY - canvas.getBoundingClientRect().top;
+                primary_selected_shape = -1;
+                for (var s = 0; s < shapes.length; s++) {
+                    if (shapes[s].pointer_is_inside(xm, ym)) {
+                        primary_selected_shape = s;
+                    }
+                }
+                if (primary_selected_shape == -1) {
+                    $("#layerName").val("");
+                } else {
+                    $("#layerName").val(shapes[primary_selected_shape].text);
+                }
+                setTimeout(function () {
+                    $("#layerName").focus();
+                }, 1);
+
+
+                for (var i = 0; i < border_colors.length; i++) {
+                    if (primary_selected_shape > -1 && border_colors[i].to_string() == shapes[primary_selected_shape].border_color.to_string()) {
+                        current_color_idx = i;
+                        $('#color' + i.toString()).html('<i class="glyphicon glyphicon-ok" style="margin-top: 3px;margin-left:50%;left:-8px;color:rgba(255,255,255,0.7)"></i>');
+                    } else {
+                        $('#color' + i.toString()).html('');
+                    }
+                }
+                return true;
+            }
+
+            canvas.addEventListener('mousedown', mouseDown);
+            document.addEventListener('mousemove', mouseMove);
+            document.addEventListener('mouseup', mouseUp);
+            //canvas.addEventListener('dblclick', config);
+
+        }
+    </script>
+</head>
+<body onload="run()" style="overflow: hidden;" oncontextmenu="return false">
+<div class="col-lg-2 divContainer"
+     style="padding: 20px; height: 100%; background-color: #FF533D; border-style: none solid none none; border-color: #FEFEFE; border-width: 3px;">
+    <div>
+        <h1 style="font-size: 50px; margin:0; text-shadow: -2px 2px #ff0000;"><b>neuralizer</b></h1>
+        <b>visual neural network designer</b>
+        <br>
+        <br>
+        <div class="form-group">
+            <label for="layerName" style="color:white">Name</label>
+            <input type="text" id="layerName" class="form-control" placeholder="Layer name" onkeyup="update_shape()">
+        </div>
+        <div class="form-group">
+            <label for="layerType" style="color:white">Type</label>
+            <select id="layerType" class="form-control selectpicker" onkeyup="update_shape()">
+                <optgroup label="Feedforward">
+                    <option value="Convolution">Convolution</option>
+                    <option value="Inner Product">Inner Product</option>
+                    <option value="Deconvolution">Deconvolution</option>
+                    <option value="Activation">Activation</option>
+                    <option value="Dropout">Dropout</option>
+                    <option value="Concatanate">Concatanate</option>
+                    <option value="ElementWiseMultiplication">Element-Wise Multiplication</option>
+                    <option value="Add">Add</option>
+                    <option value="Pooling">Pooling</option>
+                </optgroup>
+                <optgroup label="Normalization">
+                    <option value="Batch Normalization">Batch Normalization</option>
+                    <option value="LRN">LRN</option>
+
+                </optgroup>
+                <optgroup label="Recurrent">
+                    <option value="RNN">RNN</option>
+                    <option value="GRU">GRU</option>
+                    <option value="LSTM">LSTM</option>
+                </optgroup>
+                <optgroup label="Classifiers / Loss Functions">
+                    <option value="Softmax">Softmax</option>
+                    <option value="L2 Loss">L2 Loss</option>
+                    <option value="LSTM">LSTM</option>
+                </optgroup>
+
+
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="layerColor" style="color:white">Color</label>
+            <div style="width:100%;cursor:pointer;" id="layerColor">
+                <div class="layer-color" id="color0" onclick="change_color(0)"
+                     style="background-color: rgb(230, 126, 34);border-top-left-radius: 3px;border-bottom-left-radius: 3px; ">
+                    <i class="glyphicon glyphicon-ok"
+                       style="margin-top: 3px;margin-left:50%;left:-8px;color:rgba(255,255,255,0.7)"></i>
+                </div>
+                <div class="layer-color" id="color1" onclick="change_color(1)"
+                     style="background-color: rgb(231, 76, 60);">
+                </div>
+                <div class="layer-color" id="color2" onclick="change_color(2)"
+                     style="background-color: rgb(142, 68, 173); ">
+                </div>
+                <div class="layer-color" id="color3" onclick="change_color(3)"
+                     style="background-color: rgb(52, 152, 219); ">
+                </div>
+                <div class="layer-color" id="color4" onclick="change_color(4)"
+                     style="background-color: rgb(39, 174, 96); ">
+                </div>
+                <div class="layer-color" id="color5" onclick="change_color(5)"
+                     style="background-color: rgb(241, 196, 15);border-top-right-radius: 3px;border-bottom-right-radius: 3px; border-style: none solid solid none;">
+                </div>
+            </div>
+        </div>
+        <br>
+        <br>
+        <div class="form-group" style="text-align:center;">
+            <button type="button" id="addLayer" class="btn btn-default btn-circle btn-lg"
+                    onclick="add_or_remove_layer()" style="outline:none;"><i data-toggle="tooltip" data-placement="top"
+                                                                             title="Add" id="addLayerIcon"
+                                                                             class="glyphicon glyphicon-plus"></i>
+            </button>
+        </div>
+        <hr class="separator">
+        <div class="form-group">
+            <label for="framework" style="color:white">Framework</label>
+            <select id="framework" class="form-control selectpicker">
+                <option data-content="<img src='images/icon-tensorflow.png' style='margin-right:10px'>TensorFlow"
+                        value="TensorFlow">TensorFlow
+                </option>
+                <option data-content="<img src='images/icon-caffe.png' style='margin-right:10px'> Caffe" value="Caffe">
+                    Caffe
+                </option>
+                <option data-content="<img src='images/icon-theano.png' style='margin-right:10px'> Theano"
+                        value="Theano">Theano
+                </option>
+                <option data-content="<img src='images/icon-torch.png' style='margin-right:10px'> Torch" value="Torch">
+                    Torch
+                </option>
+                <option data-content="<img src='images/icon-keras.png' style='margin-right:10px'> Keras" value="Keras">
+                    Keras
+                </option>
+                <option data-content="<img src='images/icon-pytorch.png' style='margin-right:10px'> PyTorch"
+                        value="Keras">PyTorch
+                </option>
+                <!--
+                    <option data-content="<span style='width: 80px; display: inline-block'><img src='images/icon-tensorflow.png'></span>TensorFlow" value="TensorFlow">TensorFlow</option>
+                    <option data-content="<span style='width: 80px; display: inline-block'><img src='images/icon-caffe.png'></span>Caffe" value="Caffe">Caffe</option>
+                    <option data-content="<span style='width: 80px; display: inline-block'><img src='images/icon-theano.png'></span>Theano" value="Theano">Theano</option>
+                    <option data-content="<span style='width: 80px; display: inline-block'><img src='images/icon-torch.png'></span>Torch" value="Torch">Torch</option>
+                    <option data-content="<span style='width: 80px; display: inline-block'><img src='images/icon-keras.png'></span>Keras" value="Keras">Keras</option>
+                    <option data-content="<span style='width: 80px; display: inline-block'><img src='images/icon-pytorch.png'></span>PyTorch" value="Keras">PyTorch</option>
+                -->
+            </select>
+        </div>
+        <div class="form-group">
+            <button type="button" id="saveTopology" class="form-control">Save Topology</button>
+        </div>
+    </div>
+</div>
+<div class="col-lg-10">
+    <canvas id="cnv" width="800" height="1000"></canvas>
+</div>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+<script src="js/bootstrap-select.js"></script>
+<script>
+    $(document).ready(function () {
+        // Initiate with custom caret icon
+        $('select.selectpicker').selectpicker();
+        // Initiate tooltip
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+</script>
+</body>
+</html>
