@@ -265,7 +265,7 @@ Line.prototype.pointer_is_on_the_border = function(xm, ym, ctx) {
 //  Shape
 
 
-var Shape = function(x, y, width, height, radius, stroke, text, color, border_color, dashedBorder) {
+var Shape = function(x, y, width, height, radius, stroke, text, color, border_color, dashedBorder, mathjax_element) {
     this.x = x;
     this.y = y;
     this.baseWidth = width;
@@ -280,11 +280,12 @@ var Shape = function(x, y, width, height, radius, stroke, text, color, border_co
     this.border_color = Object.create(border_color);
     this.vertices = [];
 	this.dashedBorder = (typeof dashedBorder != 'undefined') ? dashedBorder : false;
-	this.update_text((typeof text != 'undefined') ? text : "");
+	this.update_text((typeof text != 'undefined') ? text : "", mathjax_element);
 	
 };
 
-Shape.prototype.update_vertices = function() {
+Shape.prototype.clone = function() {
+
 };
 
 
@@ -341,6 +342,11 @@ Shape.prototype.pointer_is_on_the_border = function(xm, ym, ctx) {
     return false;
 };
 
+Shape.prototype.update_vertices = function() {
+
+};
+
+
 Shape.prototype.translate = function(dx, dy) {
     for (var i = 0; i < this.vertices.length; i++) {
         this.vertices[i].x += dx;
@@ -350,9 +356,10 @@ Shape.prototype.translate = function(dx, dy) {
     this.y += dy;
 };
 
-Shape.prototype.update_text = function(text) {
+Shape.prototype.update_text = function(text, mathjax_element) {
     var textWidth = text.length * 7;
     this.text = text;
+    this.mathjax_element = (typeof mathjax_element != 'undefined') ? mathjax_element : "";
     if (textWidth > this.baseWidth) {
         this.width = textWidth;
     } else {
@@ -388,17 +395,32 @@ Shape.prototype.change_border_color = function(color) {
 };
 
 
+Shape.prototype.highlight = function() {
+    this.color.a = 1;
+    this.textColor = "black";
+};
+
+Shape.prototype.darken = function() {
+    this.textColor = "white";
+    this.color.a = 0;
+};
+
 /////////////////////////////////////
 //  Rectangle
 
-var Rectangle = function(x, y, width, height, radius, offset, stroke, text, color, border_color, dashedBorder) {
-    Shape.call(this, x, y, width, height, radius, stroke, text, color, border_color, dashedBorder);
+var Rectangle = function(x, y, width, height, radius, offset, stroke, text, color, border_color, dashedBorder, math_jax_element) {
+    Shape.call(this, x, y, width, height, radius, stroke, text, color, border_color, dashedBorder, math_jax_element);
     this.offset = (typeof offset != 'undefined') ? offset : 10;
     this.update_vertices();
     this.type = "Rectangle";
 };
 
 inheritsFrom(Rectangle, Shape);
+
+Rectangle.prototype.clone = function() {
+    return new Rectangle(this.x, this.y, this.width, this.height, this.radius, this.offset, this.stroke, this.text, this.color, this.border_color, this.dashedBorder, this.mathjax_element);
+};
+
 
 Rectangle.prototype.update_vertices = function() {
     this.vertices = [
@@ -435,11 +457,42 @@ Rectangle.prototype.draw = function(ctx) {
         ctx.stroke();
 		ctx.setLineDash([0,0]);
     }
-    // draw text
-    ctx.font="14px Calibri";
-    ctx.textAlign="center";
-    ctx.fillStyle = this.textColor;
-    ctx.fillText(this.text,this.x+(this.width-this.offset)/2,this.y+this.height/2+3);
+    if (this.mathjax_element == "") {
+        // draw text
+        ctx.font = "14px Calibri";
+        ctx.textAlign = "center";
+        ctx.fillStyle = this.textColor;
+        ctx.fillText(this.text, this.x + (this.width - this.offset) / 2, this.y + this.height / 2 + 3);
+    } else {
+        var svg_data = $("#MathJax-Element-" + this.mathjax_element + "-Frame").get(0);
+        var xml;
+        try {
+            xml = new XMLSerializer().serializeToString(svg_data);
+        } catch (err) {
+
+        }
+
+        var x = this.x;
+        var y = this.y-this.height/4-4;
+
+        var data = '<svg xmlns="http://www.w3.org/2000/svg" width="' + this.width + '" height="' + this.height + '">' +
+            '<foreignObject width="100%" height="100%">' +
+            xml +
+            '</foreignObject>' +
+            '</svg>';
+
+        var svg64 = btoa(data);
+        var b64Start = 'data:image/svg+xml;base64,';
+
+        // prepend a "header"
+        var image64 = b64Start + svg64;
+        var img = new Image();
+        img.src = image64;
+        img.onload = function () {
+            ctx.drawImage(img, x, y);
+        };
+
+    }
 };
 
 /////////////////////////////////////
@@ -452,6 +505,11 @@ var Triangle = function(x, y, width, height, radius, stroke, color, border_color
 };
 
 inheritsFrom(Triangle, Shape);
+
+
+Triangle.prototype.clone = function() {
+    return new Triangle(this.x, this.y, this.width, this.height, this.radius, this.stroke, this.color, this. border_color);
+};
 
 Triangle.prototype.update_vertices = function() {
     this.vertices = [
@@ -487,13 +545,17 @@ Triangle.prototype.draw = function(ctx) {
 /////////////////////////////////////
 //  Circle
 
-var Circle = function(x, y, radius, stroke, text, color, border_color) {
-    Shape.call(this, x + radius, y + radius, radius, radius, radius, stroke, text, color, border_color);
+var Circle = function(x, y, radius, stroke, text, color, border_color, math_jax_element) {
+    Shape.call(this, x + radius, y + radius, radius, radius, radius, stroke, text, color, border_color, false, math_jax_element);
     this.vertices = [];
     this.type = "Circle";
 };
 
 inheritsFrom(Circle, Shape);
+
+Circle.prototype.clone = function() {
+    return new Circle(this.x, this.y, this.width, this.stroke, this.text, this.color, this.border_color, this.mathjax_element);
+};
 
 Circle.prototype.draw = function(ctx) {
     ctx.beginPath();

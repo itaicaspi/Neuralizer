@@ -2,37 +2,37 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>DeepFlow</title>
+    <title>Neuralizer</title>
 
+
+    <script type='text/javascript' src='http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG'></script>
     <!--jQuery-->
     <script src="js/jquery-3.0.0.min.js"></script>
     <!-- bootstrap -->
-    <script src="js/bootstrap.min.js"></script>
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-    <!--<link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" rel="stylesheet">-->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/bootstrap-select.css">
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
-    <link href="https://fonts.googleapis.com/css?family=Lato:100,700" rel="stylesheet">
-
     <link href="css/bootstrap-glyphicons.css" rel="stylesheet">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <!-- bootstrap select -->
+    <link rel="stylesheet" href="css/bootstrap-select.css"> <!-- js is at the end -->
+    <!-- style -->
+    <link href="https://fonts.googleapis.com/css?family=Lato:100,700" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
+    <!-- neuralizer scripts -->
     <script src="js/utils.js"></script>
-    <script src="js/definitions.js"></script>
     <script src="js/objects.js"></script>
     <script src="js/nn.js"></script>
     <script src="js/transforms.js"></script>
     <script src="js/shapes.js"></script>
-    <script type="text/javascript">
-        function nextColor(color) {
-            var colors = [orange, green, blue, red, purple, yellow, cyan, grey];
-            for (var i = 0; i < colors.length; i++) {
-                if (color == colors[i]) {
-                    return colors[(i + 1) % colors.length];
-                }
-            }
-        }
 
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+      displayAlign: "left",
+      displayIndent: "2em",
+      SVG: { scale: 120 }
+    });
+    </script>
+
+    <script type="text/javascript">
 
         var canvas;
         var ctx;
@@ -51,14 +51,40 @@
         var selected_shapes = [];
         var current_color_idx = 0;
         var selection_box = new Rectangle(0, 0, 0, 0, 2, 0, 2, "", new Color(0, 0, 0, 0), new Color(255, 255, 255, 1), true);
+        var mathjax_element_idx = 1;
+        var clipboard = [];
+
+
+        function draw_all_arrows(ctx) {
+            // calls the draw function for all the currently available arrows
+            for (var a = 0; a < arrows.length; a++) {
+                arrows[a].draw(ctx);
+            }
+        }
 
         function draw_all_shapes(ctx) {
+            // calls the draw function for all the currently available shapes
             for (var s = 0; s < shapes.length; s++) {
                 shapes[s].draw(ctx);
             }
         }
 
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            draw_all_shapes(ctx);
+            if (pointer_is_on_shape_border > -1) {
+                ctx.beginPath();
+                ctx.arc(xm, ym, 5, 0, 2 * Math.PI, false);
+                ctx.fillStyle = shapes_and_arrows[pointer_is_on_shape_border].border_color.to_string();
+                ctx.fill();
+            }
+            draw_all_arrows(ctx);
+
+            current_arrow.draw(ctx);
+        }
+
         function toggle_params(select) {
+            // open the parameters section for the selected layer type only
             select = $("#layerType");
 
             var types = {
@@ -67,9 +93,11 @@
                 "Activation": "#activationParams",
                 "Regularization": "#regularizationParams",
                 "ElementWise": "#elementWiseParams",
-                "InnerProduct": "#innerProductParams"
+                "InnerProduct": "#innerProductParams",
+                "SpecialBlock": "#specialBlockParams"
             };
 
+            // close all other than the given type
             for (var key in types) {
                 if ($(select).val() == key) {
                     $(types[key]).show("fast");
@@ -81,24 +109,26 @@
         }
 
 
-
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            draw_all_shapes(ctx);
-            if (pointer_is_on_shape_border > -1) {
-                ctx.beginPath();
-                ctx.arc(xm, ym, 5, 0, 2 * Math.PI, false);
-                ctx.fillStyle = shapes_and_arrows[pointer_is_on_shape_border].border_color.to_string();
-                ctx.fill();
+        function get_short_name(layer_type) {
+            // get a short default name for a layer
+            var types = {
+                "DataPlaceholder": "data",
+                "Pooling": "pool",
+                "Convolution": "conv",
+                "Activation": "activation",
+                "Regularization": "regularization",
+                "ElementWise": "+",
+                "InnerProduct": "inner"
+            };
+            if (types[layer_type] != undefined) {
+                return types[layer_type];
             }
-            for (var a = 0; a < arrows.length; a++) {
-                arrows[a].draw(ctx);
-            }
-            current_arrow.draw(ctx);
+            return "";
         }
 
+
         function update_shape() {
-            if (primary_selected_shape > -1) {
+            if (primary_selected_shape > -1 && shapes.length > primary_selected_shape) {
                 shapes[primary_selected_shape].update_text($("#layerName").val());
             }
             draw();
@@ -114,37 +144,65 @@
             $(add_layer_icon).toggleClass('rotated');
         }
 
-        function add_or_remove_layer() {
+        function remove_layer() {
             var s = 0;
-            if ($("#addLayerIcon").hasClass('rotated')) {
-                for (s = selected_shapes.length - 1; s >= 0; s--) {
-                    if (selected_shapes[s] == true && shapes[s] != selection_box) {
-                        for (var a = arrows.length - 1; a >= 0; a--) {
-                            result = arrows[a].shapes_are_linked([shapes[s]]);
-                            if (result[0] == true || result[1] == true) {
-                                arrows.splice(a, 1);
-                            }
+            for (s = selected_shapes.length - 1; s >= 0; s--) {
+                if (selected_shapes[s] == true && shapes[s] != selection_box) {
+                    for (var a = arrows.length - 1; a >= 0; a--) {
+                        result = arrows[a].shapes_are_linked([shapes[s]]);
+                        if (result[0] == true || result[1] == true) {
+                            arrows.splice(a, 1);
                         }
-                        shapes.splice(s, 1);
-                        selected_shapes.splice(s, 1);
                     }
+                    shapes.splice(s, 1);
+                    selected_shapes.splice(s, 1);
                 }
-            } else {
-                for (s = 0; s < selected_shapes.length; s++) {
-                    selected_shapes[s] = false;
-                }
-                is_mouse_down = true;
-                var layer_type = $("#layerType");
-                var shape;
-                if ($(layer_type).val() == "DataPlaceholder") {
-                    shape = new Rectangle(xm - 40, ym - 20, 80, 40, 3, 10, 3, $("#layerName").val(), fill_colors[current_color_idx], border_colors[current_color_idx]);
-                } else {
-                    shape = new Rectangle(xm - 40, ym - 20, 80, 40, 10, 0, 3, $("#layerName").val(), fill_colors[current_color_idx], border_colors[current_color_idx]);
-                }
+            }
+        }
 
-                shapes.push(shape);
-                selected_shapes.push(true);
-                primary_selected_shape = shapes.length - 1;
+        function add_layer() {
+            for (s = 0; s < selected_shapes.length; s++) {
+                selected_shapes[s] = false;
+            }
+            is_mouse_down = true;
+            var layer_type = $("#layerType").val();
+            var layer_name = $("#layerName").val();
+            if (layer_name == "") {
+                layer_name = get_short_name(layer_type);
+                $("#layerName").val(layer_name);
+            }
+
+            // add latex name
+            var layer_mathjax_element_idx = "";
+            var latexName = $("#latexName").is(":checked");
+            if (latexName) {
+                $("#mathjax-elements").append('\\[ ' + layer_name + ' \\]');
+                MathJax.Hub.Queue(["Typeset",MathJax.Hub,"mathjax-elements"]);
+                mathjax_element_idx += 1;
+                layer_mathjax_element_idx = mathjax_element_idx;
+            }
+
+            var shape;
+            if (layer_type == "DataPlaceholder") {
+                shape = new Rectangle(xm - 40, ym - 20, 80, 40, 3, 10, 3, layer_name, fill_colors[current_color_idx], border_colors[current_color_idx], false, layer_mathjax_element_idx);
+            } else if (layer_type == "Concatenate") {
+                shape = new Triangle(xm - 20, ym - 20, 40, 40, 2, 3, fill_colors[current_color_idx], border_colors[current_color_idx]);
+            } else if (layer_type == "ElementWise") {
+                shape = new Circle(xm - 20, ym - 20, 20, 3, layer_name, fill_colors[current_color_idx], border_colors[current_color_idx], layer_mathjax_element_idx);
+            } else {
+                shape = new Rectangle(xm - 40, ym - 20, 80, 40, 10, 0, 3, layer_name, fill_colors[current_color_idx], border_colors[current_color_idx], false, layer_mathjax_element_idx);
+            }
+
+            shapes.push(shape);
+            selected_shapes.push(true);
+            primary_selected_shape = shapes.length - 1;
+        }
+
+        function add_or_remove_layer() {
+            if ($("#addLayerIcon").hasClass('rotated')) {
+                remove_layer();
+            } else {
+                add_layer();
             }
             toggle_add_or_remove_button();
         }
@@ -205,7 +263,6 @@
             // Objects style
             ctx = canvas.getContext('2d');
 
-
             degree = Math.PI / 180;
 
             function find_selected_shapes(selection_box, shapes) {
@@ -227,14 +284,13 @@
                 return selected_shapes;
             }
 
-            var rect1 = new Rectangle(100, 50, 80, 40, 2, 10, 3, "angle", fill_colors[0], border_colors[0]);
-            var rect2 = new Rectangle(200, 50, 80, 40, 10, 0, 3, "input", fill_colors[1], border_colors[1]);
-            var tri1 = new Triangle(300, 50, 40, 40, 2, 3, fill_colors[2], border_colors[2]);
-            var rect3 = new Rectangle(400, 50, 80, 40, 2, 10, 3, "flow", fill_colors[3], border_colors[3]);
-            var circ1 = new Circle(500, 50, 20, 3, "+", fill_colors[4], border_colors[4]);
+//            var rect1 = new Rectangle(100, 50, 80, 40, 2, 10, 3, "angle", fill_colors[0], border_colors[0]);
+//            var rect2 = new Rectangle(200, 50, 80, 40, 10, 0, 3, "input", fill_colors[1], border_colors[1]);
+//            var tri1 = new Triangle(300, 50, 40, 40, 2, 3, fill_colors[2], border_colors[2]);
+//            var rect3 = new Rectangle(400, 50, 80, 40, 2, 10, 3, "flow", fill_colors[3], border_colors[3]);
+//            var circ1 = new Circle(500, 50, 20, 3, "+", fill_colors[4], border_colors[4]);
 
-            selected_shapes =
-                shapes = [rect1, rect2, rect3, tri1, circ1];
+            selected_shapes = shapes = [];
             draw_all_shapes(ctx);
 
             button = 0;
@@ -344,6 +400,7 @@
             }
 
             function snap_to_grid(step_size, counter, diff) {
+                // uses the step size for shape movement to determine the new shape location
                 var after = (counter + diff) / step_size;
                 var before = counter / step_size;
                 var change = 0;
@@ -373,7 +430,7 @@
                 var diffY = evt.clientY - canvas.getBoundingClientRect().top - ym;
                 xm = evt.clientX - canvas.getBoundingClientRect().left;
                 ym = evt.clientY - canvas.getBoundingClientRect().top;
-
+                //need_draw = false;
 
                 // snap to grid
                 var step_size = 1;
@@ -409,12 +466,10 @@
                         $('body').css('cursor', 'pointer');
                     }
                     if (shapes[s].pointer_is_inside(xm, ym) || (selected_shapes.length > s && selected_shapes[s] == true)) {
-                        shapes[s].color.a = 1;
-                        shapes[s].textColor = "black";
+                        shapes[s].highlight();
                         need_draw = true;
-                    } else if (shapes[s].color.to_string() != shapes[s].default_color.to_string()) {
-                        shapes[s].textColor = "white";
-                        shapes[s].color.a = 0;
+                    } else if ((shapes[s].color.to_string() != shapes[s].default_color.to_string())) {
+                        shapes[s].darken();
                         need_draw = true;
                     }
                 }
@@ -487,20 +542,68 @@
                     if (primary_selected_shape > -1 && border_colors[i].to_string() == shapes[primary_selected_shape].border_color.to_string()) {
                         current_color_idx = i;
                         $('#color' + i.toString()).html('<i class="glyphicon glyphicon-ok" style="margin-top: 3px;margin-left:50%;left:-8px;color:rgba(255,255,255,0.7)"></i>');
-                    } else {
+                    } else if (primary_selected_shape > -1) {
                         $('#color' + i.toString()).html('');
                     }
                 }
                 return true;
             }
 
+            function keyPress(evt) {
+                evt = evt || window.event;
+                var s = 0;
+                if (evt.keyCode == 46) {
+                    // Del ==> Remove selected layers
+                    if ($("#addLayerIcon").hasClass('rotated')) {
+                        remove_layer();
+                        toggle_add_or_remove_button();
+                    }
+                } else if (evt.ctrlKey && evt.keyCode == 65) {
+                    // Ctrl + A ==> Select all
+                    for (s = 0; s < selected_shapes.length; s++) {
+                        selected_shapes[s] = true;
+                        shapes[s].highlight();
+                    }
+                    if (!$("#addLayerIcon").hasClass('rotated')) {
+                        toggle_add_or_remove_button();
+                    }
+                    draw();
+                } else if (evt.ctrlKey && evt.keyCode == 67) {
+                    // Ctrl + C ==> Copy
+                    clipboard = [];
+                    for (s = 0; s < selected_shapes.length; s++) {
+                        if (selected_shapes[s] && shapes[s] != selection_box) {
+                            clipboard.push(shapes[s]);
+                        }
+                    }
+                    $("#layerName").blur();
+                } else if (evt.ctrlKey && evt.keyCode == 86) {
+                    // Ctrl + V ==> Paste
+                    for (s = 0; s < clipboard.length; s++) {
+                        var copiedObject = clipboard[s].clone();
+                        copiedObject.translate(50 + 10*Math.random(),50 + 10*Math.random());
+                        copiedObject.highlight();
+                        shapes.push(copiedObject);
+                        selected_shapes.push(true);
+                    }
+                    draw();
+                }
+
+        }
+
             canvas.addEventListener('mousedown', mouseDown);
             document.addEventListener('mousemove', mouseMove);
             document.addEventListener('mouseup', mouseUp);
+            document.addEventListener('keydown', keyPress);
         }
     </script>
 </head>
 <body onload="run()" style="overflow: hidden;" oncontextmenu="return false">
+<!-- Github Form Me Ribbon -->
+<a href="https://github.com/itaicaspi/Neuralizer">
+    <img style="z-index: 10; position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png">
+</a>
+<!--------------------------->
 <div class="col-lg-2 divContainer side-bar">
     <div>
         <div class="appName">
@@ -510,6 +613,14 @@
         <br>
         <div class="form-group">
             <label for="layerName" style="color:white">Name</label>
+            <!-- Latex support -->
+            <!--
+            <div class="material-switch pull-right">
+                <span style="padding-right: 5px;"><img src="images/latex.png" height="17px"></span>
+                <input id="latexName" name="latexName" type="checkbox" />
+                <label for="latexName" class="label-success"></label>
+            </div>
+            -->
             <input type="text" id="layerName" class="form-control" placeholder="Layer name" onkeyup="update_shape()">
         </div>
         <div class="form-group">
@@ -527,6 +638,7 @@
                     <option value="Regularization">Regularization</option>
                     <option value="Concatenate">Concatenate</option>
                     <option value="ElementWise">Element-Wise</option>
+                    <option value="SpecialBlock">Special Block</option>
                 </optgroup>
                 <optgroup label="Normalization">
                     <option value="Batch Normalization">Batch Normalization</option>
@@ -665,12 +777,25 @@
         </div>
 
 
-        <!-- Regularization -->
+        <!-- Element-Wise -->
         <div class="form-group" style="display: none;" id="elementWiseParams">
             <label for="elementWiseOperator" style="color:white">Element-wise Operator</label>
             <select id="elementWiseOperator" class="form-control selectpicker">
                 <option value="Add">Add</option>
                 <option value="Multiply">Multiply</option>
+            </select>
+        </div>
+
+        <!-- Special Block -->
+        <div class="form-group" style="display: none;" id="specialBlockParams">
+            <label for="specialBlockType" style="color:white">Block Type</label>
+            <select id="specialBlockType" class="form-control selectpicker">
+                <option value="Inception">Inception</option>
+                <option value="ResidualBlock">Residual Block</option>
+                <option value="DenseEncoder">Dense Encoder</option>
+                <option value="DenseDecoder">Dense Decoder</option>
+                <option value="ConvEncoder">Convolutional Encoder</option>
+                <option value="ConvDecoder">Convolutional Decoder</option>
             </select>
         </div>
 
@@ -700,7 +825,13 @@
             </div>
         </div>
         <br>
-        <br>
+        <div class="form-group">
+            <span style="padding-right: 5px; color:white"><b>Full Details</b></span>
+            <div class="material-switch pull-right">
+                <input id="fullDetails" name="latexName" type="checkbox" />
+                <label for="fullDetails" class="label-success"></label>
+            </div>
+        </div>
         <div class="form-group" style="text-align:center;">
             <button type="button" id="addLayer" class="btn btn-default btn-circle btn-lg"
                     onclick="add_or_remove_layer()" style="outline:none;"><i data-toggle="tooltip" data-placement="top"
@@ -747,8 +878,11 @@
 </div>
 <div class="col-lg-10">
     <canvas id="cnv" width="800" height="1000"></canvas>
+    <div id="mathjax-elements">
+        \[ {} \]
+    </div>
 </div>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
 <script src="js/bootstrap-select.js"></script>
 <script>
     $(document).ready(function () {
