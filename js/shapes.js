@@ -379,19 +379,19 @@ Shape.prototype.show = function() {
 };
 
 Shape.prototype.change_color = function(color) {
-    this.color = new Color(this.default_color);
-	this.border_color = new Color(this.default_border_color);
+    this.color = Object.create(this.default_color);
+	this.border_color = Object.create(this.default_border_color);
 };
 
 
 Shape.prototype.change_fill_color = function(color) {
-    this.color = color;
-	//this.default_color = color;
+    this.color = Object.create(color);
+	this.default_color = Object.create(color);
 };
 
 Shape.prototype.change_border_color = function(color) {
-    this.border_color = color;
-	this.default_border_color = color;
+    this.border_color = Object.create(color);
+	this.default_border_color = Object.create(color);
 };
 
 
@@ -418,7 +418,7 @@ var Rectangle = function(x, y, width, height, radius, offset, stroke, text, colo
 inheritsFrom(Rectangle, Shape);
 
 Rectangle.prototype.clone = function() {
-    return new Rectangle(this.x, this.y, this.width, this.height, this.radius, this.offset, this.stroke, this.text, this.color, this.border_color, this.dashedBorder, this.mathjax_element);
+    return new Rectangle(this.x, this.y, this.width, this.height, this.radius, this.offset, this.stroke, this.text, this.default_color, this.default_border_color, this.dashedBorder, this.mathjax_element);
 };
 
 
@@ -508,7 +508,7 @@ inheritsFrom(Triangle, Shape);
 
 
 Triangle.prototype.clone = function() {
-    return new Triangle(this.x, this.y, this.width, this.height, this.radius, this.stroke, this.color, this. border_color);
+    return new Triangle(this.x, this.y, this.width, this.height, this.radius, this.stroke, this.default_color, this.default_border_color);
 };
 
 Triangle.prototype.update_vertices = function() {
@@ -554,7 +554,7 @@ var Circle = function(x, y, radius, stroke, text, color, border_color, math_jax_
 inheritsFrom(Circle, Shape);
 
 Circle.prototype.clone = function() {
-    return new Circle(this.x, this.y, this.width, this.stroke, this.text, this.color, this.border_color, this.mathjax_element);
+    return new Circle(this.x, this.y, this.width, this.stroke, this.text, this.default_color, this.default_border_color, this.mathjax_element);
 };
 
 Circle.prototype.draw = function(ctx) {
