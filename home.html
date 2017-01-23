@@ -85,17 +85,18 @@
                 }
                 return v;
             }), "arrows": JSON.stringify(arrows)};
-            if (current_timestep == 0 || current_state != stored_states[current_timestep-1]) {
+
+            if (current_timestep <= 1 || current_state["shapes"] != stored_states[current_timestep-1]["shapes"]) {
                 stored_states[current_timestep] = current_state;
+                current_timestep += 1;
             }
-            current_timestep += 1;
         }
 
         function load_state(state) {
             // load the given state to the designer
             shapes = JSON.parse(state["shapes"]);
             for (var s = shapes.length-1; s >= 0; s--) {
-                if (shapes[s] == null) {
+                if (shapes[s] == null || shapes[s] == undefined) {
                     shapes.splice(s,1);
                     continue;
                 }
@@ -112,9 +113,9 @@
 
         function undo() {
             // undo changes
-            if (current_timestep > 0) {
+            if (current_timestep > 1) {
                 current_timestep -= 1;
-                load_state(stored_states[current_timestep]);
+                load_state(stored_states[current_timestep-1]);
                 return true;
             }
             return false;
@@ -124,8 +125,8 @@
         function redo() {
             // redo changes
             if (current_timestep < stored_states.length) {
-                current_timestep += 1;
                 load_state(stored_states[current_timestep]);
+                current_timestep += 1;
                 return true;
             }
             return false;
@@ -185,6 +186,18 @@
 
         }
 
+
+        function highlight_selected_shapes() {
+            var s;
+            for (s = 0; s < shapes.length; s++) {
+                if (shapes[s] == selection_box) continue;
+
+                if (selected_shapes.length > s && selected_shapes[s] == true) {
+                    shapes[s].highlight();
+                }
+            }
+            draw();
+        }
 
         function get_short_name(layer_type) {
             // get a short default name for a layer
@@ -282,7 +295,6 @@
                 add_layer();
             }
             toggle_add_or_remove_button();
-            save_state();
         }
 
         var border_colors = [
@@ -292,9 +304,9 @@
             new Color(241, 196, 15, 1),
             new Color(230, 126, 34, 1),
             new Color(231, 76, 60, 1)
-        ]
+        ];
 
-        var fill_colors = []
+        var fill_colors = [];
         for (var i = 0; i < border_colors.length; i++) {
             border_color = border_colors[i];
             var max_val = Math.max(Math.max(border_color.r, border_color.g), border_color.b);
@@ -384,6 +396,8 @@
             shapes.push(selection_box);
 
             selected_shapes = find_selected_shapes(selection_box, shapes);
+
+            save_state();
 
             function mouseDown(evt) {
 
@@ -594,7 +608,9 @@
                     selected_shapes = find_selected_shapes(selection_box, shapes);
                 }
                 is_mouse_down = false;
-                save_state();
+                if (xm >= 0 && ym >= 0) {
+                    save_state();
+                }
             }
 
 
@@ -680,18 +696,20 @@
                     }
                     save_state();
                     draw();
-                } else if (evt.ctrlKey && evt.keyCode == 90) {
+                } else if (evt.ctrlKey && evt.keyCode == 90 && !evt.shiftKey) {
                     // Ctrl + Z ==> undo
                     if (undo()) {
                         show_message("Undo changes");
+                        highlight_selected_shapes();
+                        draw();
                     }
-                    draw();
-                } else if (evt.ctrlKey && evt.keyCode == 89) {
+                } else if ((evt.ctrlKey && evt.keyCode == 89) || (evt.ctrlKey && evt.shiftKey && evt.keyCode == 90)) {
                     // Ctrl + Y ==> redo
                     if (redo()) {
                         show_message("Redo changes");
+                        highlight_selected_shapes();
+                        draw();
                     }
-                    draw();
                 }
 
 
