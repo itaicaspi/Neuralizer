@@ -70,7 +70,7 @@ Line.prototype.linked_shape_color_change = function(shape, arrows) {
     }
 };
 
-Line.prototype.startLine = function(start, color, linkStart, startDir) {
+Line.prototype.start_line = function(start, color, linkStart, startDir) {
     this.points++;
     this.vertices[0] = start;
     this.color = color;

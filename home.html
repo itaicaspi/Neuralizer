@@ -15,6 +15,8 @@
     <link rel="stylesheet" href="css/bootstrap-select.css"> <!-- js is at the end -->
     <!-- style -->
     <link href="https://fonts.googleapis.com/css?family=Lato:100,700" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+          rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
     <!-- neuralizer scripts -->
     <script src="js/utils.js"></script>
@@ -22,6 +24,10 @@
     <script src="js/nn.js"></script>
     <script src="js/transforms.js"></script>
     <script src="js/shapes.js"></script>
+    <!-- favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="images/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
 
     <script type="text/x-mathjax-config">
     MathJax.Hub.Config({
@@ -56,8 +62,39 @@
         var current_timestep = 0;
         var stored_states = [];
 
+        function switch_mode(mode) {
+            //switch the sidebar mode
+            var modes = ["designer", "import_export", "share", "explore", "account"];
+            for (var key in modes) {
+                if (modes[key] == mode) {
+                    $("#" + modes[key] + "_icon").addClass("selected-side-icon");
+                    $("#" + modes[key]).fadeIn("fast");
+                } else {
+                    $("#" + modes[key] + "_icon").removeClass("selected-side-icon");
+                    $("#" + modes[key]).hide();
+                }
+            }
+        }
+
+        function show_message(msg, slow) {
+            var fade_out_time = 500;
+            if (slow) {
+                fade_out_time = 1000;
+            }
+
+            var canvas_overlay = $("#canvas_overlay");
+            $("#canvas_overlay h1").text(msg);
+            $(canvas_overlay).stop();
+            $(canvas_overlay).fadeIn(30);
+            $(canvas_overlay).fadeOut(fade_out_time);
+        }
+
         function download_as_file(filename, text) {
             // Download the text as a file to the user's machine
+            if (filename == "") {
+                filename = "neuralizer_topology";
+                $("filename").val(filename);
+            }
             var link = document.createElement("a");
             link.setAttribute("target","_blank");
             if(Blob !== undefined) {
@@ -74,7 +111,30 @@
 
         function save_current_state_to_file() {
             // download the current state to the user's machine
-            download_as_file("topology.txt", JSON.stringify(stored_states[current_timestep-1]));
+            show_message("Downloading topology", true);
+            download_as_file($("#filename").val(), JSON.stringify(stored_states[current_timestep-1]));
+        }
+
+        function load_state_from_file() {
+            // load a file as the current state
+            var fileInput = document.getElementById('fileInput');
+
+            var file = fileInput.files[0];
+            var textType = /text.*/;
+
+            if (file.type.match(textType)) {
+                show_message("Loading topology", true);
+                var reader = new FileReader();
+
+                reader.onload = function(e) {
+                    var state = JSON.parse(reader.result);
+                    load_state(state);
+                };
+                reader.readAsText(file);
+
+            } else {
+                show_message("File not supported!");
+            }
         }
 
         function save_state() {
@@ -434,6 +494,8 @@
 
 
                 if (button == 0) {
+                    // Left mouse button => select or attach an arrow
+
                     // add point to current arrow
                     if (current_arrow.points >= 1) {
                         current_arrow.points++;
@@ -445,7 +507,7 @@
                             pointer_is_on_shape_border = s;
                             if (current_arrow.points == 0) {
                                 // start a new line
-                                current_arrow.startLine(new Vertex(xm, ym, 0), shapes_and_arrows[s].border_color, shapes_and_arrows[s], borderDir);
+                                current_arrow.start_line(new Vertex(xm, ym, 0), shapes_and_arrows[s].border_color, shapes_and_arrows[s], borderDir);
                             } else {
                                 current_arrow.end_line(new Vertex(xm, ym, 0), shapes_and_arrows[s]);
                                 arrows.push(current_arrow);
@@ -460,6 +522,8 @@
                     }
 
                 } else if (button == 2) {
+                    // Right mouse button
+                    /*
                     if (primary_selected_shape > -1) {
                         var shape;
                         var curr = shapes[primary_selected_shape];
@@ -471,7 +535,7 @@
                             shape = new Circle(curr.x, curr.y + 70, curr.radius, curr.stroke, curr.text, curr.default_color, curr.border_color);
                         }
                         shapes.push(shape);
-                    }
+                    }*/
                 }
                 var add_layer_icon = $("#addLayerIcon");
                 if (primary_selected_shape == -1) {
@@ -644,13 +708,6 @@
                 return true;
             }
 
-            function show_message(msg) {
-                var canvas_messages = $("#canvas_messages");
-                $("#canvas_messages h1").text(msg);
-                $(canvas_messages).stop();
-                $(canvas_messages).fadeIn(30);
-                $(canvas_messages).fadeOut(500);
-            }
 
             function keyPress(evt) {
                 evt = evt || window.event;
@@ -719,6 +776,11 @@
             document.addEventListener('mousemove', mouseMove);
             document.addEventListener('mouseup', mouseUp);
             document.addEventListener('keydown', keyPress);
+
+            var fileInput = document.getElementById('fileInput');
+            fileInput.addEventListener('change', load_state_from_file);
+
+
         }
     </script>
 </head>
@@ -728,13 +790,35 @@
     <img style="z-index: 10; position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png">
 </a>
 <!--------------------------->
+<div class="col-lg-1 icons-side-bar">
+    <!-- Designer -->
+    <div id="designer_icon" class="side-icon selected-side-icon" onclick="switch_mode('designer')">
+        <i data-toggle="tooltip" data-placement="top" title="Designer" class="material-icons">color_lens</i>
+    </div>
+    <!-- Import / Export -->
+    <div id="import_export_icon" class="side-icon" onclick="switch_mode('import_export')">
+        <i data-toggle="tooltip" data-placement="top" title="Import/Export" class="material-icons">file_download</i>
+    </div>
+    <!-- Share -->
+    <div id="share_icon" class="side-icon" onclick="switch_mode('share')">
+        <i data-toggle="tooltip" data-placement="top" title="Share" class="material-icons">share</i>
+    </div>
+    <!-- Explore -->
+    <div id="explore_icon" class="side-icon" onclick="switch_mode('explore')">
+        <i data-toggle="tooltip" data-placement="top" title="Explore" class="material-icons">explore</i>
+    </div>
+    <!-- Account -->
+    <div id="account_icon" class="side-icon" onclick="switch_mode('account')">
+        <i data-toggle="tooltip" data-placement="top" title="Account" class="material-icons">account_circle</i>
+    </div>
+</div>
 <div class="col-lg-2 divContainer side-bar">
-    <div>
-        <div class="appName">
-            <h1>neuralizer</h1>
-            <b style="font-size: 17px;text-align: center;">visual neural network designer</b>
-        </div>
-        <br>
+    <div class="appName">
+        <h1>neuralizer</h1>
+        <b style="font-size: 17px;text-align: center;">visual neural network designer</b>
+    </div>
+    <br>
+    <div id="designer">
         <div class="form-group">
             <label for="layerName" style="color:white">Name</label>
             <!-- Latex support -->
@@ -988,15 +1072,26 @@
         </div>
         <div class="form-group" style="text-align:center;">
             <button type="button" id="addLayer" class="btn btn-default btn-circle btn-lg"
-                    onclick="add_or_remove_layer()" style="outline:none;"><i data-toggle="tooltip" data-placement="top"
-                                                                             title="Add" id="addLayerIcon"
-                                                                             class="glyphicon glyphicon-plus"></i>
+                    onclick="add_or_remove_layer()" style="outline:none;">
+                <i data-toggle="tooltip" data-placement="top"
+                     title="Add" id="addLayerIcon"
+                     class="glyphicon glyphicon-plus"></i>
             </button>
         </div>
         <hr class="separator">
+    </div>
+
+    <div id="import_export" style="display: none">
+        <div class="form-group">
+            <label for="filename" style="color:white">Filename</label>
+            <input type="text" id="filename" class="form-control" placeholder="Filename">
+        </div>
         <div class="form-group">
             <label for="framework" style="color:white">Framework</label>
             <select id="framework" class="form-control selectpicker">
+                <!--<option data-content="<img src='images/icon-neuralizer.png' style='margin-right:10px'>Neuralizer"-->
+                <!--value="Neuralizer">Neuralizer-->
+                <!--</option>-->
                 <option data-content="<img src='images/icon-tensorflow.png' style='margin-right:10px'>TensorFlow"
                         value="TensorFlow">TensorFlow
                 </option>
@@ -1028,11 +1123,16 @@
         <div class="form-group">
             <button type="button" id="saveTopology" class="form-control" onclick="save_current_state_to_file()">Save Topology</button>
         </div>
+        <div class="form-group">
+            <button type="button" id="loadTopology" class="form-control" onclick="document.getElementById('fileInput').click()" style="margin-top:-10px">Load Topology</button>
+            <input type="file" id="fileInput" style="display: none;">
+        </div>
+
     </div>
 </div>
-<div class="col-lg-10" style="height:100%">
-    <div id="canvas_messages" style="position: absolute; left: 0; top:0; width:100%; height:100%; display: none;">
-        <div style="position: absolute; top: 50%; left:50%; margin-left: -320px; margin-top: -80px; color: white">
+<div class="col-lg-9" style="height:100%">
+    <div id="canvas_overlay">
+        <div id="canvas_messages">
             <h1>Copied to clipboard</h1>
         </div>
     </div>

@@ -22,7 +22,7 @@ input {
 h1 {
     font-size: 60px;
     margin: 0;
-    text-shadow: -2px 1px rgba(0,0,0,0.2), -4px 2px rgba(0,0,0,0.1), -6px 3px rgba(0,0,0,0.05), -8px 4px rgba(0,0,0,0.025);
+    text-shadow: -2px 1px rgba(0, 0, 0, 0.2), -4px 2px rgba(0, 0, 0, 0.1), -6px 3px rgba(0, 0, 0, 0.05), -8px 4px rgba(0, 0, 0, 0.025);
 }
 
 .appName {
@@ -30,6 +30,52 @@ h1 {
     font-family: 'Lato', sans-serif;
 }
 
+#canvas_overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+}
+
+#canvas_messages {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-left: -320px;
+    margin-top: -80px;
+    color: white
+}
+
+.icons-side-bar {
+    width: 50px;
+    height: 100%;
+    background: #af392a;
+    padding: 140px 0 0;
+    box-shadow: 0px 5px 20px 5px rgba(0,0,0,0.1) inset;
+}
+
+.side-icon {
+    width: 100%;
+    height: 70px;
+    padding-top: 20px;
+    padding-left: 12px;
+    background: transparent;
+}
+
+.side-icon:hover {
+    cursor: pointer;
+}
+
+.selected-side-icon {
+    background: #FF533D;
+    box-shadow: 0 5px 20px 5px rgba(0,0,0,0.1);
+}
+
+.selected-side-icon:hover {
+    cursor: default;
+}
 
 .side-bar {
     padding: 20px;
@@ -99,11 +145,12 @@ h1 {
     content: '';
     height: 16px;
     margin-top: -8px;
-    position:absolute;
+    position: absolute;
     opacity: 0.3;
     transition: all 0.4s ease-in-out;
     width: 40px;
 }
+
 .material-switch > label::after {
     background: rgb(255, 255, 255);
     border-radius: 16px;
@@ -117,10 +164,12 @@ h1 {
     transition: all 0.3s ease-in-out;
     width: 24px;
 }
+
 .material-switch > input[type="checkbox"]:checked + label::before {
     background: inherit;
     opacity: 0.5;
 }
+
 .material-switch > input[type="checkbox"]:checked + label::after {
     background: inherit;
     left: 20px;
