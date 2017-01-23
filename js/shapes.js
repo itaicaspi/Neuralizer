@@ -266,6 +266,7 @@ Line.prototype.pointer_is_on_the_border = function(xm, ym, ctx) {
 
 
 var Shape = function(x, y, width, height, radius, stroke, text, color, border_color, dashedBorder, mathjax_element) {
+    mathjax_element = ""; // TODO: remove mathjax from the app
     this.x = x;
     this.y = y;
     this.baseWidth = width;
@@ -273,15 +274,16 @@ var Shape = function(x, y, width, height, radius, stroke, text, color, border_co
     this.height = height;
     this.radius = (typeof radius != 'undefined') ? radius : 2;
     this.stroke = (typeof stroke != 'undefined') ? stroke : 1;
-	this.textColor = "white";
-    this.default_color = Object.create(color);
-    this.color = Object.create(color);
-	this.default_border_color = Object.create(border_color);
-    this.border_color = Object.create(border_color);
+    this.textColor = "white";
+    this.default_color = new Color(color);
+    this.color = new Color(color);
+    this.default_border_color = new Color(border_color);
+    this.border_color = new Color(border_color);
     this.vertices = [];
-	this.dashedBorder = (typeof dashedBorder != 'undefined') ? dashedBorder : false;
-	this.update_text((typeof text != 'undefined') ? text : "", mathjax_element);
-	
+    this.dashedBorder = (typeof dashedBorder != 'undefined') ? dashedBorder : false;
+    this.update_text((typeof text != 'undefined') ? text : "", mathjax_element);
+    this.mathjax_element = mathjax_element;
+
 };
 
 Shape.prototype.clone = function() {
@@ -379,19 +381,19 @@ Shape.prototype.show = function() {
 };
 
 Shape.prototype.change_color = function(color) {
-    this.color = Object.create(this.default_color);
-	this.border_color = Object.create(this.default_border_color);
+    this.color = new Color(this.default_color);
+	this.border_color = new Color(this.default_border_color);
 };
 
 
 Shape.prototype.change_fill_color = function(color) {
-    this.color = Object.create(color);
-	this.default_color = Object.create(color);
+    this.color = new Color(color);
+	this.default_color = new Color(color);
 };
 
 Shape.prototype.change_border_color = function(color) {
-    this.border_color = Object.create(color);
-	this.default_border_color = Object.create(color);
+    this.border_color = new Color(color);
+	this.default_border_color = new Color(color);
 };
 
 
@@ -408,8 +410,14 @@ Shape.prototype.darken = function() {
 /////////////////////////////////////
 //  Rectangle
 
-var Rectangle = function(x, y, width, height, radius, offset, stroke, text, color, border_color, dashedBorder, math_jax_element) {
-    Shape.call(this, x, y, width, height, radius, stroke, text, color, border_color, dashedBorder, math_jax_element);
+var Rectangle = function(x, y, width, height, radius, offset, stroke, text, color, border_color, dashedBorder, mathjax_element) {
+    if (typeof x == "object") {
+        // copy constructor
+        var shape = x;
+        Shape.call(this, shape.x, shape.y, shape.width, shape.height, shape.radius, shape.stroke, shape.text, shape.default_color, shape.default_border_color, shape.dashedBorder, shape.mathjax_element);
+    } else {
+        Shape.call(this, x, y, width, height, radius, stroke, text, color, border_color, dashedBorder, mathjax_element);
+    }
     this.offset = (typeof offset != 'undefined') ? offset : 10;
     this.update_vertices();
     this.type = "Rectangle";
@@ -499,7 +507,13 @@ Rectangle.prototype.draw = function(ctx) {
 //  Triangle
 
 var Triangle = function(x, y, width, height, radius, stroke, color, border_color) {
-    Shape.call(this, x, y, width, height, radius, stroke, "", color, border_color);
+    if (typeof x == "object") {
+        // copy constructor
+        var shape = x;
+        Shape.call(this, shape.x, shape.y, shape.width, shape.height, shape.radius, shape.stroke, shape.text, shape.default_color, shape.default_border_color);
+    } else {
+        Shape.call(this, x, y, width, height, radius, stroke, "", color, border_color);
+    }
     this.update_vertices();
     this.type = "Triangle";
 };
@@ -545,8 +559,14 @@ Triangle.prototype.draw = function(ctx) {
 /////////////////////////////////////
 //  Circle
 
-var Circle = function(x, y, radius, stroke, text, color, border_color, math_jax_element) {
-    Shape.call(this, x + radius, y + radius, radius, radius, radius, stroke, text, color, border_color, false, math_jax_element);
+var Circle = function(x, y, radius, stroke, text, color, border_color, mathjax_element) {
+    if (typeof x == "object") {
+        // copy constructor
+        var shape = x;
+        Shape.call(this, shape.x, shape.y, shape.width, shape.height, shape.radius, shape.stroke, shape.text, shape.default_color, shape.default_border_color, shape.dashedBorder, shape.mathjax_element);
+    } else {
+        Shape.call(this, x + radius, y + radius, radius, radius, radius, stroke, text, color, border_color, false, mathjax_element);
+    }
     this.vertices = [];
     this.type = "Circle";
 };

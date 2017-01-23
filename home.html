@@ -53,7 +53,83 @@
         var selection_box = new Rectangle(0, 0, 0, 0, 2, 0, 2, "", new Color(0, 0, 0, 0), new Color(255, 255, 255, 1), true);
         var mathjax_element_idx = 1;
         var clipboard = [];
+        var current_timestep = 0;
+        var stored_states = [];
 
+        function download_as_file(filename, text) {
+            // Download the text as a file to the user's machine
+            var link = document.createElement("a");
+            link.setAttribute("target","_blank");
+            if(Blob !== undefined) {
+                var blob = new Blob([text], {type: "text/plain"});
+                link.setAttribute("href", URL.createObjectURL(blob));
+            } else {
+                link.setAttribute("href","data:text/plain," + encodeURIComponent(text));
+            }
+            link.setAttribute("download",filename);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function save_current_state_to_file() {
+            // download the current state to the user's machine
+            download_as_file("topology.txt", JSON.stringify(stored_states[current_timestep-1]));
+        }
+
+        function save_state() {
+            // save the state of the designer in the buffer
+            var current_state = {"shapes": JSON.stringify(shapes, function(k,v) {
+                if (v == selection_box) {
+                    return undefined;
+                }
+                return v;
+            }), "arrows": JSON.stringify(arrows)};
+            if (current_timestep == 0 || current_state != stored_states[current_timestep-1]) {
+                stored_states[current_timestep] = current_state;
+            }
+            current_timestep += 1;
+        }
+
+        function load_state(state) {
+            // load the given state to the designer
+            shapes = JSON.parse(state["shapes"]);
+            for (var s = shapes.length-1; s >= 0; s--) {
+                if (shapes[s] == null) {
+                    shapes.splice(s,1);
+                    continue;
+                }
+                if (shapes[s].type == "Rectangle") {
+                    shapes[s] = new Rectangle(shapes[s]);
+                } else if (shapes[s].type == "Triangle") {
+                    shapes[s] = new Triangle(shapes[s]);
+                } else if (shapes[s].type == "Circle") {
+                    shapes[s] = new Circle(shapes[s]);
+                }
+            }
+            shapes.push(selection_box);
+        }
+
+        function undo() {
+            // undo changes
+            if (current_timestep > 0) {
+                current_timestep -= 1;
+                load_state(stored_states[current_timestep]);
+                return true;
+            }
+            return false;
+        }
+
+
+        function redo() {
+            // redo changes
+            if (current_timestep < stored_states.length) {
+                current_timestep += 1;
+                load_state(stored_states[current_timestep]);
+                return true;
+            }
+            return false;
+        }
 
         function draw_all_arrows(ctx) {
             // calls the draw function for all the currently available arrows
@@ -88,6 +164,7 @@
             select = $("#layerType");
 
             var types = {
+                "DataPlaceholder": "#dataParams",
                 "Pooling": "#poolingParams",
                 "Convolution": "#convolutionParams",
                 "Activation": "#activationParams",
@@ -205,15 +282,16 @@
                 add_layer();
             }
             toggle_add_or_remove_button();
+            save_state();
         }
 
         var border_colors = [
-            new Color(230, 126, 34, 1),
-            new Color(231, 76, 60, 1),
             new Color(142, 68, 173, 1),
             new Color(52, 152, 219, 1),
             new Color(39, 174, 96, 1),
-            new Color(241, 196, 15, 1)
+            new Color(241, 196, 15, 1),
+            new Color(230, 126, 34, 1),
+            new Color(231, 76, 60, 1)
         ]
 
         var fill_colors = []
@@ -251,6 +329,7 @@
                 }
             }
 
+            save_state();
             draw();
         }
 
@@ -365,7 +444,6 @@
                     if (current_arrow.points == 0 && pointer_is_on_shape_border == -1) {
                         current_arrow = new Line([], 5, new Color(0, 0, 0, 1), 3);
                     }
-
 
                 } else if (button == 2) {
                     if (primary_selected_shape > -1) {
@@ -516,6 +594,7 @@
                     selected_shapes = find_selected_shapes(selection_box, shapes);
                 }
                 is_mouse_down = false;
+                save_state();
             }
 
 
@@ -552,6 +631,7 @@
             function show_message(msg) {
                 var canvas_messages = $("#canvas_messages");
                 $("#canvas_messages h1").text(msg);
+                $(canvas_messages).stop();
                 $(canvas_messages).fadeIn(30);
                 $(canvas_messages).fadeOut(500);
             }
@@ -598,10 +678,24 @@
                         shapes.push(copiedObject);
                         selected_shapes.push(true);
                     }
+                    save_state();
+                    draw();
+                } else if (evt.ctrlKey && evt.keyCode == 90) {
+                    // Ctrl + Z ==> undo
+                    if (undo()) {
+                        show_message("Undo changes");
+                    }
+                    draw();
+                } else if (evt.ctrlKey && evt.keyCode == 89) {
+                    // Ctrl + Y ==> redo
+                    if (redo()) {
+                        show_message("Redo changes");
+                    }
                     draw();
                 }
 
-        }
+
+            }
 
             canvas.addEventListener('mousedown', mouseDown);
             document.addEventListener('mousemove', mouseMove);
@@ -669,6 +763,35 @@
             </select>
         </div>
         <hr class="separator">
+
+
+        <!-- Data -->
+        <div class="form-group" style="display: none;" id="dataParams">
+            <label for="kernelSize" style="color:white; margin-bottom: 20px">Data Properties</label>
+            <div class="row">
+                <div class="col-lg-3">
+                    <label for="dataWidth" style="color:white">Width</label>
+                </div>
+                <div class="col-lg-3" style="padding:0">
+                    <input id="dataWidth" type="number" min="1" max="10000" value="1" style="width:70%;">
+                </div>
+                <div class="col-lg-3">
+                    <label for="dataHeight" style="color:white">Height</label>
+                </div>
+                <div class="col-lg-3" style="padding:0">
+                    <input id="dataHeight" type="number" min="1" max="10000" value="1" style="width:70%;">
+                </div>
+            </div>
+            <br>
+            <div class="row">
+                <div class="col-lg-3">
+                    <label for="dataDepth" style="color:white">Depth</label>
+                </div>
+                <div class="col-lg-3" style="padding:0">
+                    <input id="dataDepth" type="number" min="1" max="10000" value="1" style="width:70%;">
+                </div>
+            </div>
+        </div>
 
         <!-- Convolution -->
         <div class="form-group" style="display: none;" id="convolutionParams">
@@ -815,24 +938,25 @@
             <label for="layerColor" style="color:white">Color</label>
             <div style="width:100%;cursor:pointer;" id="layerColor">
                 <div class="layer-color" id="color0" onclick="change_color(0)"
-                     style="background-color: rgb(230, 126, 34);border-top-left-radius: 3px;border-bottom-left-radius: 3px; ">
+                     style="background-color: rgb(142, 68, 173); border-top-left-radius: 3px;border-bottom-left-radius: 3px; ">
                     <i class="glyphicon glyphicon-ok"
                        style="margin-top: 3px;margin-left:50%;left:-8px;color:rgba(255,255,255,0.7)"></i>
                 </div>
                 <div class="layer-color" id="color1" onclick="change_color(1)"
-                     style="background-color: rgb(231, 76, 60);">
-                </div>
-                <div class="layer-color" id="color2" onclick="change_color(2)"
-                     style="background-color: rgb(142, 68, 173); ">
-                </div>
-                <div class="layer-color" id="color3" onclick="change_color(3)"
                      style="background-color: rgb(52, 152, 219); ">
                 </div>
-                <div class="layer-color" id="color4" onclick="change_color(4)"
+                <div class="layer-color" id="color2" onclick="change_color(2)"
                      style="background-color: rgb(39, 174, 96); ">
                 </div>
+                <div class="layer-color" id="color3" onclick="change_color(3)"
+                     style="background-color: rgb(241, 196, 15);">
+                </div>
+                <div class="layer-color" id="color4" onclick="change_color(4)"
+                     style="background-color: rgb(230, 126, 34);">
+
+                </div>
                 <div class="layer-color" id="color5" onclick="change_color(5)"
-                     style="background-color: rgb(241, 196, 15);border-top-right-radius: 3px;border-bottom-right-radius: 3px; border-style: none solid solid none;">
+                     style="background-color: rgb(231, 76, 60);border-top-right-radius: 3px;border-bottom-right-radius: 3px; border-style: none solid solid none;">
                 </div>
             </div>
         </div>
@@ -884,7 +1008,7 @@
             </select>
         </div>
         <div class="form-group">
-            <button type="button" id="saveTopology" class="form-control">Save Topology</button>
+            <button type="button" id="saveTopology" class="form-control" onclick="save_current_state_to_file()">Save Topology</button>
         </div>
     </div>
 </div>

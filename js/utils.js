@@ -6,14 +6,14 @@
 //  Color
 
 
-var Color = function(color) {
-    this.r = color.r;
-    this.g = color.g;
-    this.b = color.b;
-    this.a = color.a;
-};
-
 var Color = function(r, g, b, a) {
+    if (typeof r == "object") {
+        var color = r;
+        r = color.r;
+        g = color.g;
+        b = color.b;
+        a = color.a;
+    }
     this.r = r;
     this.g = g;
     this.b = b;
