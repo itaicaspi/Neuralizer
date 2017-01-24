@@ -13,17 +13,21 @@
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <!-- bootstrap select -->
     <link rel="stylesheet" href="css/bootstrap-select.css"> <!-- js is at the end -->
+    <!--Pulling Awesome Font -->
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
     <!-- style -->
     <link href="https://fonts.googleapis.com/css?family=Lato:100,700" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
           rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
+    <link href="css/social.css" rel="stylesheet">
     <!-- neuralizer scripts -->
     <script src="js/utils.js"></script>
     <script src="js/objects.js"></script>
     <script src="js/nn.js"></script>
     <script src="js/transforms.js"></script>
     <script src="js/shapes.js"></script>
+    <script src="js/files.js"></script>
     <!-- favicon -->
     <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="96x96" href="images/favicon-96x96.png">
@@ -64,13 +68,23 @@
 
         function switch_mode(mode) {
             //switch the sidebar mode
-            var modes = ["designer", "import_export", "share", "explore", "account"];
+            var modes = ["before", "designer", "import_export", "share_explore", "account", "after"];
             for (var key in modes) {
+                var mode_icon = $("#" + modes[key] + "_icon");
+                $(mode_icon).parent('div').removeClass("wrapping-side-icon");
+                $(mode_icon).removeClass("before-side-icon");
+                $(mode_icon).removeClass("selected-side-icon");
+                $(mode_icon).removeClass("after-side-icon");
+            }
+            for (var key = 0; key <= modes.length; key++) {
                 if (modes[key] == mode) {
+                    $("#" + modes[key-1] + "_icon").parent('div').addClass("wrapping-side-icon");
+                    $("#" + modes[key-1] + "_icon").addClass("before-side-icon");
                     $("#" + modes[key] + "_icon").addClass("selected-side-icon");
+                    $("#" + modes[key+1] + "_icon").addClass("after-side-icon");
+                    $("#" + modes[key+1] + "_icon").parent('div').addClass("wrapping-side-icon");
                     $("#" + modes[key]).fadeIn("fast");
                 } else {
-                    $("#" + modes[key] + "_icon").removeClass("selected-side-icon");
                     $("#" + modes[key]).hide();
                 }
             }
@@ -89,53 +103,6 @@
             $(canvas_overlay).fadeOut(fade_out_time);
         }
 
-        function download_as_file(filename, text) {
-            // Download the text as a file to the user's machine
-            if (filename == "") {
-                filename = "neuralizer_topology";
-                $("filename").val(filename);
-            }
-            var link = document.createElement("a");
-            link.setAttribute("target","_blank");
-            if(Blob !== undefined) {
-                var blob = new Blob([text], {type: "text/plain"});
-                link.setAttribute("href", URL.createObjectURL(blob));
-            } else {
-                link.setAttribute("href","data:text/plain," + encodeURIComponent(text));
-            }
-            link.setAttribute("download",filename);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        function save_current_state_to_file() {
-            // download the current state to the user's machine
-            show_message("Downloading topology", true);
-            download_as_file($("#filename").val(), JSON.stringify(stored_states[current_timestep-1]));
-        }
-
-        function load_state_from_file() {
-            // load a file as the current state
-            var fileInput = document.getElementById('fileInput');
-
-            var file = fileInput.files[0];
-            var textType = /text.*/;
-
-            if (file.type.match(textType)) {
-                show_message("Loading topology", true);
-                var reader = new FileReader();
-
-                reader.onload = function(e) {
-                    var state = JSON.parse(reader.result);
-                    load_state(state);
-                };
-                reader.readAsText(file);
-
-            } else {
-                show_message("File not supported!");
-            }
-        }
 
         function save_state() {
             // save the state of the designer in the buffer
@@ -776,7 +743,11 @@
             document.addEventListener('mousemove', mouseMove);
             document.addEventListener('mouseup', mouseUp);
             document.addEventListener('keydown', keyPress);
-
+            window.addEventListener('resize', function () {
+                canvas = document.getElementById('cnv');
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+            });
             var fileInput = document.getElementById('fileInput');
             fileInput.addEventListener('change', load_state_from_file);
 
@@ -791,25 +762,43 @@
 </a>
 <!--------------------------->
 <div class="col-lg-1 icons-side-bar">
+    <div class="wrapping-side-icon" style="height: 100px;">
+        <div id="before_icon" class="side-icon before-side-icon" style="height: 100px; cursor: default">
+        </div>
+    </div>
     <!-- Designer -->
-    <div id="designer_icon" class="side-icon selected-side-icon" onclick="switch_mode('designer')">
-        <i data-toggle="tooltip" data-placement="top" title="Designer" class="material-icons">color_lens</i>
+    <div>
+        <div id="designer_icon" class="side-icon selected-side-icon" onclick="switch_mode('designer')">
+            <i data-toggle="tooltip" data-placement="top" title="Designer" class="material-icons">color_lens</i>
+        </div>
     </div>
     <!-- Import / Export -->
-    <div id="import_export_icon" class="side-icon" onclick="switch_mode('import_export')">
-        <i data-toggle="tooltip" data-placement="top" title="Import/Export" class="material-icons">file_download</i>
+    <div class="wrapping-side-icon">
+        <div id="import_export_icon" class="side-icon after-side-icon" onclick="switch_mode('import_export')">
+            <i data-toggle="tooltip" data-placement="top" title="Import/Export" class="material-icons">file_download</i>
+        </div>
     </div>
     <!-- Share -->
-    <div id="share_icon" class="side-icon" onclick="switch_mode('share')">
-        <i data-toggle="tooltip" data-placement="top" title="Share" class="material-icons">share</i>
-    </div>
-    <!-- Explore -->
-    <div id="explore_icon" class="side-icon" onclick="switch_mode('explore')">
-        <i data-toggle="tooltip" data-placement="top" title="Explore" class="material-icons">explore</i>
+    <!--<div>-->
+        <!--<div id="share_icon" class="side-icon" onclick="switch_mode('share')">-->
+            <!--<i data-toggle="tooltip" data-placement="top" title="Share" class="material-icons">share</i>-->
+        <!--</div>-->
+    <!--</div>-->
+    <!-- Share / Explore -->
+    <div>
+        <div id="share_explore_icon" class="side-icon" onclick="switch_mode('share_explore')">
+            <i data-toggle="tooltip" data-placement="top" title="Share/Explore" class="material-icons">explore</i>
+        </div>
     </div>
     <!-- Account -->
-    <div id="account_icon" class="side-icon" onclick="switch_mode('account')">
-        <i data-toggle="tooltip" data-placement="top" title="Account" class="material-icons">account_circle</i>
+    <div>
+        <div id="account_icon" class="side-icon" onclick="switch_mode('account')">
+            <i data-toggle="tooltip" data-placement="top" title="Account" class="material-icons">account_circle</i>
+        </div>
+    </div>
+    <div style="height: 100px;">
+        <div id="after_icon" class="side-icon" style="height:100px; cursor: default">
+        </div>
     </div>
 </div>
 <div class="col-lg-2 divContainer side-bar">
@@ -1083,11 +1072,25 @@
 
     <div id="import_export" style="display: none">
         <div class="form-group">
-            <label for="filename" style="color:white">Filename</label>
+            <label for="filename" style="color:white">Topology Name</label>
             <input type="text" id="filename" class="form-control" placeholder="Filename">
         </div>
         <div class="form-group">
-            <label for="framework" style="color:white">Framework</label>
+            <label for="saveTopology" style="color:white">Save Topology Image</label>
+            <button type="button" id="saveTopologyImage" class="form-control" onclick="save_current_state_as_image()">Save Image</button>
+        </div>
+        <div class="form-group">
+            <label for="saveTopology" style="color:white">Neuralizer Data File</label>
+            <button type="button" id="saveTopology" class="form-control" onclick="save_current_state_to_file()">Save Topology</button>
+        </div>
+        <div class="form-group">
+            <button type="button" id="loadTopology" class="form-control" onclick="document.getElementById('fileInput').click()" style="margin-top:-10px">
+                Load Topology
+            </button>
+            <input type="file" id="fileInput" style="display: none;">
+        </div>
+        <div class="form-group">
+            <label for="framework" style="color:white">Export to Framework</label>
             <select id="framework" class="form-control selectpicker">
                 <!--<option data-content="<img src='images/icon-neuralizer.png' style='margin-right:10px'>Neuralizer"-->
                 <!--value="Neuralizer">Neuralizer-->
@@ -1121,12 +1124,25 @@
             </select>
         </div>
         <div class="form-group">
-            <button type="button" id="saveTopology" class="form-control" onclick="save_current_state_to_file()">Save Topology</button>
+            <button type="button" id="saveTopologyToFramework" class="form-control" onclick="">Save Topology</button>
         </div>
+
+    </div>
+    <div id="share_explore" style="display: none">
         <div class="form-group">
-            <button type="button" id="loadTopology" class="form-control" onclick="document.getElementById('fileInput').click()" style="margin-top:-10px">Load Topology</button>
-            <input type="file" id="fileInput" style="display: none;">
+            <label for="" style="color:white">Sharing Options</label>
         </div>
+        <div class="col-md-12">
+            <ul class="social-network social-circle">
+                <li><a href="#" class="icoFacebook" title="Facebook"><i class="fa fa-facebook"></i></a></li>
+                <li><a href="#" class="icoTwitter" title="Twitter"><i class="fa fa-twitter"></i></a></li>
+                <li><a href="#" class="icoGoogle" title="Google +"><i class="fa fa-envelope"></i></a></li>
+                <li><a href="#" class="icoGitHub" title="GitHub Gist"><i class="fa fa-github"></i></a></li>
+            </ul>
+        </div>
+
+    </div>
+    <div id="account">
 
     </div>
 </div>
