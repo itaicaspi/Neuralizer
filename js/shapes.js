@@ -7,29 +7,50 @@ var inheritsFrom = function (child, parent) {
     child.prototype.constructor = child;
 };
 
-var Line = function(vertices, radius, color, stroke) {
-    this.vertices = vertices;
-    this.default_color = color;
-    this.color = color;
-    this.border_color = color;
-    this.stroke = (typeof stroke != 'undefined') ? stroke : 1;
-    this.radius = (typeof radius != 'undefined') ? radius : 2;
-    this.points = 0;
-    this.linkStart = [];
-    this.linkEnd = [];
-	this.startDir = [];
-    this.endDir = [];
-    this.type = "Line";
+var Line = function(vertices, radius, color, stroke, key) {
+
+    if (radius == undefined) {
+        // copy constructor
+        var shape = vertices;
+        this.vertices = shape.vertices;
+        this.default_color = new Color(shape.color);
+        this.color = new Color(shape.color);
+        this.border_color = new Color(shape.color);
+        this.stroke = shape.stroke;
+        this.radius = shape.radius;
+        this.points = shape.points;
+        this.linkStart = shape.linkStart;
+        this.linkEnd = shape.linkEnd;
+        this.startDir = shape.startDir;
+        this.endDir = shape.endDir  ;
+        this.type = shape.type;
+    } else {
+        this.vertices = vertices;
+        this.default_color = color;
+        this.color = color;
+        this.border_color = color;
+        this.stroke = (typeof stroke != 'undefined') ? stroke : 1;
+        this.radius = (typeof radius != 'undefined') ? radius : 2;
+        this.points = 0;
+        this.linkStart = [];
+        this.linkEnd = [];
+        this.startDir = [];
+        this.endDir = [];
+        this.type = "Line";
+    }
+    this.key = new Uint32Array(1);
+    window.crypto.getRandomValues(this.key);
+    this.key = (typeof key != 'undefined') ? key : this.key[0];
 };
 
 Line.prototype.shapes_are_linked = function(shapes) {
 	var is_start = false;
 	var is_end = false;
 	for (var i = 0; i < shapes.length; i++) {
-		if (this.linkStart == shapes[i]) {
+		if (this.linkStart.key == shapes[i].key) {
             is_start = true;
         }
-        if (this.linkEnd == shapes[i]) {
+        if (this.linkEnd.key == shapes[i].key) {
             is_end = true;
         }
 	}
@@ -230,6 +251,8 @@ Line.prototype.move_end = function(dx, dy) {
 };
 
 Line.prototype.pointer_is_on_the_border = function(xm, ym, ctx) {
+
+    // check if the pointer position is relevant by comparing the color under the cursor with the color of the line
     var relevant = false;
     var pixelColor = ctx.getImageData(xm - this.stroke, ym - this.stroke, this.stroke*2, this.stroke*2).data;
     for (var i = 0; i < 4*this.stroke*this.stroke; i++) {
@@ -238,9 +261,9 @@ Line.prototype.pointer_is_on_the_border = function(xm, ym, ctx) {
             break;
         }
     }
-
     if (relevant == false) return false;
 
+    // go over all parts of the line and check if the pointer is on them
     for (i = 0; i < this.vertices.length; i++) {
         var vi = this.vertices[i];
         var vj = this.vertices[(i + 1) % this.vertices.length];
@@ -265,7 +288,7 @@ Line.prototype.pointer_is_on_the_border = function(xm, ym, ctx) {
 //  Shape
 
 
-var Shape = function(x, y, width, height, radius, stroke, text, color, border_color, dashedBorder, mathjax_element) {
+var Shape = function(x, y, width, height, radius, stroke, text, color, border_color, dashedBorder, mathjax_element, key) {
     mathjax_element = ""; // TODO: remove mathjax from the app
     this.x = x;
     this.y = y;
@@ -283,6 +306,10 @@ var Shape = function(x, y, width, height, radius, stroke, text, color, border_co
     this.dashedBorder = (typeof dashedBorder != 'undefined') ? dashedBorder : false;
     this.update_text((typeof text != 'undefined') ? text : "", mathjax_element);
     this.mathjax_element = mathjax_element;
+
+    this.key = new Uint32Array(1);
+    window.crypto.getRandomValues(this.key);
+    this.key = (typeof key != 'undefined') ? key : this.key[0];
 
 };
 
@@ -310,6 +337,7 @@ Shape.prototype.pointer_is_inside = function(xm, ym) {
 };
 
 Shape.prototype.pointer_is_on_the_border = function(xm, ym, ctx) {
+    // check if the pointer position is relevant by comparing the color under the cursor with the color of the line
     var relevant = false;
     var pixelColor = ctx.getImageData(xm - this.stroke, ym - this.stroke, this.stroke*2, this.stroke*2).data;
     for (var i = 0; i < 4*this.stroke*this.stroke; i++) {
@@ -318,9 +346,9 @@ Shape.prototype.pointer_is_on_the_border = function(xm, ym, ctx) {
             break;
         }
     }
-
     if (relevant == false) return false;
 
+    // go over all lines of the border and check if the pointer is on them
     for (i = 0; i < this.vertices.length; i++) {
         var vi = this.vertices[i];
         var vj = this.vertices[(i + 1) % this.vertices.length];
@@ -333,12 +361,14 @@ Shape.prototype.pointer_is_on_the_border = function(xm, ym, ctx) {
             } else if (vi.y == vj.y && (ym <= vi.y + this.stroke) && (ym >= vi.y - this.stroke)) {
 				return "horizontal";
 			}
-			
+
+			// the slope of the current line part
             var m = (vj.y - vi.y) / (vj.x - vi.x);
-            // other lines
-            if ((ym - m*(xm - vi.x) - vi.y <= this.stroke) && (ym - m*(xm - vi.x) - vi.y >= -this.stroke)) {
-                return true;
-            }
+            // the distance between a point and a line
+            var a = -m;
+            var c = -vi.y+m*vi.x;
+            var dist = Math.abs(a*xm+ym+c) / Math.sqrt(a*a+1);
+            if (dist <= this.stroke) return true;
         }
     }
     return false;
@@ -410,13 +440,13 @@ Shape.prototype.darken = function() {
 /////////////////////////////////////
 //  Rectangle
 
-var Rectangle = function(x, y, width, height, radius, offset, stroke, text, color, border_color, dashedBorder, mathjax_element) {
+var Rectangle = function(x, y, width, height, radius, offset, stroke, text, color, border_color, dashedBorder, mathjax_element, key) {
     if (typeof x == "object") {
         // copy constructor
         var shape = x;
-        Shape.call(this, shape.x, shape.y, shape.width, shape.height, shape.radius, shape.stroke, shape.text, shape.default_color, shape.default_border_color, shape.dashedBorder, shape.mathjax_element);
+        Shape.call(this, shape.x, shape.y, shape.width, shape.height, shape.radius, shape.stroke, shape.text, shape.default_color, shape.default_border_color, shape.dashedBorder, shape.mathjax_element, shape.key);
     } else {
-        Shape.call(this, x, y, width, height, radius, stroke, text, color, border_color, dashedBorder, mathjax_element);
+        Shape.call(this, x, y, width, height, radius, stroke, text, color, border_color, dashedBorder, mathjax_element, key);
     }
     this.offset = (typeof offset != 'undefined') ? offset : 10;
     this.update_vertices();
@@ -506,13 +536,13 @@ Rectangle.prototype.draw = function(ctx) {
 /////////////////////////////////////
 //  Triangle
 
-var Triangle = function(x, y, width, height, radius, stroke, color, border_color) {
+var Triangle = function(x, y, width, height, radius, stroke, color, border_color, key) {
     if (typeof x == "object") {
         // copy constructor
         var shape = x;
-        Shape.call(this, shape.x, shape.y, shape.width, shape.height, shape.radius, shape.stroke, shape.text, shape.default_color, shape.default_border_color);
+        Shape.call(this, shape.x, shape.y, shape.width, shape.height, shape.radius, shape.stroke, shape.text, shape.default_color, shape.default_border_color, shape.key);
     } else {
-        Shape.call(this, x, y, width, height, radius, stroke, "", color, border_color);
+        Shape.call(this, x, y, width, height, radius, stroke, "", color, border_color, key);
     }
     this.update_vertices();
     this.type = "Triangle";
@@ -559,13 +589,13 @@ Triangle.prototype.draw = function(ctx) {
 /////////////////////////////////////
 //  Circle
 
-var Circle = function(x, y, radius, stroke, text, color, border_color, mathjax_element) {
+var Circle = function(x, y, radius, stroke, text, color, border_color, mathjax_element, key) {
     if (typeof x == "object") {
         // copy constructor
         var shape = x;
-        Shape.call(this, shape.x, shape.y, shape.width, shape.height, shape.radius, shape.stroke, shape.text, shape.default_color, shape.default_border_color, shape.dashedBorder, shape.mathjax_element);
+        Shape.call(this, shape.x, shape.y, shape.width, shape.height, shape.radius, shape.stroke, shape.text, shape.default_color, shape.default_border_color, shape.dashedBorder, shape.mathjax_element, shape.key);
     } else {
-        Shape.call(this, x + radius, y + radius, radius, radius, radius, stroke, text, color, border_color, false, mathjax_element);
+        Shape.call(this, x + radius, y + radius, radius, radius, radius, stroke, text, color, border_color, false, mathjax_element, key);
     }
     this.vertices = [];
     this.type = "Circle";
