@@ -68,14 +68,67 @@
 
 
         var layer_types = {
-            "DataPlaceholder": {"id": "#dataParams", "short_name": "data"},
-            "Pooling": {"id": "#poolingParams", "short_name": "pool"},
-            "Convolution": {"id": "#convolutionParams", "short_name": "conv"},
-            "Deconvolution": {"id": "#deconvolutionParams", "short_name": "deconv"},
-            "Activation": {"id": "#activationParams", "short_name": "activation"},
-            "Normalization": {"id": "#normalizationParams", "short_name": "norm"},
-            "Regularization": {"id": "#regularizationParams", "short_name": "regularize"},
-            "ElementWise": {"id": "#elementWiseParams", "short_name": "+"},
+            "DataPlaceholder": {
+                "id": "#dataParams",
+                "short_name": "data"
+            },
+            "Pooling": {
+                "id": "#poolingParams",
+                "short_name": "pool",
+                "subtype_selector_id": "#poolingType",
+                "subtypes": {"MaxPooling": {"id": "#maxPoolingParams"},
+                             "AveragePooling": {"id": "#averagePoolingParams"},
+                             "StochasticPooling": {"id": "#stochasticPoolingParams"}}},
+            "Convolution": {
+                "id": "#convolutionParams",
+                "short_name": "conv"},
+            "Deconvolution": {
+                "id": "#deconvolutionParams",
+                "short_name": "deconv"},
+            "Activation": {
+                "id": "#activationParams",
+                "short_name": "activation",
+                "subtype_selector_id": "#activationType",
+                "subtypes": {"ReLU": {"id": "#reluParams"},
+                             "ReLU6": {"id": "#relu6Params"},
+                             "LeakyReLU": {"id": "#leakyReluParams"},
+                             "ParametericReLU": {"id": "#parametericReluParams"},
+                             "ELU": {"id": "#eluParams"},
+                             "Sigmoid": {"id": "#sigmoidParams"},
+                             "HardSigmoid": {"id": "#hardSigmoidParams"},
+                             "TanH": {"id": "#tanhParams"},
+                             "Softmax": {"id": "#softmaxParams"},
+                             "Softsign": {"id": "#softsignParams"},
+                             "Softplux": {"id": "#softplusParams"}}},
+            "Normalization": {
+                "id": "#normalizationParams",
+                "short_name": "norm",
+                "subtype_selector_id": "#normalizationType",
+                "subtypes": {"LocalResponseNormalization": {"id": "#localResponseNormalizationParams"},
+                             "BatchNormalization": {"id": "#batchNormalizationParams"},
+                             "L2Normalization": {"id": "#l2NormalizationParams"}}},
+            "Regularization": {
+                "id": "#regularizationParams",
+                "short_name": "regularize",
+                "subtype_selector_id": "#regularizationType",
+                "subtypes": {"Dropout": {"id": "#dropoutParams"},
+                             "Maxout": {"id": "#maxoutParams"},
+                             "Zoneout": {"id": "#zoneoutParams"},
+                             "DropConnect": {"id": "#dropConnectParams"}}},
+            "DataManipulation": {
+                "id": "#dataManipulationParams",
+                "short_name": "manipulate",
+                "subtype_selector_id": "#dataManipulationType",
+                "subtype": {"Reshape": {"id": "#reshapeParams"},
+                            "Concatenate": {"id": "#concatenateParams"},
+                            "Flatten": {"id": "#flattenParams"},
+                            "Permute": {"id": "#permuteParams"}}},
+            "ElementWise": {
+                "id": "#elementWiseParams",
+                "short_name": "+",
+                "subtype_selector_id": "#elementWiseType",
+                "subtype": {"Add": {"id": "#addParams"},
+                            "Multiply": {"id": "#multiplyParams"}}},
             "Noise": {"id": "#noiseParams", "short_name": "noise"},
             "InnerProduct": {"id": "#innerProductParams", "short_name": "fc"},
             "SpecialBlock": {"id": "#specialBlockParams", "short_name": "special"},
@@ -217,6 +270,7 @@
         function toggle_params() {
             // open the parameters section for the selected layer type only
             var layerType = $("#layerType").val();
+            var layerSubtype = $(layer_types[layerType]["subtype_selector_id"]).val();
 
             // close all other than the given type
             for (var key in layer_types) {
@@ -226,6 +280,16 @@
                     $(layer_types[key]["id"]).hide("fast");
                 }
             }
+
+            // choose subtype
+            for (var key in layer_types[layerType]["subtypes"]) {
+                if (layerSubtype == key) {
+                    $(layer_types[layerType]["subtypes"][key]["id"]).show("fast");
+                } else {
+                    $(layer_types[layerType]["subtypes"][key]["id"]).hide("fast");
+                }
+            }
+
         }
 
         function create_new_layer() {
@@ -262,6 +326,10 @@
 //            for (var s = 0; s < selected.length; s++) {
 //                selected.layer = create_new_layer();
 //            }
+        }
+
+        function select_layer_subtype() {
+            toggle_subtype_params();
         }
 
         function highlight_selected_shapes() {
@@ -343,7 +411,7 @@
             var shape;
             if (layer_type == "DataPlaceholder") {
                 shape = new Rectangle(xm - 40, ym - 20, 80, 40, 3, 10, 3, layer_name, fill_colors[current_color_idx], border_colors[current_color_idx], false, layer_mathjax_element_idx);
-            } else if (layer_type == "Concatenate") {
+            } else if (layer_type == "DataManipulation ") {
                 shape = new Triangle(xm - 20, ym - 20, 40, 40, 2, 3, fill_colors[current_color_idx], border_colors[current_color_idx]);
             } else if (layer_type == "ElementWise") {
                 shape = new Circle(xm - 20, ym - 20, 20, 3, layer_name, fill_colors[current_color_idx], border_colors[current_color_idx], layer_mathjax_element_idx);
@@ -846,7 +914,8 @@
     <img style="z-index: 10; position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png">
 </a>
 <!--------------------------->
-<div class="col-lg-1 icons-side-bar">
+
+<div class="col-xs-1 icons-side-bar">
     <div class="wrapping-side-icon" style="height: 100px;">
         <div id="before_icon" class="side-icon before-side-icon" style="height: 100px; cursor: default">
         </div>
@@ -886,7 +955,7 @@
         </div>
     </div>
 </div>
-<div class="col-lg-2 divContainer side-bar">
+<div class="col-xs-2 divContainer side-bar">
     <div class="appName">
         <h1>neuralizer</h1>
         <b style="font-size: 17px;text-align: center;">visual neural network designer</b>
@@ -922,7 +991,7 @@
                     <option value="Deconvolution">Deconvolution</option>
                     <option value="Activation">Activation</option>
                     <option value="Regularization">Regularization</option>
-                    <option value="Concatenate">Concatenate</option>
+                    <option value="DataManipulation">Data Manipulation</option>
                     <option value="Normalization">Normalization</option>
                     <option value="ElementWise">Element-Wise</option>
                     <option value="Noise">Noise</option>
@@ -945,7 +1014,7 @@
 
         <!-- Data -->
         <div class="form-group" style="display: none;" id="dataParams">
-            <label for="kernelSize" style="color:white; margin-bottom: 20px">Data Properties</label>
+            <label style="color:white; margin-bottom: 20px">Data Properties</label>
             <div class="row">
                 <div class="col-lg-3">
                     <label for="dataWidth" style="color:white">Width</label>
@@ -973,7 +1042,7 @@
 
         <!-- Convolution -->
         <div class="form-group" style="display: none;" id="convolutionParams">
-            <label for="kernelSize" style="color:white; margin-bottom: 20px">Kernel Properties</label>
+            <label style="color:white; margin-bottom: 20px">Kernel Properties</label>
             <div class="row">
                 <div class="col-lg-3">
                     <label for="kernelWidth" style="color:white">Width</label>
@@ -1017,7 +1086,7 @@
 
         <!-- Deconvolution -->
         <div class="form-group" style="display: none;" id="deconvolutionParams">
-            <label for="kernelSize" style="color:white; margin-bottom: 20px">Kernel Properties</label>
+            <label style="color:white; margin-bottom: 20px">Kernel Properties</label>
             <div class="row">
                 <div class="col-lg-3">
                     <label for="deconvKernelWidth" style="color:white">Width</label>
@@ -1074,7 +1143,7 @@
                 <option value="Stochastic">Stochastic</option>
             </select>
             <br><br>
-            <label for="windowSize" style="color:white; margin-bottom: 20px">Window Properties</label>
+            <label style="color:white; margin-bottom: 20px">Window Properties</label>
             <div class="row">
                 <div class="col-lg-3">
                     <label for="windowWidth" style="color:white">Width</label>
@@ -1104,7 +1173,7 @@
         <!-- Activation -->
         <div class="form-group" style="display: none;" id="activationParams">
             <label for="activationType" style="color:white">Activation Type</label>
-            <select id="activationType" class="form-control selectpicker">
+            <select id="activationType" class="form-control selectpicker" onchange="select_layer_type()">
                 <option value="ReLU">ReLU</option>
                 <option value="ReLU6">ReLU6</option>
                 <option value="LeakyReLU">Leaky ReLU</option>
@@ -1122,32 +1191,78 @@
         <!-- Normalization -->
         <div class="form-group" style="display: none;" id="normalizationParams">
             <label for="normalizationType" style="color:white">Normalization Type</label>
-            <select id="normalizationType" class="form-control selectpicker">
+            <select id="normalizationType" class="form-control selectpicker" onchange="select_layer_type()">
                 <option value="BatchNormalization">Batch Normalization</option>
                 <option value="LocalResponseNormalization">Local Response Normalization</option>
                 <option value="L2Normalization">L2 Normalization</option>
             </select>
         </div>
 
+        <!-- Local Response Normalization -->
+        <div class="form-group" style="display: none;" id="localResponseNormalizationParams">
+            <div class="row">
+                <div class="col-lg-8">
+                    <label for="numberOfNeighbours" style="color:white">Number of Neighbours</label>
+                </div>
+                <div class="col-lg-4" style="text-align: right; padding-right: 15px">
+                    <input id="numberOfNeighbours" type="number" min="1" max="100000" value="1" style="width:100%;">
+                </div>
+            </div>
+            <br>
+            <div class="row">
+                <div class="col-lg-1">
+                    <label for="K" style="color:white">K</label>
+                </div>
+                <div class="col-lg-2" style="padding:0">
+                    <input id="K" type="number" min="1" max="100" value="1" style="width:100%;">
+                </div>
+                <div class="col-lg-1">
+                    <label for="alpha" style="color:white">$\alpha$</label>
+                </div>
+                <div class="col-lg-3" style="padding:0; padding-left: 5px">
+                    <input id="alpha" type="number" min="0" max="1" step="0.001" value="1" style="width:100%;">
+                </div>
+                <div class="col-lg-1">
+                    <label for="beta" style="color:white">$\beta$</label>
+                </div>
+                <div class="col-lg-3" style="padding:0; padding-left: 5px">
+                    <input id="beta" type="number" min="0" max="1" step="0.001" value="1" style="width:100%;">
+                </div>
+            </div>
+            <br>
+        </div>
+
+
 
         <!-- Regularization -->
         <div class="form-group" style="display: none;" id="regularizationParams">
             <label for="regularizationType" style="color:white">Regularization Type</label>
-            <select id="regularizationType" class="form-control selectpicker">
+            <select id="regularizationType" class="form-control selectpicker" onchange="select_layer_type()">
                 <option value="Dropout">Dropout</option>
                 <option value="Maxout">Maxout</option>
                 <option value="DropConnect">DropConnect</option>
                 <option value="Zoneout">Zoneout</option>
             </select>
+            <br><br>
+            <div class="row">
+                <div class="col-lg-6">
+                    <label for="keepProbability" style="color:white">Keep Probability</label>
+                </div>
+                <div class="col-lg-6" style="text-align: right; padding-right: 22px">
+                    <input id="keepProbability" type="number" min="0" max="1" value="1" style="width:70%;">
+                </div>
+            </div>
         </div>
 
-
-        <!-- Reshaping -->
-        <div class="form-group" style="display: none;" id="reshapingParams">
+        <!-- Data Manipulation -->
+        <div class="form-group" style="display: none;" id="dataManipulationParams">
             <label for="reshapeType" style="color:white">Reshape Type</label>
             <select id="reshapeType" class="form-control selectpicker">
+                <option value="Concatenate">Concatenate</option>
                 <option value="Reshape">Reshape</option>
                 <option value="Flatten">Flatten</option>
+                <option value="Permute">Permute</option>
+                <option value="Repeat">Repeat</option>
             </select>
         </div>
 
@@ -1298,9 +1413,10 @@
     </div>
     <div id="share_explore" style="display: none">
         <div class="form-group">
-            <label for="" style="color:white">Sharing Options</label>
+            <label style="color:white">Sharing Options</label>
         </div>
-        <div class="col-md-12">
+        <div class="row">
+        <div class="col-lg-12">
             <ul class="social-network social-circle">
                 <li><a href="#" class="icoFacebook" title="Facebook"><i class="fa fa-facebook"></i></a></li>
                 <li><a href="#" class="icoTwitter" title="Twitter"><i class="fa fa-twitter"></i></a></li>
@@ -1308,13 +1424,13 @@
                 <li><a href="#" class="icoGitHub" title="GitHub Gist"><i class="fa fa-github"></i></a></li>
             </ul>
         </div>
-
+        </div>
     </div>
     <div id="account">
 
     </div>
 </div>
-<div class="col-lg-9" style="height:100%">
+<div class="col-xs-9" style="height:100%">
     <div id="canvas_overlay">
         <div id="canvas_messages">
             <h1>Copied to clipboard</h1>
