@@ -23,10 +23,10 @@
     <link href="css/social.css" rel="stylesheet">
     <!-- neuralizer scripts -->
     <script src="js/utils.js"></script>
+    <script src="js/shapes.js"></script>
     <script src="js/objects.js"></script>
     <script src="js/nn.js"></script>
     <script src="js/transforms.js"></script>
-    <script src="js/shapes.js"></script>
     <script src="js/files.js"></script>
     <!-- favicon -->
     <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
@@ -65,6 +65,22 @@
         var clipboard = [];
         var current_timestep = 0;
         var stored_states = [];
+
+
+        var layer_types = {
+            "DataPlaceholder": {"id": "#dataParams", "short_name": "data"},
+            "Pooling": {"id": "#poolingParams", "short_name": "pool"},
+            "Convolution": {"id": "#convolutionParams", "short_name": "conv"},
+            "Deconvolution": {"id": "#deconvolutionParams", "short_name": "deconv"},
+            "Activation": {"id": "#activationParams", "short_name": "activation"},
+            "Normalization": {"id": "#normalizationParams", "short_name": "norm"},
+            "Regularization": {"id": "#regularizationParams", "short_name": "regularize"},
+            "ElementWise": {"id": "#elementWiseParams", "short_name": "+"},
+            "Noise": {"id": "#noiseParams", "short_name": "noise"},
+            "InnerProduct": {"id": "#innerProductParams", "short_name": "fc"},
+            "SpecialBlock": {"id": "#specialBlockParams", "short_name": "special"},
+            "Recurrent": {"id": "#recurrentParams", "short_name": "recurrent"}
+        };
 
         function send_email() {
             var body = JSON.stringify(stored_states[current_timestep-1]);
@@ -198,35 +214,55 @@
             current_arrow.draw(ctx);
         }
 
-        function toggle_params(select) {
+        function toggle_params() {
             // open the parameters section for the selected layer type only
-            select = $("#layerType");
-
-            var types = {
-                "DataPlaceholder": "#dataParams",
-                "Pooling": "#poolingParams",
-                "Convolution": "#convolutionParams",
-                "Activation": "#activationParams",
-                "Normalization": "#normalizationParams",
-                "Regularization": "#regularizationParams",
-                "ElementWise": "#elementWiseParams",
-                "Noise": "#noiseParams",
-                "InnerProduct": "#innerProductParams",
-                "SpecialBlock": "#specialBlockParams",
-                "Recurrent": "#recurrentParams",
-            };
+            var layerType = $("#layerType").val();
 
             // close all other than the given type
-            for (var key in types) {
-                if ($(select).val() == key) {
-                    $(types[key]).show("fast");
+            for (var key in layer_types) {
+                if (layerType == key) {
+                    $(layer_types[key]["id"]).show("fast");
                 } else {
-                    $(types[key]).hide("fast");
+                    $(layer_types[key]["id"]).hide("fast");
                 }
             }
-
         }
 
+        function create_new_layer() {
+            var layerType = $("#layerType").val();
+            var layer;
+            if (layerType == "Convolution") {
+                layer = new Convolution($("#numOfms").val(),$("#kernelWidth").val(),$("#kernelHeight").val(),$("#kernelStride").val(),$("#kernelStride").val(),0,0);
+            } else if (layerType == "InnerProduct") {
+                layer = new InnerProduct($("#innerProductNumOutputs").val());
+            } else if (layerType == "Pooling") {
+                layer = new Pooling($("#windowWidth").val(),$("#windowHeight").val(),$("#windowStride").val(),$("#windowStride").val(),0,0,$("#poolingType").val());
+            } else if (layerType == "Deconvolution") {
+                layer = new Deconvolution($("#numOfms").val(),$("#kernelWidth").val(),$("#kernelHeight").val(),$("#kernelStride").val(),$("#kernelStride").val(),0,0);
+            } else if (layerType == "Activation") {
+
+            } else if (layerType == "Normalization") {
+                var normalizationType = $("#normalizationType").val();
+                if (normalizationType == "LocalResponseNormalization") {
+                    layer = new LRN();
+                } else if (normalizationType == "BatchNormalization") {
+                    layer = new BatchNormalization();
+                }
+            } else if (layerType == "Noise") {
+
+            } else if (layerType == "Recurrent") {
+
+            }
+            return layer;
+        }
+
+        function select_layer_type() {
+            toggle_params();
+//            var selected = get_selected_shapes_list(selection_box, shapes);
+//            for (var s = 0; s < selected.length; s++) {
+//                selected.layer = create_new_layer();
+//            }
+        }
 
         function highlight_selected_shapes() {
             var s;
@@ -242,17 +278,8 @@
 
         function get_short_name(layer_type) {
             // get a short default name for a layer
-            var types = {
-                "DataPlaceholder": "data",
-                "Pooling": "pool",
-                "Convolution": "conv",
-                "Activation": "activation",
-                "Regularization": "regularization",
-                "ElementWise": "+",
-                "InnerProduct": "inner"
-            };
-            if (types[layer_type] != undefined) {
-                return types[layer_type];
+            if (layer_types[layer_type] != undefined) {
+                return layer_types[layer_type]["short_name"];
             }
             return "";
         }
@@ -416,6 +443,16 @@
                 return selected_shapes;
             }
 
+            function get_selected_shapes_list(selection_box, shapes) {
+                var selected_shapes_flags = find_selected_shapes(selection_box, shapes);
+                var selected_shapes = [];
+                for (var s = 0; s < shapes.length; s++) {
+                    if (selected_shapes_flags[s]) {
+                        selected_shapes.push(shapes[s]);
+                    }
+                }
+            }
+
 //            var rect1 = new Rectangle(100, 50, 80, 40, 2, 10, 3, "angle", fill_colors[0], border_colors[0]);
 //            var rect2 = new Rectangle(200, 50, 80, 40, 10, 0, 3, "input", fill_colors[1], border_colors[1]);
 //            var tri1 = new Triangle(300, 50, 40, 40, 2, 3, fill_colors[2], border_colors[2]);
@@ -497,13 +534,11 @@
                                     current_arrow = new Line([], 5, new Color(0, 0, 0, 1), 3);
                                 }
                             }
+                            primary_selected_shape = -1;
+                            selected_shapes = [];
                             break;
                         }
                     }
-
-//                    if (current_arrow.points == 0 && pointer_is_on_shape_border == -1) {
-//                        current_arrow = new Line([], 5, new Color(0, 0, 0, 1), 3);
-//                    }
 
                 } else if (button == 2) {
                     // Right mouse button
@@ -717,13 +752,39 @@
                     // Ctrl + C ==> Copy
                     show_message("Copied to clipboard");
                     clipboard = [];
+                    // find all the selected shapes
+                    var selected_shapes_obj = [];
                     for (s = 0; s < selected_shapes.length; s++) {
                         if (selected_shapes[s] && shapes[s] != selection_box) {
-                            // I clone each object so that it will be detached from the original object
-                            var copiedObject = shapes[s].clone();
-                            clipboard.push(copiedObject);
+                            selected_shapes_obj.push(shapes[s]);
                         }
                     }
+                    // find all the arrows which have both sides in the selected shapes
+//                    var arrows_obj = [];
+//                    for (var a = 0; a < arrows.length; a++) {
+//                        var is_linked = arrows[a].shapes_are_linked(selected_shapes_obj);
+//                        if (is_linked[0] && is_linked[1]) {
+//                            arrows_obj.push(arrows[a].clone());
+//                        }
+//                    }
+                    // clone all the selected shapes
+                    for (s = 0; s < selected_shapes_obj.length; s++) {
+                        // I clone each object so that it will be detached from the original object
+                        var copiedObject = selected_shapes_obj[s].clone();
+//                        for (a = 0; a < arrows_obj.length; a++) {
+//                            var is_linked = arrows_obj[a].shapes_are_linked([selected_shapes_obj[s]]);
+//                            if (is_linked[0]) {
+//                                arrows_obj[a].linkStart = copiedObject;
+//                            } else if (is_linked[1]) {
+//                                arrows_obj[a].linkEnd = copiedObject;
+//                            }
+//                        }
+                        clipboard.push(copiedObject);
+                    }
+                    // clone all relevant arrows
+//                    for (a = 0; a < arrows_obj.length; a++) {
+//                        clipboard.push(arrows_obj[a]);
+//                    }
                     $("#layerName").blur();
                 } else if (evt.ctrlKey && evt.keyCode == 86) {
                     // Ctrl + V ==> Paste
@@ -731,8 +792,12 @@
                         // I clone again each object from the clipboard so that multiple pastes will be possible
                         var copiedObject = clipboard[s].clone();
                         copiedObject.translate(50 + 10*Math.random(),50 + 20*Math.random());
-                        copiedObject.highlight();
-                        shapes.push(copiedObject);
+                        if (copiedObject.type != "Line") {
+                            copiedObject.highlight();
+                            shapes.push(copiedObject);
+                        } else {
+                            arrows.push(copiedObject);
+                        }
                         selected_shapes.push(true);
                     }
                     save_state();
@@ -842,7 +907,7 @@
         </div>
         <div class="form-group">
             <label for="layerType" style="color:white">Layer Type</label>
-            <select id="layerType" class="form-control selectpicker" onchange="toggle_params(this)">
+            <select id="layerType" class="form-control selectpicker" onchange="select_layer_type(this)">
                 <optgroup label="Data">
                     <option value="DataPlaceholder">Data Placeholder</option>
                 </optgroup>
@@ -950,14 +1015,51 @@
         </div>
 
 
+        <!-- Deconvolution -->
+        <div class="form-group" style="display: none;" id="deconvolutionParams">
+            <label for="kernelSize" style="color:white; margin-bottom: 20px">Kernel Properties</label>
+            <div class="row">
+                <div class="col-lg-3">
+                    <label for="deconvKernelWidth" style="color:white">Width</label>
+                </div>
+                <div class="col-lg-3" style="padding:0">
+                    <input id="deconvKernelWidth" type="number" min="1" max="100" value="1" style="width:70%;">
+                </div>
+                <div class="col-lg-3">
+                    <label for="deconvKernelHeight" style="color:white">Height</label>
+                </div>
+                <div class="col-lg-3" style="padding:0">
+                    <input id="deconvKernelHeight" type="number" min="1" max="100" value="1" style="width:70%;">
+                </div>
+            </div>
+            <br>
+            <div class="row">
+                <div class="col-lg-3">
+                    <label for="deconvKernelStride" style="color:white">Stride</label>
+                </div>
+                <div class="col-lg-3" style="padding:0">
+                    <input id="deconvKernelStride" type="number" min="1" max="100" value="1" style="width:70%;">
+                </div>
+            </div>
+            <br>
+            <div class="row">
+                <div class="col-lg-6">
+                    <label for="deconvNumOfms" style="color:white">Number of OFMs</label>
+                </div>
+                <div class="col-lg-6" style="text-align: right; padding-right: 22px">
+                    <input id="deconvNumOfms" type="number" min="1" max="100000" value="1" style="width:70%;">
+                </div>
+            </div>
+        </div>
+
         <!-- InnerProduct -->
         <div class="form-group" style="display: none;" id="innerProductParams">
             <div class="row">
                 <div class="col-lg-6">
-                    <label for="numOutputs" style="color:white">Output Size</label>
+                    <label for="innerProductNumOutputs" style="color:white">Output Size</label>
                 </div>
                 <div class="col-lg-6" style="padding:0; ">
-                    <input id="numOutputs" type="number" min="1" max="10000" value="1" style="width:70%;">
+                    <input id="innerProductNumOutputs" type="number" min="1" max="10000" value="1" style="width:70%;">
                 </div>
             </div>
         </div>

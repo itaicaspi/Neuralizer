@@ -43,6 +43,10 @@ var Line = function(vertices, radius, color, stroke, key) {
     this.key = (typeof key != 'undefined') ? key : this.key[0];
 };
 
+Line.prototype.clone = function() {
+    return new Line(this);
+};
+
 Line.prototype.shapes_are_linked = function(shapes) {
 	var is_start = false;
 	var is_end = false;
@@ -197,6 +201,10 @@ Line.prototype.move = function(dx, dy) {
 	}
 };
 
+Line.prototype.translate = function(dx,dy) {
+    this.move(dx,dy);
+};
+
 Line.prototype.move_start = function(dx, dy) {
     var startDir;
     if (this.endDir == "vertical" && this.points % 2 == 1) startDir = "horizontal";
@@ -311,6 +319,11 @@ var Shape = function(x, y, width, height, radius, stroke, text, color, border_co
     window.crypto.getRandomValues(this.key);
     this.key = (typeof key != 'undefined') ? key : this.key[0];
 
+    this.set_layer(new Layer());
+};
+
+Shape.prototype.set_layer = function(layer) {
+    this.layer = layer;
 };
 
 Shape.prototype.clone = function() {

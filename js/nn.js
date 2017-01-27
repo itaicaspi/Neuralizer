@@ -2,12 +2,30 @@
  * Created by Itai Caspi on 26/07/2016.
  */
 
+var Layer = function() {
+    this.output =  new Tensor();
+    this.weight = new Tensor();
+};
+
+Layer.prototype.updateOutputSize = function() {
+    this.output = this.input.clone();
+};
+
+Layer.prototype.updateWeightSize = function() {
+};
+
+Layer.prototype.setInput = function(inputTensor) {
+    this.input = inputTensor;
+    this.updateOutputSize();
+    this.updateWeightSize();
+};
+
 ////////////////////////////////////////
 //  Convolution
 
-var Convolution = function(numOutput, kernelWidth, kernelHeight, strideX, strideY, padX, padY) {
-
-    this.numOutput = numOutput;
+var Convolution = function(outputDepth, kernelWidth, kernelHeight, strideX, strideY, padX, padY) {
+    Layer.call();
+    this.output.depth = outputDepth;
     this.kernelWidth = kernelWidth;
     this.kernelHeight = kernelHeight;
     this.strideX = strideX;
@@ -17,17 +35,170 @@ var Convolution = function(numOutput, kernelWidth, kernelHeight, strideX, stride
     this.type = "Convolution";
 };
 
-Convolution.prototype.setInput = function(inputTensor) {
-    this.input = inputTensor;
-    var outputWidth = Math.floor((inputTensor.width + 2*this.padX - this.kernelWidth) / this.strideX + 1);
-    var outputHeight = Math.floor((inputTensor.height + 2*this.padY - this.kernelHeight) / this.strideY + 1);
-    this.output = new Tensor(outputWidth, outputHeight, this.numOutput);
+inheritsFrom(Convolution, Layer);
+
+Convolution.prototype.updateOutputSize = function() {
+    this.output.width = Math.floor((this.input.width + 2*this.padX - this.kernelWidth) / this.strideX + 1);
+    this.output.height = Math.floor((this.input.height + 2*this.padY - this.kernelHeight) / this.strideY + 1);
 };
 
 Convolution.prototype.toBox = function(center, color) {
     var outputCenter = new Vertex(center.x, center.y, center.z);
     return this.output.toBox(outputCenter, color);
 };
+
+////////////////////////////////////////
+//  Inner Product
+
+var InnerProduct = function(outputDepth) {
+    Layer.call();
+    this.output.width = 1;
+    this.output.height = 1;
+    this.output.depth = outputDepth;
+    this.type = "InnerProduct";
+};
+
+InnerProduct.prototype.updateOutputSize = function() {
+};
+
+inheritsFrom(InnerProduct, Layer);
+
+////////////////////////////////////////
+//  Pooling
+
+var Pooling = function(kernelWidth, kernelHeight, strideX, strideY, padX, padY, poolingType) {
+    Layer.call();
+    this.kernelWidth = kernelWidth;
+    this.kernelHeight = kernelHeight;
+    this.strideX = strideX;
+    this.strideY = strideY;
+    this.padX = padX;
+    this.padY = padY;
+    this.poolingType = poolingType;
+    this.type = "Pooling";
+};
+
+inheritsFrom(Pooling, Layer);
+
+Pooling.prototype.updateOutputSize = function() {
+    this.output.width = Math.floor((this.input.width + 2*this.padX - this.kernelWidth) / this.strideX + 1);
+    this.output.height = Math.floor((this.input.height + 2*this.padY - this.kernelHeight) / this.strideY + 1);
+};
+
+////////////////////////////////////////
+//  Deconvolution
+
+var Deconvolution = function(numOutputs, kernelWidth, kernelHeight, strideX, strideY, padX, padY, pooling_type) {
+    Layer.call();
+    this.kernelWidth = kernelWidth;
+    this.kernelHeight = kernelHeight;
+    this.strideX = strideX;
+    this.strideY = strideY;
+    this.padX = padX;
+    this.padY = padY;
+    this.type = "Deconvolution";
+};
+
+inheritsFrom(Deconvolution, Layer);
+
+Deconvolution.prototype.updateOutputSize = function() {
+    this.output.width = (this.input.width - 1)*this.strideX - 2*this.padX + this.kernelWidth;
+    this.output.height = (this.input.height - 1)*this.strideY - 2*this.padY + this.kernelHeight;
+};
+
+
+////////////////////////////////////////
+//  Concatenate
+
+var Concatenate = function() {
+    Layer.call();
+};
+
+inheritsFrom(Concatenate, Layer);
+
+
+
+
+////////////////////////////////////////
+//  Normalization Layer
+
+var NormalizationLayer = function() {
+    Layer.call();
+};
+
+inheritsFrom(NormalizationLayer, Layer);
+
+////////////////////////////////////////
+//  Local Response Normalization
+
+var LRN = function(numNeighbours, k, alpha, beta) {
+    NormalizationLayer.call();
+    this.numNeighbours = numNeighbours;
+    this.k = k;
+    this.alpha = alpha;
+    this.beta = beta;
+};
+
+inheritsFrom(LRN, NormalizationLayer);
+
+
+////////////////////////////////////////
+//  Batch Normalization
+
+var BatchNormalization = function() {
+    NormalizationLayer.call();
+};
+
+inheritsFrom(BatchNormalization, NormalizationLayer);
+
+
+////////////////////////////////////////
+//  Regularization
+
+var RegularizationLayer = function() {
+    Layer.call();
+};
+
+inheritsFrom(RegularizationLayer, Layer);
+
+////////////////////////////////////////
+//  Dropout
+
+var Dropout = function(keepProbability) {
+    RegularizationLayer.call();
+    this.keepProbability = keepProbability;
+};
+
+inheritsFrom(Dropout, RegularizationLayer);
+
+////////////////////////////////////////
+//  Maxout
+
+var Maxout = function() {
+    RegularizationLayer.call();
+};
+
+inheritsFrom(Maxout, RegularizationLayer);
+
+
+////////////////////////////////////////
+//  DropConnect
+
+var DropConnect = function() {
+    RegularizationLayer.call();
+};
+
+inheritsFrom(DropConnect, RegularizationLayer);
+
+
+////////////////////////////////////////
+//  Zoneout
+
+var Zoneout = function() {
+    RegularizationLayer.call();
+};
+
+inheritsFrom(Zoneout, RegularizationLayer);
 
 ///////////////////////////////////////
 // Sequential

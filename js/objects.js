@@ -225,11 +225,28 @@ Arrow.prototype.draw = function() {
 /////////////////////////////////////////
 //  Tensor
 
-var Tensor = function(width, height, depth) {
-    this.width = width;
-    this.height = height;
-    this.depth = depth;
+var Tensor = function(width, height, depth, length) {
+    if (typeof width == "object") {
+        var tensor = width;
+        this.width = tensor.width;
+        this.height = tensor.height;
+        this.depth = tensor.depth;
+        this.length = tensor.length;
+    } else {
+        this.width = (typeof width != 'undefined') ? width : 1;
+        this.height = (typeof height != 'undefined') ? height : 1;
+        this.depth = (typeof depth != 'undefined') ? depth : 1;
+        this.length = (typeof length != 'undefined') ? length : 1;
+    }
     this.type = "Tensor";
+};
+
+Tensor.prototype.size = function() {
+    return this.width * this.height * this.depth * this.length;
+};
+
+Tensor.prototype.clone = function () {
+    return new Tensor(this.width, this.height, this.depth, this.length);
 };
 
 Tensor.prototype.toBox = function(center, color) {
