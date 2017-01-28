@@ -292,6 +292,13 @@ Line.prototype.pointer_is_on_the_border = function(xm, ym, ctx) {
     return false;
 };
 
+Line.prototype.pointer_is_on_end = function(xm, ym, ctx) {
+    var pointer = new Vertex(xm, ym, 0);
+    var dist = pointer.subtract(this.vertices[this.vertices.length-1]).norm();
+    var radius = 5; //px
+    return dist < radius;
+};
+
 //////////////////////////////////
 //  Shape
 
@@ -458,10 +465,11 @@ var Rectangle = function(x, y, width, height, radius, offset, stroke, text, colo
         // copy constructor
         var shape = x;
         Shape.call(this, shape.x, shape.y, shape.width, shape.height, shape.radius, shape.stroke, shape.text, shape.default_color, shape.default_border_color, shape.dashedBorder, shape.mathjax_element, shape.key);
+        this.offset = shape.offset;
     } else {
         Shape.call(this, x, y, width, height, radius, stroke, text, color, border_color, dashedBorder, mathjax_element, key);
+        this.offset = (typeof offset != 'undefined') ? offset : 10;
     }
-    this.offset = (typeof offset != 'undefined') ? offset : 10;
     this.update_vertices();
     this.type = "Rectangle";
 };

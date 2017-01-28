@@ -30,6 +30,14 @@ h1 {
     font-family: 'Lato', sans-serif;
 }
 
+#canvas_keys {
+    padding: 20px;
+    background: transparent;
+    z-index: 100;
+    position: absolute;
+    bottom: 0px;
+}
+
 #canvas_overlay {
     position: absolute;
     left: 0;
@@ -187,4 +195,58 @@ h1 {
 .material-switch > input[type="checkbox"]:checked + label::after {
     background: inherit;
     left: 20px;
+}
+
+
+#well2 {
+    height: 500px;
+    /*margin-bottom: 0;*/
+    margin-right: -5px;
+    overflow: auto;
+    overflow-x: hidden;
+    background: rgba(175,57,42,1);
+    border-color: transparent;
+}
+
+.ModelItem {
+    border-color: transparent;
+    background: #5cb85c;
+    color: white;
+    /*border-radius: 2px;*/
+    /*box-shadow: 0 0px 10px rgba(0,0,0,0.2);*/
+}
+
+.ModelItem:hover {
+    text-decoration: none;
+    color: white;
+}
+
+.ModelItemContent {
+    height: 40px;
+    padding-left: 5px;
+}
+
+
+.ModelItemContent:hover {
+    height: 80px;
+    transition: all 0.1s ease-in-out;
+}
+
+a.thumbnail:hover, a.thumbnail:focus, a.thumbnail.active {
+    border-color: transparent;
+}
+
+.key-wrap {
+    width: 120px;
+    display: inline-block;
+}
+
+.key-info {
+    display: inline-block;
+    margin-left: 10px;
+    margin-right: 10px;
+    vertical-align: middle;
+    height: 40px;
+    color: rgba(255,255,255,0.8);
+    font-weight: bold;
 }

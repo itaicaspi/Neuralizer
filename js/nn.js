@@ -2,9 +2,16 @@
  * Created by Itai Caspi on 26/07/2016.
  */
 
+var inheritsFrom = function (child, parent) {
+    child.prototype = Object.create(parent.prototype);
+    child.prototype.constructor = child;
+};
+
 var Layer = function() {
-    this.output =  new Tensor();
+    this.output =  new Tensor(1,1,1);
     this.weight = new Tensor();
+    this.type = "";
+    this.subtype = "";
 };
 
 Layer.prototype.updateOutputSize = function() {
@@ -24,8 +31,8 @@ Layer.prototype.setInput = function(inputTensor) {
 //  Convolution
 
 var Convolution = function(outputDepth, kernelWidth, kernelHeight, strideX, strideY, padX, padY) {
-    Layer.call();
-    this.output.depth = outputDepth;
+    Layer.call(this);
+    this.output = new Tensor(1,1,outputDepth);
     this.kernelWidth = kernelWidth;
     this.kernelHeight = kernelHeight;
     this.strideX = strideX;
@@ -51,7 +58,7 @@ Convolution.prototype.toBox = function(center, color) {
 //  Inner Product
 
 var InnerProduct = function(outputDepth) {
-    Layer.call();
+    Layer.call(this);
     this.output.width = 1;
     this.output.height = 1;
     this.output.depth = outputDepth;
@@ -67,7 +74,7 @@ inheritsFrom(InnerProduct, Layer);
 //  Pooling
 
 var Pooling = function(kernelWidth, kernelHeight, strideX, strideY, padX, padY, poolingType) {
-    Layer.call();
+    Layer.call(this);
     this.kernelWidth = kernelWidth;
     this.kernelHeight = kernelHeight;
     this.strideX = strideX;
@@ -89,7 +96,7 @@ Pooling.prototype.updateOutputSize = function() {
 //  Deconvolution
 
 var Deconvolution = function(numOutputs, kernelWidth, kernelHeight, strideX, strideY, padX, padY, pooling_type) {
-    Layer.call();
+    Layer.call(this);
     this.kernelWidth = kernelWidth;
     this.kernelHeight = kernelHeight;
     this.strideX = strideX;
@@ -111,19 +118,18 @@ Deconvolution.prototype.updateOutputSize = function() {
 //  Concatenate
 
 var Concatenate = function() {
-    Layer.call();
+    Layer.call(this);
 };
 
 inheritsFrom(Concatenate, Layer);
-
-
 
 
 ////////////////////////////////////////
 //  Normalization Layer
 
 var NormalizationLayer = function() {
-    Layer.call();
+    Layer.call(this);
+    this.type = "Normalization";
 };
 
 inheritsFrom(NormalizationLayer, Layer);
@@ -132,11 +138,12 @@ inheritsFrom(NormalizationLayer, Layer);
 //  Local Response Normalization
 
 var LRN = function(numNeighbours, k, alpha, beta) {
-    NormalizationLayer.call();
+    NormalizationLayer.call(this);
     this.numNeighbours = numNeighbours;
     this.k = k;
     this.alpha = alpha;
     this.beta = beta;
+    this.subtype = "LocalResponseNormalization";
 };
 
 inheritsFrom(LRN, NormalizationLayer);
@@ -146,7 +153,8 @@ inheritsFrom(LRN, NormalizationLayer);
 //  Batch Normalization
 
 var BatchNormalization = function() {
-    NormalizationLayer.call();
+    NormalizationLayer.call(this);
+    this.subtype = "BatchNormalization";
 };
 
 inheritsFrom(BatchNormalization, NormalizationLayer);
@@ -156,7 +164,8 @@ inheritsFrom(BatchNormalization, NormalizationLayer);
 //  Regularization
 
 var RegularizationLayer = function() {
-    Layer.call();
+    Layer.call(this);
+    this.type = "Regularization";
 };
 
 inheritsFrom(RegularizationLayer, Layer);
@@ -165,8 +174,9 @@ inheritsFrom(RegularizationLayer, Layer);
 //  Dropout
 
 var Dropout = function(keepProbability) {
-    RegularizationLayer.call();
+    RegularizationLayer.call(this);
     this.keepProbability = keepProbability;
+    this.subtype = "Dropout";
 };
 
 inheritsFrom(Dropout, RegularizationLayer);
@@ -175,7 +185,8 @@ inheritsFrom(Dropout, RegularizationLayer);
 //  Maxout
 
 var Maxout = function() {
-    RegularizationLayer.call();
+    RegularizationLayer.call(this);
+    this.subtype = "Maxout";
 };
 
 inheritsFrom(Maxout, RegularizationLayer);
@@ -185,7 +196,8 @@ inheritsFrom(Maxout, RegularizationLayer);
 //  DropConnect
 
 var DropConnect = function() {
-    RegularizationLayer.call();
+    RegularizationLayer.call(this);
+    this.subtype = "DropConnect";
 };
 
 inheritsFrom(DropConnect, RegularizationLayer);
@@ -195,7 +207,8 @@ inheritsFrom(DropConnect, RegularizationLayer);
 //  Zoneout
 
 var Zoneout = function() {
-    RegularizationLayer.call();
+    RegularizationLayer.call(this);
+    this.subtype = "Zoneout";
 };
 
 inheritsFrom(Zoneout, RegularizationLayer);

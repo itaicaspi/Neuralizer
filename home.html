@@ -21,6 +21,7 @@
           rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
     <link href="css/social.css" rel="stylesheet">
+    <link href="css/keys.css" rel="stylesheet">
     <!-- neuralizer scripts -->
     <script src="js/utils.js"></script>
     <script src="js/shapes.js"></script>
@@ -49,6 +50,7 @@
         var button;
         var is_mouse_down;
         var pointer_is_on_shape_border;
+        var pointer_is_on_arrow_end;
         var need_draw;
         var init_arrow;
         var current_arrow;
@@ -182,7 +184,7 @@
         function save_state() {
             // save the state of the designer in the buffer
             var current_state = {"shapes": JSON.stringify(shapes, function(k,v) {
-                if (v.key == selection_box.key) {
+                if (v != undefined && v.key == selection_box.key) {
                     return undefined;
                 }
                 return v;
@@ -210,6 +212,7 @@
                     shapes[s] = new Circle(shapes[s]);
                 }
             }
+            selection_box.text = "";
             shapes.push(selection_box);
 
             arrows = JSON.parse(state["arrows"]);
@@ -256,24 +259,30 @@
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             draw_all_shapes(ctx);
-            if (pointer_is_on_shape_border > -1) {
+
+            draw_all_arrows(ctx);
+            if (pointer_is_on_arrow_end > -1) {
+                ctx.beginPath();
+                ctx.arc(xm, ym, 5, 0, 2 * Math.PI, false);
+                ctx.fillStyle = "white";
+                ctx.strokeStyle = arrows[pointer_is_on_arrow_end].border_color.to_string();
+                ctx.lineWidth = 4;
+                ctx.stroke();
+                ctx.fill();
+            } else if (pointer_is_on_shape_border > -1) {
                 ctx.beginPath();
                 ctx.arc(xm, ym, 5, 0, 2 * Math.PI, false);
                 ctx.fillStyle = shapes_and_arrows[pointer_is_on_shape_border].border_color.to_string();
                 ctx.fill();
             }
-            draw_all_arrows(ctx);
-
+            update_key_info();
             current_arrow.draw(ctx);
         }
 
-        function toggle_params() {
-            // open the parameters section for the selected layer type only
-            var layerType = $("#layerType").val();
-            var layerSubtype = $(layer_types[layerType]["subtype_selector_id"]).val();
-
+        function switch_layer_type(layerType, layerSubtype) {
+            var key;
             // close all other than the given type
-            for (var key in layer_types) {
+            for (key in layer_types) {
                 if (layerType == key) {
                     $(layer_types[key]["id"]).show("fast");
                 } else {
@@ -282,14 +291,25 @@
             }
 
             // choose subtype
-            for (var key in layer_types[layerType]["subtypes"]) {
+            for (key in layer_types[layerType]["subtypes"]) {
                 if (layerSubtype == key) {
                     $(layer_types[layerType]["subtypes"][key]["id"]).show("fast");
                 } else {
                     $(layer_types[layerType]["subtypes"][key]["id"]).hide("fast");
                 }
             }
+        }
 
+        function select_layer_type() {
+            // open the parameters section for the selected layer type only
+            var layerType = $("#layerType").val();
+            var layerSubtype = $(layer_types[layerType]["subtype_selector_id"]).val();
+            switch_layer_type(layerType, layerSubtype);
+        }
+
+        function change_selected_layer_type(layerType, layerSubtype) {
+            $("#layerType").val(layerType);
+            $(layer_types[layerType]["subtype_selector_id"]).val(layerSubtype);
         }
 
         function create_new_layer() {
@@ -316,20 +336,10 @@
 
             } else if (layerType == "Recurrent") {
 
+            } else {
+                layer = new Layer();
             }
             return layer;
-        }
-
-        function select_layer_type() {
-            toggle_params();
-//            var selected = get_selected_shapes_list(selection_box, shapes);
-//            for (var s = 0; s < selected.length; s++) {
-//                selected.layer = create_new_layer();
-//            }
-        }
-
-        function select_layer_subtype() {
-            toggle_subtype_params();
         }
 
         function highlight_selected_shapes() {
@@ -418,6 +428,7 @@
             } else {
                 shape = new Rectangle(xm - 40, ym - 20, 80, 40, 10, 0, 3, layer_name, fill_colors[current_color_idx], border_colors[current_color_idx], false, layer_mathjax_element_idx);
             }
+            shape.layer = create_new_layer();
 
             shapes.push(shape);
             selected_shapes.push(true);
@@ -434,12 +445,12 @@
         }
 
         var border_colors = [
-            new Color(142, 68, 173, 1),
-            new Color(52, 152, 219, 1),
-            new Color(39, 174, 96, 1),
-            new Color(241, 196, 15, 1),
-            new Color(230, 126, 34, 1),
-            new Color(231, 76, 60, 1)
+            new Color(142, 68, 173, 1), // Purple
+            new Color(52, 152, 219, 1), // Blue
+            new Color(39, 174, 96, 1),  // Green
+            new Color(241, 196, 15, 1), // Yellow
+            new Color(230, 126, 34, 1), // Orange
+            new Color(231, 76, 60, 1)   // Red
         ];
 
         var fill_colors = [];
@@ -479,6 +490,55 @@
 
             save_state();
             draw();
+        }
+
+        function get_key(key) {
+            var fadeInTime = 0;
+            var keys = {
+                "backspace": "Undo last point",
+                "esc": "Cancel edge",
+                "delete": "Remove",
+                "ctrl-c": "Copy",
+                "ctrl-v": "Paste",
+                "ctrl-z": "Undo",
+                "ctrl-y": "Redo",
+                "ctrl-a": "Select all"
+            };
+            var object;
+            if (key.substring(0,4) == "ctrl") {
+                object = '<span class="key-wrap"><icon class="keyboard-key ctrl"></icon><span class="key-info">+</span>' +
+                    '<icon class="keyboard-key ' + key.substring(5) + '"></icon></span><span class="key-info">' + keys[key] + '</span><br>';
+            } else {
+                object = '<span class="key-wrap"><icon class="keyboard-key ' + key + '"></icon></span><span class="key-info">' + keys[key] + '</span><br>';
+            }
+            return $(object).hide().fadeIn(fadeInTime);
+        }
+
+        function update_key_info() {
+            $("#canvas_keys").empty();
+            // arrow is not currently being created
+            if (current_arrow.points > 0) {
+                $("#canvas_keys").append(get_key("esc"));
+                $("#canvas_keys").append(get_key("backspace"));
+            } else {
+                if (primary_selected_shape > -1) {
+                    // shape is currently selected
+                    $("#canvas_keys").append(get_key("delete"));
+                    $("#canvas_keys").append(get_key("ctrl-c"));
+                }
+                if (clipboard.length > 0) {
+                    $("#canvas_keys").append(get_key("ctrl-v"));
+                }
+                if (current_timestep > 1) {
+                    $("#canvas_keys").append(get_key("ctrl-z"));
+                }
+                if (current_timestep < stored_states.length) {
+                    $("#canvas_keys").append(get_key("ctrl-y"));
+                }
+                if (shapes.length > 1) {
+                    $("#canvas_keys").append(get_key("ctrl-a"));
+                }
+            }
         }
 
         function run() {
@@ -575,6 +635,7 @@
                             }
                         }
                         selected_shapes[s] = true;
+//                        change_selected_layer_type(shapes[s].layer.type, shapes[s].layer.subtype);
                     }
                 }
 
@@ -586,43 +647,35 @@
                     if (current_arrow.points >= 1) {
                         current_arrow.points++;
                     }
-                    // check if the pointer is on the border of any shape
-                    for (s = 0; s < shapes_and_arrows.length; s++) {
-                        var borderDir = shapes_and_arrows[s].pointer_is_on_the_border(xm, ym, ctx);
-                        if (borderDir) {
-                            pointer_is_on_shape_border = s;
-                            if (current_arrow.points == 0) {
-                                // start a new line
-                                current_arrow.start_line(new Vertex(xm, ym, 0), shapes_and_arrows[s].border_color, shapes_and_arrows[s], borderDir);
-                            } else {
-                                // make sure the line is not linked to itself
-                                if (!(current_arrow.shapes_are_linked([shapes_and_arrows[s]])[0]) || current_arrow.linkStart.type != "Line") {
-                                    current_arrow.end_line(new Vertex(xm, ym, 0), shapes_and_arrows[s]);
-                                    arrows.push(current_arrow);
-                                    current_arrow = new Line([], 5, new Color(0, 0, 0, 1), 3);
+
+                    if (pointer_is_on_arrow_end > -1) {
+                        current_arrow = arrows[pointer_is_on_arrow_end];
+                        arrows.splice(pointer_is_on_arrow_end, 1);
+                        current_arrow.points--;
+                        pointer_is_on_arrow_end = -1;
+                    } else {
+                        // check if the pointer is on the border of any shape
+                        for (s = 0; s < shapes_and_arrows.length; s++) {
+                            var borderDir = shapes_and_arrows[s].pointer_is_on_the_border(xm, ym, ctx);
+                            if (borderDir) {
+                                pointer_is_on_shape_border = s;
+                                if (current_arrow.points == 0) {
+                                    // start a new line
+                                    current_arrow.start_line(new Vertex(xm, ym, 0), shapes_and_arrows[s].border_color, shapes_and_arrows[s], borderDir);
+                                } else {
+                                    // make sure the line is not linked to itself
+                                    if (!(current_arrow.shapes_are_linked([shapes_and_arrows[s]])[0]) || current_arrow.linkStart.type != "Line") {
+                                        current_arrow.end_line(new Vertex(xm, ym, 0), shapes_and_arrows[s]);
+                                        arrows.push(current_arrow);
+                                        current_arrow = new Line([], 5, new Color(0, 0, 0, 1), 3);
+                                    }
                                 }
+                                primary_selected_shape = -1;
+                                selected_shapes = [];
+                                break;
                             }
-                            primary_selected_shape = -1;
-                            selected_shapes = [];
-                            break;
                         }
                     }
-
-                } else if (button == 2) {
-                    // Right mouse button
-                    /*
-                    if (primary_selected_shape > -1) {
-                        var shape;
-                        var curr = shapes[primary_selected_shape];
-                        if (curr.type == "Rectangle") {
-                            shape = new Rectangle(curr.x, curr.y + 70, curr.width, curr.height, curr.radius, curr.offset, curr.stroke, curr.text, curr.default_color, curr.border_color);
-                        } else if (shapes[primary_selected_shape].type == "Triangle") {
-                            shape = new Triangle(curr.x, curr.y + 70, curr.width, curr.height, curr.radius, curr.stroke, curr.default_color, curr.border_color);
-                        } else if (shapes[primary_selected_shape].type == "Circle") {
-                            shape = new Circle(curr.x, curr.y + 70, curr.radius, curr.stroke, curr.text, curr.default_color, curr.border_color);
-                        }
-                        shapes.push(shape);
-                    }*/
                 }
                 var add_layer_icon = $("#addLayerIcon");
                 if (primary_selected_shape == -1) {
@@ -721,6 +774,7 @@
                         $('body').css('cursor', 'pointer');
                         pointer_is_on_shape_border = s;
                         need_draw = true;
+                        break;
                     }
                 }
 
@@ -746,6 +800,14 @@
 
                 if (current_arrow.vertices.length > 0) {
                     current_arrow.add_point(new Vertex(xm, ym, 0));
+                }
+
+                pointer_is_on_arrow_end = -1;
+                for (a = 0; a < arrows.length; a++) {
+                    if (arrows[a].pointer_is_on_end(xm,ym,ctx)) {
+                        pointer_is_on_arrow_end = a;
+                        break;
+                    }
                 }
 
                 if (need_draw == true) {
@@ -887,6 +949,12 @@
                 } else if (evt.keyCode == 27) {
                     // Escape ==> Cancel current action
                     current_arrow = new Line([], 5, new Color(0, 0, 0, 1), 3);
+                } else if (evt.keyCode == 8) {
+                    // Backspace ==> Cancel last arrow point
+                    if (current_arrow.points > 0) {
+                        current_arrow.vertices.pop();
+                        current_arrow.points--;
+                    }
                 }
 
 
@@ -1356,7 +1424,7 @@
     <div id="import_export" style="display: none">
         <div class="form-group">
             <label for="filename" style="color:white">Topology Name</label>
-            <input type="text" id="filename" class="form-control" placeholder="Filename">
+            <input type="text" id="filename" class="form-control" placeholder="Topology Name">
         </div>
         <div class="form-group">
             <label for="saveTopology" style="color:white">Save Topology Image</label>
@@ -1416,14 +1484,126 @@
             <label style="color:white">Sharing Options</label>
         </div>
         <div class="row">
-        <div class="col-lg-12">
-            <ul class="social-network social-circle">
-                <li><a href="#" class="icoFacebook" title="Facebook"><i class="fa fa-facebook"></i></a></li>
-                <li><a href="#" class="icoTwitter" title="Twitter"><i class="fa fa-twitter"></i></a></li>
-                <li><a href="#" class="icoGoogle" title="E-Mail" onclick="send_email()"><i class="fa fa-envelope"></i></a></li>
-                <li><a href="#" class="icoGitHub" title="GitHub Gist"><i class="fa fa-github"></i></a></li>
-            </ul>
+            <div class="col-lg-12">
+                <ul class="social-network social-circle">
+                    <li>
+                        <a href="#" class="icoFacebook" title="Facebook">
+                            <i data-toggle="tooltip" data-placement="top" title="Share on Neuralizer" class="fa fa-facebook"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="icoTwitter" title="Twitter">
+                            <i data-toggle="tooltip" data-placement="top" title="Share on Twitter" class="fa fa-twitter"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="icoGoogle" title="E-Mail" onclick="send_email()">
+                            <i data-toggle="tooltip" data-placement="top" title="Send by email" class="fa fa-envelope"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="icoGitHub" title="GitHub Gist">
+                            <i data-toggle="tooltip" data-placement="top" title="Share as Gist" class="fa fa-github"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </div>
+        <br>
+        <div class="form-group">
+            <label for="searchModels" style="color:white">Search Models</label>
+            <div class="input-group">
+                <input type="text" class="form-control" id="searchModels" placeholder="Model Name...">
+                <span class="input-group-btn">
+                <button class="btn btn-default" type="button"><span class="glyphicon glyphicon-search"></span></button>
+              </span>
+            </div><!-- /input-group -->
+        </div>
+        <div class="container" style="padding:0">
+            <div class="row">
+                <div class="col-md-3 ">
+                    <div class="well" id="well2">
+                        <div class="row">
+                            <div class="col-xs-6 col-md-12">
+                                <a href="#" class="thumbnail ModelItem">
+                                    <div class="ModelItemContent">
+                                        <b>AlexNet</b>
+                                        <br>
+                                        Author: Itai Caspi
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-6 col-md-12">
+                                <a href="#" class="thumbnail ModelItem">
+                                    <div class="ModelItemContent">
+                                        <b>Incpetion v3</b>
+                                        <br>
+                                        Author: Itai Caspi
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-6 col-md-12">
+                                <a href="#" class="thumbnail ModelItem">
+                                    <div class="ModelItemContent">
+                                        <b>ResNet</b>
+                                        <br>
+                                        Author: Itai Caspi
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-xs-6 col-md-12">
+                                <a href="#" class="thumbnail ModelItem">
+                                    <div class="ModelItemContent">
+                                        <b>FCN</b>
+                                        <br>
+                                        Author: Itai Caspi
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-6 col-md-12">
+                                <a href="#" class="thumbnail ModelItem">
+                                    <div class="ModelItemContent">
+                                        <b>Faster-RCNN</b>
+                                        <br>
+                                        Author: Itai Caspi
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-6 col-md-12">
+                                <a href="#" class="thumbnail ModelItem">
+                                    <div class="ModelItemContent">
+                                        <b>AlexNet</b>
+                                        <br>
+                                        Author: Itai Caspi
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-6 col-md-12">
+                                <a href="#" class="thumbnail ModelItem">
+                                    <div class="ModelItemContent">
+                                        <b>AlexNet</b>
+                                        <br>
+                                        Author: Itai Caspi
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     <div id="account">
@@ -1431,6 +1611,9 @@
     </div>
 </div>
 <div class="col-xs-9" style="height:100%">
+    <div id="canvas_keys">
+
+    </div>
     <div id="canvas_overlay">
         <div id="canvas_messages">
             <h1>Copied to clipboard</h1>
@@ -1450,7 +1633,7 @@
         // Initiate tooltip
         $('[data-toggle="tooltip"]').tooltip();
 
-        toggle_params();
+        select_layer_type();
     });
 </script>
 </body>
