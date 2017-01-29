@@ -131,10 +131,20 @@
                 "subtype_selector_id": "#elementWiseType",
                 "subtype": {"Add": {"id": "#addParams"},
                             "Multiply": {"id": "#multiplyParams"}}},
-            "Noise": {"id": "#noiseParams", "short_name": "noise"},
+            "Stochastic": {
+                "id": "#stochasticParams",
+                "short_name": "stochastic",
+                "subtype": {"GaussianNoise": {"id": "#gaussianParams"},
+                            "UniformNoise": {"id": "#uniformParams"},
+                            "GumbleSoftmax": {"id": "#gumbleSoftmaxParams"}}},
             "InnerProduct": {"id": "#innerProductParams", "short_name": "fc"},
             "SpecialBlock": {"id": "#specialBlockParams", "short_name": "special"},
-            "Recurrent": {"id": "#recurrentParams", "short_name": "recurrent"}
+            "Recurrent": {"id": "#recurrentParams", "short_name": "recurrent"},
+            "Advanced": {
+                "id": "#advancedParams",
+                "short_name": "advanced",
+                "subtype": {"Memory": {"id": "#memoryParams"},
+                            "Attention": {"id": "#attentionParams"}}}
         };
 
         function send_email() {
@@ -256,27 +266,47 @@
             }
         }
 
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            draw_all_shapes(ctx);
+        function draw_text(text, x, y, size) {
+            ctx.font = size + "px Calibri";
+            ctx.textAlign = "center";
+            ctx.fillStyle = "white";
+            ctx.shadowColor = "black";
+            ctx.shadowOffsetX = 1;
+            ctx.shadowOffsetY = 1;
+            ctx.shadowBlur = 1;
+            ctx.fillText(text, x, y);
+            ctx.shadowColor = "transparent";
 
+        }
+
+        function draw_circle(color, border_color, border_width, x, y, size) {
+            ctx.beginPath();
+            ctx.arc(x, y, size, 0, 2 * Math.PI, false);
+            ctx.fillStyle = color;
+            ctx.strokeStyle = border_color;
+            ctx.lineWidth = border_width;
+            ctx.stroke();
+            ctx.fill();
+        }
+
+        function draw() {
+            // clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // draw everything
+            draw_all_shapes(ctx);
             draw_all_arrows(ctx);
-            if (pointer_is_on_arrow_end > -1) {
-                ctx.beginPath();
-                ctx.arc(xm, ym, 5, 0, 2 * Math.PI, false);
-                ctx.fillStyle = "white";
-                ctx.strokeStyle = arrows[pointer_is_on_arrow_end].border_color.to_string();
-                ctx.lineWidth = 4;
-                ctx.stroke();
-                ctx.fill();
-            } else if (pointer_is_on_shape_border > -1) {
-                ctx.beginPath();
-                ctx.arc(xm, ym, 5, 0, 2 * Math.PI, false);
-                ctx.fillStyle = shapes_and_arrows[pointer_is_on_shape_border].border_color.to_string();
-                ctx.fill();
-            }
-            update_key_info();
             current_arrow.draw(ctx);
+            update_key_info();
+
+            // draw cursot markers
+            if (pointer_is_on_arrow_end > -1) {
+                draw_circle(arrows[pointer_is_on_arrow_end].border_color.to_string(), "white", 4, xm, ym, 5);
+                draw_text("click to detach", xm+50, ym, 14);
+            } else if (pointer_is_on_shape_border > -1) {
+                draw_circle(shapes_and_arrows[pointer_is_on_shape_border].border_color.to_string(), "transparent", 0, xm, ym, 5);
+                //draw_text("click to attach", xm+50, ym, 14);
+            }
         }
 
         function switch_layer_type(layerType, layerSubtype) {
@@ -421,7 +451,7 @@
             var shape;
             if (layer_type == "DataPlaceholder") {
                 shape = new Rectangle(xm - 40, ym - 20, 80, 40, 3, 10, 3, layer_name, fill_colors[current_color_idx], border_colors[current_color_idx], false, layer_mathjax_element_idx);
-            } else if (layer_type == "DataManipulation ") {
+            } else if (layer_type == "DataManipulation") {
                 shape = new Triangle(xm - 20, ym - 20, 40, 40, 2, 3, fill_colors[current_color_idx], border_colors[current_color_idx]);
             } else if (layer_type == "ElementWise") {
                 shape = new Circle(xm - 20, ym - 20, 20, 3, layer_name, fill_colors[current_color_idx], border_colors[current_color_idx], layer_mathjax_element_idx);
@@ -759,7 +789,7 @@
                     //$('body').css('cursor', 'default');
 
                     if (shapes[s].pointer_is_inside(xm, ym)) {
-                        $('body').css('cursor', 'pointer');
+                        $('body').css('cursor', 'move');
                     }
                     if (shapes[s].pointer_is_inside(xm, ym) || (selected_shapes.length > s && selected_shapes[s] == true)) {
                         shapes[s].highlight();
@@ -954,6 +984,7 @@
                     if (current_arrow.points > 0) {
                         current_arrow.vertices.pop();
                         current_arrow.points--;
+                        draw();
                     }
                 }
 
@@ -1062,7 +1093,7 @@
                     <option value="DataManipulation">Data Manipulation</option>
                     <option value="Normalization">Normalization</option>
                     <option value="ElementWise">Element-Wise</option>
-                    <option value="Noise">Noise</option>
+                    <option value="Stochastic">Stochastic</option>
                     <option value="Recurrent">Recurrent</option>
                     <option value="SpecialBlock">Special Block</option>
                 </optgroup>
@@ -1334,12 +1365,13 @@
             </select>
         </div>
 
-        <!-- Noise -->
-        <div class="form-group" style="display: none;" id="noiseParams">
-            <label for="noiseType" style="color:white">Noise Type</label>
-            <select id="noiseType" class="form-control selectpicker">
-                <option value="Gaussian">Gaussian</option>
-                <option value="Uniform">Uniform</option>
+        <!-- Stochastic -->
+        <div class="form-group" style="display: none;" id="stochasticParams">
+            <label for="stochasticType" style="color:white">Stochastic Layer Type</label>
+            <select id="stochasticType" class="form-control selectpicker">
+                <option value="GaussianNoise">Gaussian Noise</option>
+                <option value="UniformNoise">Uniform Noise</option>
+                <option value="GumbleSoftmax">Gumble Softmax</option>
             </select>
         </div>
 

@@ -63,15 +63,15 @@ Line.prototype.shapes_are_linked = function(shapes) {
 
 
 Line.prototype.linked_shapes_moved = function(dx, dy, shapes) {
-	
+
 	var results = this.shapes_are_linked(shapes);
 	var start_moved = results[0];
 	var end_moved = results[1];
 	//if (shape != "Line") {
-        
+
 		if (start_moved && end_moved) {
 			this.move(dx,dy);
-		} else {		
+		} else {
 			if (start_moved) {
 				this.move_start(dx, dy);
 			}
@@ -523,6 +523,7 @@ Rectangle.prototype.draw = function(ctx) {
         ctx.fillStyle = this.textColor;
         ctx.fillText(this.text, this.x + (this.width - this.offset) / 2, this.y + this.height / 2 + 3);
     } else {
+        /*
         var svg_data = $("#MathJax-Element-" + this.mathjax_element + "-Frame").get(0);
         var xml;
         try {
@@ -550,7 +551,7 @@ Rectangle.prototype.draw = function(ctx) {
         img.onload = function () {
             ctx.drawImage(img, x, y);
         };
-
+        */
     }
 };
 
@@ -677,3 +678,4 @@ Circle.prototype.update_text = function(text) {
         this.radius = this.baseWidth;
     }
 };
+
