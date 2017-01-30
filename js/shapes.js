@@ -457,6 +457,15 @@ Shape.prototype.darken = function() {
     this.color.a = 0;
 };
 
+Shape.prototype.full = function() {
+    this.height += 50;
+};
+
+
+Shape.prototype.partial = function() {
+    this.height -= 50;
+};
+
 /////////////////////////////////////
 //  Rectangle
 

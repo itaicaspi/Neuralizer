@@ -29,6 +29,8 @@
     <script src="js/nn.js"></script>
     <script src="js/transforms.js"></script>
     <script src="js/files.js"></script>
+    <script src="js/canvas_manager.js"></script>
+    <script src="js/side_bar_manager.js"></script>
     <!-- favicon -->
     <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="96x96" href="images/favicon-96x96.png">
@@ -45,29 +47,8 @@
 
     <script type="text/javascript">
 
-        var canvas;
-        var ctx;
-        var button;
-        var is_mouse_down;
-        var pointer_is_on_shape_border;
-        var pointer_is_on_arrow_end;
-        var need_draw;
-        var init_arrow;
-        var current_arrow;
-        var arrows;
-        var shapes_and_arrows;
-        var degree;
-        var xm = 0, ym = 0;
-        var primary_selected_shape = -1;
-        var shapes = [];
-        var selected_shapes = [];
-        var current_color_idx = 0;
-        var selection_box = new Rectangle(0, 0, 0, 0, 2, 0, 2, "", new Color(0, 0, 0, 0), new Color(255, 255, 255, 1), true);
-        var mathjax_element_idx = 1;
-        var clipboard = [];
-        var current_timestep = 0;
-        var stored_states = [];
-
+        var canvas_manager;
+        var sidebar_manager;
 
         var layer_types = {
             "DataPlaceholder": {
@@ -148,7 +129,7 @@
         };
 
         function send_email() {
-            var body = JSON.stringify(stored_states[current_timestep-1]);
+            var body = JSON.stringify(canvas_manager.stored_states[canvas_manager.current_timestep]);
             var subject = "Neuralizer Topology";
             window.open('mailto:'  + '?subject=' +subject + '&body=' + body);
         }
@@ -177,136 +158,24 @@
             }
         }
 
-        function show_message(msg, slow) {
-            var fade_out_time = 500;
-            if (slow) {
-                fade_out_time = 1000;
-            }
-
-            var canvas_overlay = $("#canvas_overlay");
-            $("#canvas_overlay h1").text(msg);
-            $(canvas_overlay).stop();
-            $(canvas_overlay).fadeIn(30);
-            $(canvas_overlay).fadeOut(fade_out_time);
+        function change_color(color_idx) {
+            canvas_manager.change_selected_shapes_color(color_idx);
+            sidebar_manager.change_selected_color(color_idx);
         }
 
-
-        function save_state() {
-            // save the state of the designer in the buffer
-            var current_state = {"shapes": JSON.stringify(shapes, function(k,v) {
-                if (v != undefined && v.key == selection_box.key) {
-                    return undefined;
-                }
-                return v;
-            }), "arrows": JSON.stringify(arrows)};
-
-            if (current_timestep <= 1 || current_state["shapes"] != stored_states[current_timestep-1]["shapes"]) {
-                stored_states[current_timestep] = current_state;
-                current_timestep += 1;
-            }
-        }
-
-        function load_state(state) {
-            // load the given state to the designer
-            shapes = JSON.parse(state["shapes"]);
-            for (var s = shapes.length-1; s >= 0; s--) {
-                if (shapes[s] == null || shapes[s] == undefined) {
-                    shapes.splice(s,1);
-                    continue;
-                }
-                if (shapes[s].type == "Rectangle") {
-                    shapes[s] = new Rectangle(shapes[s]);
-                } else if (shapes[s].type == "Triangle") {
-                    shapes[s] = new Triangle(shapes[s]);
-                } else if (shapes[s].type == "Circle") {
-                    shapes[s] = new Circle(shapes[s]);
+        function show_full_details(checked) {
+            var selected_shapes_list = [];
+            for (var s = 0; s < selected_shapes.length; s++) {
+                if (selected_shapes[s]) {
+                    if (checked) {
+                        shapes[s].full();
+                    } else {
+                        shapes[s].partial();
+                    }
+                    selected_shapes_list.push(shapes[s]);
                 }
             }
-            selection_box.text = "";
-            shapes.push(selection_box);
-
-            arrows = JSON.parse(state["arrows"]);
-            for (var a = arrows.length-1; a >= 0; a--) {
-                arrows[a] = new Line(arrows[a]);
-            }
-        }
-
-        function undo() {
-            // undo changes
-            if (current_timestep > 1) {
-                current_timestep -= 1;
-                load_state(stored_states[current_timestep-1]);
-                return true;
-            }
-            return false;
-        }
-
-
-        function redo() {
-            // redo changes
-            if (current_timestep < stored_states.length) {
-                load_state(stored_states[current_timestep]);
-                current_timestep += 1;
-                return true;
-            }
-            return false;
-        }
-
-        function draw_all_arrows(ctx) {
-            // calls the draw function for all the currently available arrows
-            for (var a = 0; a < arrows.length; a++) {
-                arrows[a].draw(ctx);
-            }
-        }
-
-        function draw_all_shapes(ctx) {
-            // calls the draw function for all the currently available shapes
-            for (var s = 0; s < shapes.length; s++) {
-                shapes[s].draw(ctx);
-            }
-        }
-
-        function draw_text(text, x, y, size) {
-            ctx.font = size + "px Calibri";
-            ctx.textAlign = "center";
-            ctx.fillStyle = "white";
-            ctx.shadowColor = "black";
-            ctx.shadowOffsetX = 1;
-            ctx.shadowOffsetY = 1;
-            ctx.shadowBlur = 1;
-            ctx.fillText(text, x, y);
-            ctx.shadowColor = "transparent";
-
-        }
-
-        function draw_circle(color, border_color, border_width, x, y, size) {
-            ctx.beginPath();
-            ctx.arc(x, y, size, 0, 2 * Math.PI, false);
-            ctx.fillStyle = color;
-            ctx.strokeStyle = border_color;
-            ctx.lineWidth = border_width;
-            ctx.stroke();
-            ctx.fill();
-        }
-
-        function draw() {
-            // clear canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // draw everything
-            draw_all_shapes(ctx);
-            draw_all_arrows(ctx);
-            current_arrow.draw(ctx);
-            update_key_info();
-
-            // draw cursot markers
-            if (pointer_is_on_arrow_end > -1) {
-                draw_circle(arrows[pointer_is_on_arrow_end].border_color.to_string(), "white", 4, xm, ym, 5);
-                draw_text("click to detach", xm+50, ym, 14);
-            } else if (pointer_is_on_shape_border > -1) {
-                draw_circle(shapes_and_arrows[pointer_is_on_shape_border].border_color.to_string(), "transparent", 0, xm, ym, 5);
-                //draw_text("click to attach", xm+50, ym, 14);
-            }
+            draw();
         }
 
         function switch_layer_type(layerType, layerSubtype) {
@@ -372,18 +241,6 @@
             return layer;
         }
 
-        function highlight_selected_shapes() {
-            var s;
-            for (s = 0; s < shapes.length; s++) {
-                if (shapes[s] == selection_box) continue;
-
-                if (selected_shapes.length > s && selected_shapes[s] == true) {
-                    shapes[s].highlight();
-                }
-            }
-            draw();
-        }
-
         function get_short_name(layer_type) {
             // get a short default name for a layer
             if (layer_types[layer_type] != undefined) {
@@ -393,44 +250,21 @@
         }
 
 
-        function update_shape() {
-            if (primary_selected_shape > -1 && shapes.length > primary_selected_shape) {
-                shapes[primary_selected_shape].update_text($("#layerName").val());
-            }
-            draw();
+        function update_shape_name() {
+            canvas_manager.get_primary_selected_shape().update_text($("#layerName").val());
+            canvas_manager.draw_required = true;
+            canvas_manager.draw_curr_state_if_necessary();
         }
 
-        function toggle_add_or_remove_button() {
-            var add_layer_icon = $("#addLayerIcon");
-            if ($(add_layer_icon).attr('data-original-title') == "Add") {
-                $(add_layer_icon).attr('data-original-title', "Remove");
-            } else {
-                $(add_layer_icon).attr('data-original-title', "Add");
-            }
-            $(add_layer_icon).toggleClass('rotated');
-        }
 
         function remove_layer() {
-            var s = 0;
-            for (s = selected_shapes.length - 1; s >= 0; s--) {
-                if (selected_shapes[s] == true && shapes[s] != selection_box) {
-                    for (var a = arrows.length - 1; a >= 0; a--) {
-                        result = arrows[a].shapes_are_linked([shapes[s]]);
-                        if (result[0] == true || result[1] == true) {
-                            arrows.splice(a, 1);
-                        }
-                    }
-                    shapes.splice(s, 1);
-                    selected_shapes.splice(s, 1);
-                }
-            }
+            canvas_manager.remove_selected_shapes();
         }
 
         function add_layer() {
-            for (s = 0; s < selected_shapes.length; s++) {
-                selected_shapes[s] = false;
-            }
-            is_mouse_down = true;
+            canvas_manager.reset_selected_shapes();
+            canvas_manager.mouse_is_pressed = true;
+
             var layer_type = $("#layerType").val();
             var layer_name = $("#layerName").val();
             if (layer_name == "") {
@@ -438,572 +272,176 @@
                 $("#layerName").val(layer_name);
             }
 
-            // add latex name
-            var layer_mathjax_element_idx = "";
-            var latexName = $("#latexName").is(":checked");
-            if (latexName) {
-                $("#mathjax-elements").append('\\[ ' + layer_name + ' \\]');
-                MathJax.Hub.Queue(["Typeset",MathJax.Hub,"mathjax-elements"]);
-                mathjax_element_idx += 1;
-                layer_mathjax_element_idx = mathjax_element_idx;
-            }
 
+            var x = canvas_manager.cursor_x;
+            var y = canvas_manager.cursor_y;
+            var color = canvas_manager.selected_color_idx;
             var shape;
             if (layer_type == "DataPlaceholder") {
-                shape = new Rectangle(xm - 40, ym - 20, 80, 40, 3, 10, 3, layer_name, fill_colors[current_color_idx], border_colors[current_color_idx], false, layer_mathjax_element_idx);
+                shape = new Rectangle(x - 40, y - 20, 80, 40, 3, 10, 3, layer_name, fill_colors[color], border_colors[color], false);
             } else if (layer_type == "DataManipulation") {
-                shape = new Triangle(xm - 20, ym - 20, 40, 40, 2, 3, fill_colors[current_color_idx], border_colors[current_color_idx]);
+                shape = new Triangle(x - 20, y - 20, 40, 40, 2, 3, fill_colors[color], border_colors[color]);
             } else if (layer_type == "ElementWise") {
-                shape = new Circle(xm - 20, ym - 20, 20, 3, layer_name, fill_colors[current_color_idx], border_colors[current_color_idx], layer_mathjax_element_idx);
+                shape = new Circle(x - 20, y - 20, 20, 3, layer_name, fill_colors[color], border_colors[color]);
             } else {
-                shape = new Rectangle(xm - 40, ym - 20, 80, 40, 10, 0, 3, layer_name, fill_colors[current_color_idx], border_colors[current_color_idx], false, layer_mathjax_element_idx);
+                shape = new Rectangle(x - 40, y - 20, 80, 40, 10, 0, 3, layer_name, fill_colors[color], border_colors[color], false);
             }
             shape.layer = create_new_layer();
-
-            shapes.push(shape);
-            selected_shapes.push(true);
-            primary_selected_shape = shapes.length - 1;
+            canvas_manager.add_shape(shape);
         }
 
         function add_or_remove_layer() {
             if ($("#addLayerIcon").hasClass('rotated')) {
-                remove_layer();
+                canvas_manager.remove_selected_shapes();
             } else {
                 add_layer();
             }
-            toggle_add_or_remove_button();
+            sidebar_manager.toggle_add_or_remove_button();
         }
 
-        var border_colors = [
-            new Color(142, 68, 173, 1), // Purple
-            new Color(52, 152, 219, 1), // Blue
-            new Color(39, 174, 96, 1),  // Green
-            new Color(241, 196, 15, 1), // Yellow
-            new Color(230, 126, 34, 1), // Orange
-            new Color(231, 76, 60, 1)   // Red
-        ];
 
-        var fill_colors = [];
-        for (var i = 0; i < border_colors.length; i++) {
-            border_color = border_colors[i];
-            var max_val = Math.max(Math.max(border_color.r, border_color.g), border_color.b);
-            fill_color = new Color(border_color.r + 0.5 * max_val, border_color.g + 0.5 * max_val, border_color.b + 0.5 * max_val, 0);
-            fill_colors.push(fill_color);
-        }
-
-        function change_color(colorIdx) {
-            current_color_idx = colorIdx;
-            r = border_colors[colorIdx].r;
-            g = border_colors[colorIdx].g;
-            b = border_colors[colorIdx].b;
-            for (var i = 0; i < 6; i++) {
-                if (i == colorIdx) {
-                    $('#color' + i.toString()).html('<i class="glyphicon glyphicon-ok" style="margin-top: 3px;margin-left:50%;left:-8px;color:rgba(255,255,255,0.7)"></i>');
-                } else {
-                    $('#color' + i.toString()).html('');
-                }
-            }
-            var max_val = Math.max(Math.max(r, g), b);
-
-            for (var s = 0; s < selected_shapes.length; s++) {
-                if (shapes[s] != selection_box && selected_shapes[s] == true) {
-                    var border_color = new Color(r, g, b, 1);
-                    var fill_color = new Color(r + 0.5 * max_val, g + 0.5 * max_val, b + 0.5 * max_val, 0);
-
-                    shapes[s].change_fill_color(fill_color);
-                    shapes[s].change_border_color(border_color);
-                    for (var a = 0; a < arrows.length; a++) {
-                        arrows[a].linked_shape_color_change(shapes[s], arrows);
-                    }
-                }
-            }
-
-            save_state();
-            draw();
-        }
-
-        function get_key(key) {
-            var fadeInTime = 0;
-            var keys = {
-                "backspace": "Undo last point",
-                "esc": "Cancel edge",
-                "delete": "Remove",
-                "ctrl-c": "Copy",
-                "ctrl-v": "Paste",
-                "ctrl-z": "Undo",
-                "ctrl-y": "Redo",
-                "ctrl-a": "Select all"
-            };
-            var object;
-            if (key.substring(0,4) == "ctrl") {
-                object = '<span class="key-wrap"><icon class="keyboard-key ctrl"></icon><span class="key-info">+</span>' +
-                    '<icon class="keyboard-key ' + key.substring(5) + '"></icon></span><span class="key-info">' + keys[key] + '</span><br>';
-            } else {
-                object = '<span class="key-wrap"><icon class="keyboard-key ' + key + '"></icon></span><span class="key-info">' + keys[key] + '</span><br>';
-            }
-            return $(object).hide().fadeIn(fadeInTime);
-        }
-
-        function update_key_info() {
-            $("#canvas_keys").empty();
-            // arrow is not currently being created
-            if (current_arrow.points > 0) {
-                $("#canvas_keys").append(get_key("esc"));
-                $("#canvas_keys").append(get_key("backspace"));
-            } else {
-                if (primary_selected_shape > -1) {
-                    // shape is currently selected
-                    $("#canvas_keys").append(get_key("delete"));
-                    $("#canvas_keys").append(get_key("ctrl-c"));
-                }
-                if (clipboard.length > 0) {
-                    $("#canvas_keys").append(get_key("ctrl-v"));
-                }
-                if (current_timestep > 1) {
-                    $("#canvas_keys").append(get_key("ctrl-z"));
-                }
-                if (current_timestep < stored_states.length) {
-                    $("#canvas_keys").append(get_key("ctrl-y"));
-                }
-                if (shapes.length > 1) {
-                    $("#canvas_keys").append(get_key("ctrl-a"));
-                }
-            }
-        }
 
         function run() {
-            // Fix the canvas width and height
-            canvas = document.getElementById('cnv');
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
+            canvas_manager = new CanvasManager(document.getElementById('cnv'));
+            sidebar_manager = new SidebarManager();
 
-            // Objects style
-            ctx = canvas.getContext('2d');
-
-            degree = Math.PI / 180;
-
-            function find_selected_shapes(selection_box, shapes) {
-                var selected_shapes = [];
-                for (var i = 0; i < shapes.length; i++) {
-                    var left_check = shapes[i].x > selection_box.x;
-                    var top_check = shapes[i].y > selection_box.y;
-                    var right_check = shapes[i].x + shapes[i].width < selection_box.x + selection_box.width;
-                    var bottom_check = shapes[i].y + shapes[i].height < selection_box.y + selection_box.height;
-                    if ((left_check == true && top_check == true && right_check == true && bottom_check == true) ||
-                        (left_check == false && top_check == false && right_check == false && bottom_check == false) ||
-                        (left_check == true && top_check == false && right_check == true && bottom_check == false) ||
-                        (left_check == false && top_check == true && right_check == false && bottom_check == true)) {
-                        selected_shapes.push(true);
-                    } else {
-                        selected_shapes.push(false);
-                    }
-                }
-                return selected_shapes;
-            }
-
-            function get_selected_shapes_list(selection_box, shapes) {
-                var selected_shapes_flags = find_selected_shapes(selection_box, shapes);
-                var selected_shapes = [];
-                for (var s = 0; s < shapes.length; s++) {
-                    if (selected_shapes_flags[s]) {
-                        selected_shapes.push(shapes[s]);
-                    }
-                }
-            }
-
-//            var rect1 = new Rectangle(100, 50, 80, 40, 2, 10, 3, "angle", fill_colors[0], border_colors[0]);
-//            var rect2 = new Rectangle(200, 50, 80, 40, 10, 0, 3, "input", fill_colors[1], border_colors[1]);
-//            var tri1 = new Triangle(300, 50, 40, 40, 2, 3, fill_colors[2], border_colors[2]);
-//            var rect3 = new Rectangle(400, 50, 80, 40, 2, 10, 3, "flow", fill_colors[3], border_colors[3]);
-//            var circ1 = new Circle(500, 50, 20, 3, "+", fill_colors[4], border_colors[4]);
-
-            selected_shapes = shapes = [];
-            draw_all_shapes(ctx);
-
-            button = 0;
-            is_mouse_down = false;
-            pointer_is_on_shape_border = -1;
-            need_draw = false;
-            init_arrow = new Line([], 5, new Color(0, 0, 0, 1), 3);
-            current_arrow = new Line([], 5, new Color(0, 0, 0, 1), 3);
-            arrows = [];
-            shapes_and_arrows = shapes.concat(arrows);
-
-            shapes.push(selection_box);
-
-            selected_shapes = find_selected_shapes(selection_box, shapes);
-
-            save_state();
 
             function mouseDown(evt) {
+                canvas_manager.hide_selection_box();
+                canvas_manager.update_cursor_state(evt.clientX, evt.clientY, evt.button, true);
 
-                selection_box.hide();
-                selection_box.width = 0;
-                selection_box.height = 0;
-
-                is_mouse_down = true;
-                button = evt.button;
-
-                shapes_and_arrows = shapes.concat(arrows);
-
-                xm = evt.clientX - canvas.getBoundingClientRect().left;
-                ym = evt.clientY - canvas.getBoundingClientRect().top;
-
-                primary_selected_shape = -1;
-                var s = 0;
-                for (s = 0; s < shapes.length; s++) {
-                    if (selected_shapes.length < shapes.length) {
-                        selected_shapes[s] = false;
-                    }
-                    if (shapes[s].pointer_is_inside(xm, ym)) {
-                        primary_selected_shape = s;
-                        // if the currently selected shapes is not part of all the previously selected shapes, make it the only selected shape so that only it moves
-                        // otherwise we want to move all the selected shapes together
-                        if (selected_shapes[s] == false) {
-                            for (var i = 0; i < shapes.length; i++) {
-                                selected_shapes[i] = false;
-                            }
-                        }
-                        selected_shapes[s] = true;
-//                        change_selected_layer_type(shapes[s].layer.type, shapes[s].layer.subtype);
-                    }
+                // select the currently pointed shape if it not already selected
+                if (canvas_manager.shape_with_content_pointed_by_cursor && !canvas_manager.shape_is_selected(canvas_manager.shape_with_content_pointed_by_cursor)) {
+                    canvas_manager.select_shape(canvas_manager.shape_with_content_pointed_by_cursor);
                 }
 
-
-                if (button == 0) {
-                    // Left mouse button => select or attach an arrow
-
-                    // add point to current arrow
-                    if (current_arrow.points >= 1) {
-                        current_arrow.points++;
-                    }
-
-                    if (pointer_is_on_arrow_end > -1) {
-                        current_arrow = arrows[pointer_is_on_arrow_end];
-                        arrows.splice(pointer_is_on_arrow_end, 1);
-                        current_arrow.points--;
-                        pointer_is_on_arrow_end = -1;
-                    } else {
-                        // check if the pointer is on the border of any shape
-                        for (s = 0; s < shapes_and_arrows.length; s++) {
-                            var borderDir = shapes_and_arrows[s].pointer_is_on_the_border(xm, ym, ctx);
-                            if (borderDir) {
-                                pointer_is_on_shape_border = s;
-                                if (current_arrow.points == 0) {
-                                    // start a new line
-                                    current_arrow.start_line(new Vertex(xm, ym, 0), shapes_and_arrows[s].border_color, shapes_and_arrows[s], borderDir);
-                                } else {
-                                    // make sure the line is not linked to itself
-                                    if (!(current_arrow.shapes_are_linked([shapes_and_arrows[s]])[0]) || current_arrow.linkStart.type != "Line") {
-                                        current_arrow.end_line(new Vertex(xm, ym, 0), shapes_and_arrows[s]);
-                                        arrows.push(current_arrow);
-                                        current_arrow = new Line([], 5, new Color(0, 0, 0, 1), 3);
-                                    }
-                                }
-                                primary_selected_shape = -1;
-                                selected_shapes = [];
-                                break;
-                            }
-                        }
-                    }
+                // add points to curr arrow or attach / detach an arrow
+                if (!canvas_manager.shape_with_content_pointed_by_cursor && canvas_manager.pressed_mouse_button == "left") {
+                    canvas_manager.extend_current_arrow();
+                    canvas_manager.reset_selected_shapes();
                 }
-                var add_layer_icon = $("#addLayerIcon");
-                if (primary_selected_shape == -1) {
-                    selection_box.x = xm;
-                    selection_box.y = ym;
-                    selected_shapes = [];
-                    if ($(add_layer_icon).hasClass('rotated')) {
-                        toggle_add_or_remove_button();
-                    }
+
+                // sidebar add/remove button toggle
+                if (canvas_manager.selected_shapes.length == 0) {
+                    canvas_manager.initialize_selection_box();
+                    sidebar_manager.set_add_or_remove_button_to_add();
                 } else {
-                    if (!$(add_layer_icon).hasClass('rotated')) {
-                        toggle_add_or_remove_button();
-                    }
+                    sidebar_manager.set_add_or_remove_button_to_remove();
                 }
-                shapes_and_arrows = shapes.concat(arrows);
 
-                config(evt);
+                // update side bar properties
+                var selected_shape = canvas_manager.get_primary_selected_shape();
+                if (selected_shape) {
+                    sidebar_manager.set_layer_name(selected_shape.text);
+                    sidebar_manager.change_selected_color(canvas_manager.get_shape_color_idx(selected_shape));
+                } else {
+                    sidebar_manager.set_layer_name("");
+                }
+                sidebar_manager.focus_layer_name();
+
+                // draw
+                canvas_manager.draw_curr_state_if_necessary();
             }
 
-            function snap_to_grid(step_size, counter, diff) {
-                // uses the step size for shape movement to determine the new shape location
-                var after = (counter + diff) / step_size;
-                var before = counter / step_size;
-                var change = 0;
-                if (after < 0) {
-                    change = Math.ceil(after) - Math.ceil(before);
-                } else {
-                    change = Math.floor(after) - Math.floor(before);
-                }
-                if (change != 0) {
-                    diff = change * step_size;
-                    counter = 0;
-                } else {
-                    counter += diff;
-                    diff = 0;
-                }
-                return [counter, diff];
-            }
-
-            var count_x = 0;
-            var count_y = 0;
 
             function mouseMove(evt) {
                 $('body').css('cursor', 'default');
-                if (typeof xm == 'undefined') xm = evt.clientX - canvas.getBoundingClientRect().left;
-                if (typeof ym == 'undefined') ym = evt.clientY - canvas.getBoundingClientRect().top;
-                var diffX = evt.clientX - canvas.getBoundingClientRect().left - xm;
-                var diffY = evt.clientY - canvas.getBoundingClientRect().top - ym;
-                xm = evt.clientX - canvas.getBoundingClientRect().left;
-                ym = evt.clientY - canvas.getBoundingClientRect().top;
-                //need_draw = false;
+                canvas_manager.update_cursor_state(evt.clientX, evt.clientY, evt.button);
 
-                // snap to grid
-                var step_size = 1;
-                var res = snap_to_grid(step_size, count_x, diffX);
-                count_x = res[0];
-                diffX = res[1];
-                res = snap_to_grid(step_size, count_y, diffY);
-                count_y = res[0];
-                diffY = res[1];
-
-                if (is_mouse_down && primary_selected_shape == -1 && current_arrow.points == 0) {
-                    selection_box.width = xm - selection_box.x;
-                    selection_box.height = ym - selection_box.y;
-                    selection_box.show();
-                    selected_shapes = find_selected_shapes(selection_box, shapes);
-                    for (var s = 0; s < selected_shapes.length; s++) {
-                        if (selected_shapes[s] == true && shapes[s] != selection_box) {
-                            if (!$("#addLayerIcon").hasClass('rotated')) {
-                                toggle_add_or_remove_button();
-                            }
-                            break;
-                        }
-                    }
-                    need_draw = true;
-                }
-
-                pointer_is_on_shape_border = -1;
-                for (s = 0; s < shapes.length; s++) {
-                    if (shapes[s] == selection_box) continue;
-                    //$('body').css('cursor', 'default');
-
-                    if (shapes[s].pointer_is_inside(xm, ym)) {
-                        $('body').css('cursor', 'move');
-                    }
-                    if (shapes[s].pointer_is_inside(xm, ym) || (selected_shapes.length > s && selected_shapes[s] == true)) {
-                        shapes[s].highlight();
-                        need_draw = true;
-                    } else if ((shapes[s].color.to_string() != shapes[s].default_color.to_string())) {
-                        shapes[s].darken();
-                        need_draw = true;
-                    }
-                }
-                for (s = 0; s < shapes_and_arrows.length; s++) {
-                    if (shapes_and_arrows[s].pointer_is_on_the_border(xm, ym, ctx)) {
-                        $('body').css('cursor', 'pointer');
-                        pointer_is_on_shape_border = s;
-                        need_draw = true;
-                        break;
-                    }
-                }
-
-                if (is_mouse_down) {
-                    if (button == 0) {
-                        // move shapes
-                        if (primary_selected_shape > -1) {
-                            var moved_shapes = [];
-                            for (var i = 0; i < selected_shapes.length; i++) {
-                                if (selected_shapes[i] == true) {
-                                    shapes[i].translate(diffX, diffY);
-                                    moved_shapes.push(shapes[i]);
-                                }
-                            }
-                            for (var a = 0; a < arrows.length; a++) {
-                                arrows[a].linked_shapes_moved(diffX, diffY, moved_shapes);
-                            }
-
-                            need_draw = true;
+                if (canvas_manager.mouse_is_pressed && canvas_manager.current_arrow.points == 0) {
+                    if (!canvas_manager.get_primary_selected_shape() || canvas_manager.selection_box_is_active()) {
+                        canvas_manager.set_selection_box();
+                        if (canvas_manager.get_primary_selected_shape()) {
+                            sidebar_manager.set_add_or_remove_button_to_remove();
                         }
                     }
                 }
 
-                if (current_arrow.vertices.length > 0) {
-                    current_arrow.add_point(new Vertex(xm, ym, 0));
+                if (canvas_manager.shape_with_content_pointed_by_cursor) {
+                    $('body').css('cursor', 'move');
+                } else if (canvas_manager.get_object_with_pointed_border()) {
+                    $('body').css('cursor', 'pointer');
                 }
 
-                pointer_is_on_arrow_end = -1;
-                for (a = 0; a < arrows.length; a++) {
-                    if (arrows[a].pointer_is_on_end(xm,ym,ctx)) {
-                        pointer_is_on_arrow_end = a;
-                        break;
-                    }
+                canvas_manager.highlight_selected_shapes();
+
+                if (canvas_manager.mouse_is_pressed && canvas_manager.pressed_mouse_button == "left" && !canvas_manager.selection_box_is_active()) {
+                    canvas_manager.move_selected_shapes();
                 }
 
-                if (need_draw == true) {
-                    draw();
+                if (canvas_manager.current_arrow.vertices.length > 0) {
+                    canvas_manager.current_arrow.add_point(new Vertex(canvas_manager.cursor_x, canvas_manager.cursor_y, 0));
                 }
+
+                canvas_manager.draw_curr_state_if_necessary();
             }
 
-            function mouseUp() {
-                selection_box.hide();
-                if ((Math.abs(selection_box.width) < 10 || Math.abs(selection_box.height) < 10) && primary_selected_shape == -1) {
-                    selected_shapes = find_selected_shapes(selection_box, shapes);
-                }
-                is_mouse_down = false;
-                if (xm >= 0 && ym >= 0) {
-                    save_state();
-                }
+            function mouseUp(evt) {
+                canvas_manager.hide_selection_box();
+
+                canvas_manager.update_cursor_state(evt.clientX, evt.clientY, evt.button, false);
+
+                canvas_manager.save_state();
             }
 
-
-            function config(evt) {
-                xm = evt.clientX - canvas.getBoundingClientRect().left;
-                ym = evt.clientY - canvas.getBoundingClientRect().top;
-                primary_selected_shape = -1;
-                for (var s = 0; s < shapes.length; s++) {
-                    if (shapes[s].pointer_is_inside(xm, ym)) {
-                        primary_selected_shape = s;
-                    }
-                }
-                if (primary_selected_shape == -1) {
-                    $("#layerName").val("");
-                } else {
-                    $("#layerName").val(shapes[primary_selected_shape].text);
-                }
-                setTimeout(function () {
-                    $("#layerName").focus();
-                }, 1);
-
-
-                for (var i = 0; i < border_colors.length; i++) {
-                    if (primary_selected_shape > -1 && border_colors[i].to_string() == shapes[primary_selected_shape].border_color.to_string()) {
-                        current_color_idx = i;
-                        $('#color' + i.toString()).html('<i class="glyphicon glyphicon-ok" style="margin-top: 3px;margin-left:50%;left:-8px;color:rgba(255,255,255,0.7)"></i>');
-                    } else if (primary_selected_shape > -1) {
-                        $('#color' + i.toString()).html('');
-                    }
-                }
-                return true;
-            }
 
 
             function keyPress(evt) {
                 evt = evt || window.event;
-                var s = 0;
                 if (evt.keyCode == 46) {
                     // Del ==> Remove selected layers
                     if ($("#addLayerIcon").hasClass('rotated')) {
                         remove_layer();
-                        toggle_add_or_remove_button();
-                        draw();
+                        sidebar_manager.toggle_add_or_remove_button();
+                        canvas_manager.draw_required = true;
                     }
                 } else if (evt.ctrlKey && evt.keyCode == 65) {
                     // Ctrl + A ==> Select all
-                    for (s = 0; s < selected_shapes.length; s++) {
-                        selected_shapes[s] = true;
-                        shapes[s].highlight();
-                    }
-                    if (!$("#addLayerIcon").hasClass('rotated')) {
-                        toggle_add_or_remove_button();
-                    }
-                    draw();
+                    canvas_manager.select_all_shapes();
+                    sidebar_manager.set_add_or_remove_button_to_remove();
+                    evt.preventDefault();
+                    evt.stopPropagation();
                 } else if (evt.ctrlKey && evt.keyCode == 67) {
                     // Ctrl + C ==> Copy
-                    show_message("Copied to clipboard");
-                    clipboard = [];
-                    // find all the selected shapes
-                    var selected_shapes_obj = [];
-                    for (s = 0; s < selected_shapes.length; s++) {
-                        if (selected_shapes[s] && shapes[s] != selection_box) {
-                            selected_shapes_obj.push(shapes[s]);
-                        }
-                    }
-                    // find all the arrows which have both sides in the selected shapes
-//                    var arrows_obj = [];
-//                    for (var a = 0; a < arrows.length; a++) {
-//                        var is_linked = arrows[a].shapes_are_linked(selected_shapes_obj);
-//                        if (is_linked[0] && is_linked[1]) {
-//                            arrows_obj.push(arrows[a].clone());
-//                        }
-//                    }
-                    // clone all the selected shapes
-                    for (s = 0; s < selected_shapes_obj.length; s++) {
-                        // I clone each object so that it will be detached from the original object
-                        var copiedObject = selected_shapes_obj[s].clone();
-//                        for (a = 0; a < arrows_obj.length; a++) {
-//                            var is_linked = arrows_obj[a].shapes_are_linked([selected_shapes_obj[s]]);
-//                            if (is_linked[0]) {
-//                                arrows_obj[a].linkStart = copiedObject;
-//                            } else if (is_linked[1]) {
-//                                arrows_obj[a].linkEnd = copiedObject;
-//                            }
-//                        }
-                        clipboard.push(copiedObject);
-                    }
-                    // clone all relevant arrows
-//                    for (a = 0; a < arrows_obj.length; a++) {
-//                        clipboard.push(arrows_obj[a]);
-//                    }
+                    canvas_manager.show_message("Copied to clipboard");
+                    canvas_manager.copy_from_clipboard();
                     $("#layerName").blur();
                 } else if (evt.ctrlKey && evt.keyCode == 86) {
                     // Ctrl + V ==> Paste
-                    for (s = 0; s < clipboard.length; s++) {
-                        // I clone again each object from the clipboard so that multiple pastes will be possible
-                        var copiedObject = clipboard[s].clone();
-                        copiedObject.translate(50 + 10*Math.random(),50 + 20*Math.random());
-                        if (copiedObject.type != "Line") {
-                            copiedObject.highlight();
-                            shapes.push(copiedObject);
-                        } else {
-                            arrows.push(copiedObject);
-                        }
-                        selected_shapes.push(true);
-                    }
-                    save_state();
-                    draw();
+                    canvas_manager.paste_from_clipboard();
                 } else if (evt.ctrlKey && evt.keyCode == 90 && !evt.shiftKey) {
                     // Ctrl + Z ==> undo
-                    if (undo()) {
-                        show_message("Undo changes");
-                        highlight_selected_shapes();
-                        draw();
+                    if (canvas_manager.undo()) {
+                        canvas_manager.show_message("Undo changes");
                     }
                 } else if ((evt.ctrlKey && evt.keyCode == 89) || (evt.ctrlKey && evt.shiftKey && evt.keyCode == 90)) {
                     // Ctrl + Y ==> redo
-                    if (redo()) {
-                        show_message("Redo changes");
-                        highlight_selected_shapes();
-                        draw();
+                    if (canvas_manager.redo()) {
+                        canvas_manager.show_message("Redo changes");
+                        canvas_manager.highlight_selected_shapes();
                     }
                 } else if (evt.keyCode == 27) {
                     // Escape ==> Cancel current action
-                    current_arrow = new Line([], 5, new Color(0, 0, 0, 1), 3);
+                    canvas_manager.reset_current_arrow();
                 } else if (evt.keyCode == 8) {
                     // Backspace ==> Cancel last arrow point
-                    if (current_arrow.points > 0) {
-                        current_arrow.vertices.pop();
-                        current_arrow.points--;
-                        draw();
+                    if (canvas_manager.current_arrow.points > 0) {
+                        canvas_manager.current_arrow.vertices.pop();
+                        canvas_manager.current_arrow.points--;
+                        canvas_manager.draw_required = true;
                     }
                 }
-
-
+                canvas_manager.draw_curr_state_if_necessary();
             }
 
-            canvas.addEventListener('mousedown', mouseDown);
+            // event listeners
+            canvas_manager.canvas.addEventListener('mousedown', mouseDown);
             document.addEventListener('mousemove', mouseMove);
             document.addEventListener('mouseup', mouseUp);
             document.addEventListener('keydown', keyPress);
-            window.addEventListener('resize', function () {
-                canvas = document.getElementById('cnv');
-                canvas.width = canvas.offsetWidth;
-                canvas.height = canvas.offsetHeight;
-            });
+            window.addEventListener('resize', function() { canvas_manager.fix_canvas_size(document.getElementById('cnv')) });
             var fileInput = document.getElementById('fileInput');
             fileInput.addEventListener('change', load_state_from_file);
-
-
         }
     </script>
 </head>
@@ -1071,7 +509,7 @@
                 <label for="latexName" class="label-success"></label>
             </div>
             -->
-            <input type="text" id="layerName" class="form-control" placeholder="Layer name" onkeyup="update_shape()">
+            <input type="text" id="layerName" class="form-control" placeholder="Layer name" onkeyup="update_shape_name()">
         </div>
         <div class="form-group">
             <label for="layerType" style="color:white">Layer Type</label>
@@ -1438,7 +876,7 @@
         <div class="form-group">
             <span style="padding-right: 5px; color:white"><b>Full Details</b></span>
             <div class="material-switch pull-right">
-                <input id="fullDetails" name="latexName" type="checkbox" />
+                <input id="fullDetails" name="latexName" type="checkbox" onchange="show_full_details(this.checked)"/>
                 <label for="fullDetails" class="label-success"></label>
             </div>
         </div>
@@ -1652,9 +1090,6 @@
         </div>
     </div>
     <canvas id="cnv" width="100%" height="100%"></canvas>
-    <div id="mathjax-elements">
-        \[ {} \]
-    </div>
 </div>
 <script src="js/bootstrap.min.js"></script>
 <script src="js/bootstrap-select.js"></script>

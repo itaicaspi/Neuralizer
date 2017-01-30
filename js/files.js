@@ -30,15 +30,15 @@ function download_as_file(filename, data, type) {
 
 function save_current_state_as_image(filename) {
     // download the current state to the user's machine as an image
-    show_message("Downloading topology image", true);
-    var image = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+    canvas_manager.show_message("Downloading topology image", true);
+    var image = canvas_manager.canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
     download_as_file($("#filename").val(), image, "image");
 }
 
 function save_current_state_to_file() {
     // download the current state to the user's machine
-    show_message("Downloading topology", true);
-    var text = JSON.stringify(stored_states[current_timestep-1]);
+    canvas_manager.show_message("Downloading topology", true);
+    var text = JSON.stringify(canvas_manager.stored_states[canvas_manager.current_timestep]);
     download_as_file($("#filename").val(), text, "text");
 }
 
@@ -50,16 +50,16 @@ function load_state_from_file() {
     var textType = /text.*/;
 
     if (file.type.match(textType)) {
-        show_message("Loading topology", true);
+        canvas_manager.show_message("Loading topology", true);
         var reader = new FileReader();
 
         reader.onload = function(e) {
             var state = JSON.parse(reader.result);
-            load_state(state);
+            canvas_manager.load_state(state);
         };
         reader.readAsText(file);
 
     } else {
-        show_message("File not supported!");
+        canvas_manager.show_message("File not supported!");
     }
 }

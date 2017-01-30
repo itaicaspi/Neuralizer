@@ -28,6 +28,22 @@ Color.prototype.to_string = function() {
         this.a + ")";
 };
 
+var border_colors = [
+    new Color(142, 68, 173, 1), // Purple
+    new Color(52, 152, 219, 1), // Blue
+    new Color(39, 174, 96, 1),  // Green
+    new Color(241, 196, 15, 1), // Yellow
+    new Color(230, 126, 34, 1), // Orange
+    new Color(231, 76, 60, 1)   // Red
+];
+
+var fill_colors = [];
+for (var i = 0; i < border_colors.length; i++) {
+    var border_color = border_colors[i];
+    var max_val = Math.max(Math.max(border_color.r, border_color.g), border_color.b);
+    var fill_color = new Color(border_color.r + 0.5 * max_val, border_color.g + 0.5 * max_val, border_color.b + 0.5 * max_val, 0);
+    fill_colors.push(fill_color);
+}
 
 /////////////////////////////////////////
 //  Vertex - a 3D point in space

@@ -35,7 +35,11 @@ h1 {
     background: transparent;
     z-index: 100;
     position: absolute;
-    bottom: 0px;
+    bottom: 0;
+    -moz-user-select: -moz-none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 #canvas_overlay {
