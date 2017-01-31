@@ -444,6 +444,10 @@ Shape.prototype.update_vertices = function() {
 };
 
 
+Shape.prototype.move_to = function(x, y) {
+    this.translate(x - this.x, y - this.y);
+};
+
 Shape.prototype.translate = function(dx, dy) {
     for (var i = 0; i < this.vertices.length; i++) {
         this.vertices[i].translate(dx,dy,0);

@@ -244,7 +244,7 @@ CanvasManager.prototype.remove_selected_shapes = function() {
 
 
 CanvasManager.prototype.move_selected_shapes = function() {
-    this.move_shapes(this.selected_shapes, this.cursor_diff_x, this.cursor_diff_y);
+    this.move_shapes_with_alignment(this.selected_shapes, this.cursor_diff_x, this.cursor_diff_y);
 };
 
 CanvasManager.prototype.shape_is_selected = function(shape) {
@@ -296,6 +296,22 @@ CanvasManager.prototype.selection_box_is_active = function() {
     return this.selection_box.width > 0 || this.selection_box.height > 0;
 };
 
+CanvasManager.prototype.get_unselected_shapes = function() {
+    var unselected_shapes = [];
+    for (var i = 0; i < this.shapes.length; i++) {
+        var is_selected = false;
+        for (var j = 0; j < this.selected_shapes.length; j++) {
+            if (this.selected_shapes[j].key == this.shapes[i].key) {
+                is_selected = true;
+            }
+        }
+        if (!is_selected) {
+            unselected_shapes.push(this.shapes[i]);
+        }
+    }
+    return unselected_shapes;
+};
+
 //////////////////////////
 // Drawing Methods
 
@@ -317,15 +333,17 @@ CanvasManager.prototype.draw_curr_state = function() {
     this.update_key_info();
 
     // draw cursor markers
-    if (this.arrow_with_end_pointed_by_cursor && this.current_arrow.points == 0) {
-        this.draw_circle(this.arrow_with_end_pointed_by_cursor.border_color.to_string(), "white", 4, this.cursor_x, this.cursor_y, 5);
-        this.draw_text("click to detach", this.cursor_x+50, this.cursor_y, 14);
-    } else if (this.shape_with_border_pointed_by_cursor) {
-        this.draw_circle(this.shape_with_border_pointed_by_cursor.border_color.to_string(), "transparent", 0, this.cursor_x, this.cursor_y, 5);
-        //draw_text("click to attach", xm+50, ym, 14);
-    } else if (this.arrow_with_border_pointed_by_cursor) {
-        this.draw_circle(this.arrow_with_border_pointed_by_cursor.border_color.to_string(), "transparent", 0, this.cursor_x, this.cursor_y, 5);
-        //draw_text("click to attach", xm+50, ym, 14);
+    if (!this.mouse_is_pressed || this.selected_shapes.length == 0) {
+        if (this.arrow_with_end_pointed_by_cursor && this.current_arrow.points == 0) {
+            this.draw_circle(this.arrow_with_end_pointed_by_cursor.border_color.to_string(), "white", 4, this.cursor_x, this.cursor_y, 5);
+            this.draw_text("click to detach", this.cursor_x+50, this.cursor_y, 14);
+        } else if (this.shape_with_border_pointed_by_cursor) {
+            this.draw_circle(this.shape_with_border_pointed_by_cursor.border_color.to_string(), "transparent", 0, this.cursor_x, this.cursor_y, 5);
+            //draw_text("click to attach", xm+50, ym, 14);
+        } else if (this.arrow_with_border_pointed_by_cursor) {
+            this.draw_circle(this.arrow_with_border_pointed_by_cursor.border_color.to_string(), "transparent", 0, this.cursor_x, this.cursor_y, 5);
+            //draw_text("click to attach", xm+50, ym, 14);
+        }
     }
 };
 
@@ -505,7 +523,7 @@ CanvasManager.prototype.get_shape_index = function(shape) {
 CanvasManager.prototype.get_arrow_index = function(arrow) {
     var i;
     for (i = 0; i < this.arrows.length; i++) {
-        if (this.arrows.key == arrow.key) {
+        if (this.arrows[i].key == arrow.key) {
             return i;
         }
     }
@@ -533,7 +551,7 @@ CanvasManager.prototype.extend_current_arrow = function() {
     if (this.arrow_with_end_pointed_by_cursor) {
         // detach pointed arrow
         this.current_arrow = this.arrow_with_end_pointed_by_cursor;
-        //this.arrows.splice(this.get_arrow_index(this.arrow_with_end_pointed_by_cursor), 1);
+        this.arrows.splice(this.get_arrow_index(this.arrow_with_end_pointed_by_cursor), 1);
         this.current_arrow.points--;
         this.arrow_with_end_pointed_by_cursor = false;
 
@@ -574,6 +592,28 @@ CanvasManager.prototype.get_shape_color_idx = function(shape) {
 CanvasManager.prototype.add_shape = function(shape) {
     this.shapes.push(shape);
     this.select_shape(shape);
+};
+
+CanvasManager.prototype.move_shapes_with_alignment = function(shapes, diff_x, diff_y) {
+    var snap_threshold = 6;
+    var i;
+    // move shapes
+    for (i = 0; i < shapes.length; i++) {
+        // align to nearest center
+        var shape_center = new Vertex(shapes[i].x, shapes[i].y, 0);
+        var nearest_center = this.nearest_shape_center(shape_center);
+        if (Math.abs(nearest_center.dist_x) >= snap_threshold && Math.abs(-nearest_center.dist_x + diff_x) < snap_threshold) {
+            diff_x = nearest_center.dist_x;
+        } else if (Math.abs(nearest_center.dist_x) < snap_threshold && Math.abs(diff_x) < snap_threshold) {
+            diff_x = 0;
+        }
+        if (Math.abs(nearest_center.dist_y) >= snap_threshold && Math.abs(-nearest_center.dist_y + diff_y) < snap_threshold) {
+            diff_y = nearest_center.dist_y;
+        } else if (Math.abs(nearest_center.dist_y) < snap_threshold && Math.abs(diff_y) < snap_threshold) {
+            diff_y = 0;
+        }
+    }
+    this.move_shapes(shapes, diff_x, diff_y);
 };
 
 CanvasManager.prototype.move_shapes = function(shapes, diff_x, diff_y) {
@@ -622,6 +662,22 @@ CanvasManager.prototype.show_full_details = function(checked) {
 };
 
 
+
+CanvasManager.prototype.nearest_shape_center = function(p) {
+    var unselected_shapes = this.get_unselected_shapes();
+    var dist_x = Infinity;
+    var dist_y = Infinity;
+    for (var i = 0; i < unselected_shapes.length; i++) {
+        var shape_center = new Vertex(unselected_shapes[i].x, unselected_shapes[i].y, 0);
+        if (Math.abs(p.x - shape_center.x) < Math.abs(dist_x)) {
+            dist_x = p.x - shape_center.x;
+        }
+        if (Math.abs(p.y - shape_center.y) < Math.abs(dist_y)) {
+            dist_y = p.y - shape_center.y;
+        }
+    }
+    return {dist_x: -dist_x, dist_y: -dist_y};
+};
 
 /////////////////////////////
 //  Building the graph
