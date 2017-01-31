@@ -531,15 +531,17 @@ CanvasManager.prototype.extend_current_arrow = function() {
         this.draw_required = true;
     } else if (shape) {
         // start a new line
-        var border_dir = shape.pointer_is_on_the_border(this.cursor_x, this.cursor_y, this.ctx);
+        var line_points = shape.pointer_is_on_the_border_line(this.cursor_x, this.cursor_y, this.ctx);
+        line_points.type = shape.type;
+
         var point = new Vertex(this.cursor_x, this.cursor_y, 0);
         if (this.current_arrow.points == 0) {
             // start a new line
-            this.current_arrow.start_line(point, shape.border_color, shape, border_dir);
+            this.current_arrow.start_line(point, shape.border_color, line_points);
         } else {
             // make sure the line is not linked to itself
             if (!(this.current_arrow.shapes_are_linked([shape])[0]) || this.current_arrow.linkStart.type != "Line") {
-                this.current_arrow.end_line(point, shape);
+                this.current_arrow.end_line(point, line_points);
                 this.arrows.push(this.current_arrow);
                 this.current_arrow = new Line([], 5, new Color(0, 0, 0, 1), 3);
             }
@@ -566,12 +568,18 @@ CanvasManager.prototype.add_shape = function(shape) {
 };
 
 CanvasManager.prototype.move_shapes = function(shapes, diff_x, diff_y) {
+    var moved_shapes = [];
+    var i;
     // move shapes
-    for (var i = 0; i < shapes.length; i++) {
+    for (i = 0; i < shapes.length; i++) {
         shapes[i].translate(diff_x, diff_y);
+        moved_shapes.push(shapes[i]);
     }
-    for (var a = 0; a < this.arrows.length; a++) {
-        this.arrows[a].linked_shapes_moved(diff_x, diff_y, shapes);
+    for (i = 0; i < this.arrows.length; i++) {
+        moved_shapes.push(this.arrows[i]);
+    }
+    for (i = 0; i < this.arrows.length; i++) {
+        this.arrows[i].linked_shapes_moved(diff_x, diff_y, moved_shapes);
     }
     this.draw_required = true;
 };

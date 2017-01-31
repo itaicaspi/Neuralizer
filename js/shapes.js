@@ -32,8 +32,8 @@ var Line = function(vertices, radius, color, stroke, key) {
         this.stroke = (typeof stroke != 'undefined') ? stroke : 1;
         this.radius = (typeof radius != 'undefined') ? radius : 2;
         this.points = 0;
-        this.linkStart = [];
-        this.linkEnd = [];
+        this.linkStart = {};
+        this.linkEnd = {};
         this.startDir = [];
         this.endDir = [];
         this.type = "Line";
@@ -51,11 +51,11 @@ Line.prototype.shapes_are_linked = function(shapes) {
 	var is_start = false;
 	var is_end = false;
 	for (var i = 0; i < shapes.length; i++) {
-		if (this.linkStart.key == shapes[i].key) {
-            is_start = true;
+	    if (Object.keys(this.linkStart).length > 0 && shapes[i].has_border_line(this.linkStart)) {
+            is_start = shapes[i];
         }
-        if (this.linkEnd.key == shapes[i].key) {
-            is_end = true;
+        if (Object.keys(this.linkEnd).length > 0 && shapes[i].has_border_line(this.linkEnd)) {
+            is_end = shapes[i];
         }
 	}
 	return [is_start, is_end]
@@ -67,25 +67,23 @@ Line.prototype.linked_shapes_moved = function(dx, dy, shapes) {
 	var results = this.shapes_are_linked(shapes);
 	var start_moved = results[0];
 	var end_moved = results[1];
-	//if (shape != "Line") {
 
-		if (start_moved && end_moved) {
-			this.move(dx,dy);
-		} else {
-			if (start_moved) {
-				this.move_start(dx, dy);
-			}
-			if (end_moved) {
-				this.move_end(dx, dy);
-			}
-		}
-    //} else {
-
-    //}
+    if (start_moved && end_moved && start_moved.type != "Line" && end_moved.type != "Line") {
+        this.move(dx,dy);
+    } else {
+        if (start_moved) {
+            this.sync_start();
+            //this.move_start(dx, dy);
+        }
+        if (end_moved) {
+            this.sync_end();
+            //this.move_end(dx, dy);
+        }
+    }
 };
 
 Line.prototype.linked_shape_color_change = function(shape, arrows) {
-    if (this.linkStart == shape) {
+    if (shape.has_border_line(this.linkStart)) {
         this.color = shape.border_color;
         this.border_color = shape.border_color;
         this.default_color = shape.border_color;
@@ -95,13 +93,15 @@ Line.prototype.linked_shape_color_change = function(shape, arrows) {
     }
 };
 
-Line.prototype.start_line = function(start, color, linkStart, startDir) {
+Line.prototype.start_line = function(start, color, linkStart) {
+    // linkStart is an array of 2 points and a type
     this.points++;
     this.vertices[0] = start;
     this.color = color;
     this.border_color = color;
     this.linkStart = linkStart;
-	this.startDir = startDir;
+	this.startDir = direction_of_line_between_two_points(linkStart.p1, linkStart.p2, 0);
+	this.sync_start();
 };
 
 Line.prototype.add_point = function(point) {
@@ -122,7 +122,6 @@ Line.prototype.add_point = function(point) {
 };
 
 Line.prototype.end_line = function(end, linkEnd) {
-    this.linkEnd = linkEnd;
     var lastIdx = this.points-1;
     // close a line
     if (Math.abs(this.vertices[lastIdx].y - end.y) > 3 || Math.abs(this.vertices[lastIdx].x - end.x) > 3) {
@@ -136,12 +135,9 @@ Line.prototype.end_line = function(end, linkEnd) {
     }
     this.points = this.vertices.length;
     lastIdx = this.points-1;
-    if (this.vertices[lastIdx].y == this.vertices[lastIdx-1].y) {
-        this.endDir = "horizontal";
-    } else {
-        this.endDir = "vertical";
-    }
+    this.endDir = direction_of_line_between_two_points(this.vertices[lastIdx], this.vertices[lastIdx-1], 0);
     this.linkEnd = linkEnd;
+    this.sync_end();
 };
 
 
@@ -257,35 +253,58 @@ Line.prototype.move_end = function(dx, dy) {
     }
 };
 
-Line.prototype.pointer_is_on_the_border = function(xm, ym, ctx) {
+Line.prototype.sync_start = function() {
+    var new_x = this.linkStart.p2.x - (this.linkStart.p2.x - this.linkStart.p1.x) * this.linkStart.dist;
+    var new_y = this.linkStart.p2.y - (this.linkStart.p2.y - this.linkStart.p1.y) * this.linkStart.dist;
+    this.move_start(new_x - this.vertices[0].x, new_y - this.vertices[0].y);
+};
 
-    // check if the pointer position is relevant by comparing the color under the cursor with the color of the line
-    var relevant = false;
-    var pixelColor = ctx.getImageData(xm - this.stroke, ym - this.stroke, this.stroke*2, this.stroke*2).data;
-    for (var i = 0; i < 4*this.stroke*this.stroke; i++) {
-        if (pixelColor[i*3] == this.border_color.r && pixelColor[i*3+1] == this.border_color.g && pixelColor[i*3+2] == this.border_color.b) {
-            relevant = true;
-            break;
-        }
-    }
-    if (relevant == false) return false;
+Line.prototype.sync_end = function() {
+    var new_x = this.linkEnd.p2.x - (this.linkEnd.p2.x - this.linkEnd.p1.x) * this.linkEnd.dist;
+    var new_y = this.linkEnd.p2.y - (this.linkEnd.p2.y - this.linkEnd.p1.y) * this.linkEnd.dist;
+    this.move_end(new_x - this.vertices[this.vertices.length-1].x, new_y - this.vertices[this.vertices.length-1].y);
+};
 
-    // go over all parts of the line and check if the pointer is on them
+Line.prototype.has_border_line = function(line_points) {
+    var i;
     for (i = 0; i < this.vertices.length; i++) {
         var vi = this.vertices[i];
         var vj = this.vertices[(i + 1) % this.vertices.length];
-        // check between points
-        if (((ym <= vi.y + this.stroke && ym >= vj.y) || (ym >= vi.y && ym <= vj.y)) &&
-            ((xm <= vi.x && xm >= vj.x) || (xm >= vi.x && xm <= vj.x))) {
-            // vertical lines
-            if (vi.x == vj.x && (xm <= vi.x + this.stroke) && (xm >= vi.x - this.stroke)) {
-                return "vertical";
-            }
-            var m = (vj.y - vi.y) / (vj.x - vi.x);
-            // other lines
-            if ((ym - m*(xm - vi.x) - vi.y <= this.stroke) && (ym - m*(xm - vi.x) - vi.y >= -this.stroke)) {
-                return "horizontal";
-            }
+        if (vi.key == line_points.p1.key && vj.key == line_points.p2.key) {
+            return true;
+        }
+    }
+    return false;
+};
+
+Line.prototype.pointer_is_on_the_border = function(xm, ym, ctx) {
+    var cursor = new Vertex(xm, ym, 0);
+    // check if the pointer position is relevant by comparing the color under the cursor with the color of the line
+    if (!color_under_cursor_matches_given_color(this.border_color, ctx, cursor,this.stroke)) return false;
+
+    // go over all parts of the line and check if the pointer is on them
+    for (var i = 0; i < this.vertices.length; i++) {
+        var vi = this.vertices[i];
+        var vj = this.vertices[(i + 1) % this.vertices.length];
+        if (point_is_on_line_between_two_points(cursor,vi,vj,this.stroke)) {
+            return direction_of_line_between_two_points(vi,vj,this.stroke);
+        }
+    }
+    return false;
+};
+
+Line.prototype.pointer_is_on_the_border_line = function(xm, ym, ctx) {
+    var cursor = new Vertex(xm, ym, 0);
+    // check if the pointer position is relevant by comparing the color under the cursor with the color of the line
+    if (!color_under_cursor_matches_given_color(this.border_color, ctx, cursor,this.stroke)) return false;
+
+    // go over all lines of the border and check if the pointer is on them
+    for (var i = 0; i < this.vertices.length; i++) {
+        var vi = this.vertices[i];
+        var vj = this.vertices[(i + 1) % this.vertices.length];
+        if (point_is_on_line_between_two_points(cursor,vi,vj,this.stroke)) {
+            var dist = relative_position_on_the_line_between_two_points(vi, vj, cursor);
+            return {p1: vi, p2: vj, dist: dist};
         }
     }
     return false;
@@ -300,7 +319,6 @@ Line.prototype.pointer_is_on_end = function(xm, ym, ctx) {
 
 //////////////////////////////////
 //  Shape
-
 
 var Shape = function(x, y, width, height, radius, stroke, text, color, border_color, dashedBorder, key) {
     this.x = x;
@@ -336,6 +354,17 @@ Shape.prototype.clone = function() {
 
 };
 
+Shape.prototype.has_border_line = function(line_points) {
+    var i;
+    for (i = 0; i < this.vertices.length; i++) {
+        var vi = this.vertices[i];
+        var vj = this.vertices[(i + 1) % this.vertices.length];
+        if (vi.key == line_points.p1.key && vj.key == line_points.p2.key) {
+            return true;
+        }
+    }
+    return false;
+};
 
 Shape.prototype.pointer_is_inside = function(xm, ym) {
     var j = this.vertices.length-1;
@@ -355,39 +384,36 @@ Shape.prototype.pointer_is_inside = function(xm, ym) {
     return oddNodes;
 };
 
+
 Shape.prototype.pointer_is_on_the_border = function(xm, ym, ctx) {
+    var cursor = new Vertex(xm, ym, 0);
     // check if the pointer position is relevant by comparing the color under the cursor with the color of the line
-    var relevant = false;
-    var pixelColor = ctx.getImageData(xm - this.stroke, ym - this.stroke, this.stroke*2, this.stroke*2).data;
-    for (var i = 0; i < 4*this.stroke*this.stroke; i++) {
-        if (pixelColor[i*3] == this.border_color.r && pixelColor[i*3+1] == this.border_color.g && pixelColor[i*3+2] == this.border_color.b) {
-            relevant = true;
-            break;
-        }
-    }
-    if (relevant == false) return false;
+    if (!color_under_cursor_matches_given_color(this.border_color, ctx, cursor,this.stroke)) return false;
 
     // go over all lines of the border and check if the pointer is on them
-    for (i = 0; i < this.vertices.length; i++) {
+    for (var i = 0; i < this.vertices.length; i++) {
         var vi = this.vertices[i];
         var vj = this.vertices[(i + 1) % this.vertices.length];
-        // check between points
-        if (((ym <= vi.y + this.stroke && ym >= vj.y) || (ym >= vi.y - this.stroke && ym <= vj.y + this.stroke)) &&
-            ((xm <= vi.x + this.stroke && xm >= vj.x - this.stroke) || (xm >= vi.x - this.stroke && xm <= vj.x + this.stroke))) {
-            // vertical lines
-            if (vi.x == vj.x && (xm <= vi.x + this.stroke) && (xm >= vi.x - this.stroke)) {
-                return "vertical";
-            } else if (vi.y == vj.y && (ym <= vi.y + this.stroke) && (ym >= vi.y - this.stroke)) {
-				return "horizontal";
-			}
+        if (point_is_on_line_between_two_points(cursor,vi,vj,this.stroke)) {
+            return direction_of_line_between_two_points(vi,vj,this.stroke);
+        }
+    }
+    return false;
+};
 
-			// the slope of the current line part
-            var m = (vj.y - vi.y) / (vj.x - vi.x);
-            // the distance between a point and a line
-            var a = -m;
-            var c = -vi.y+m*vi.x;
-            var dist = Math.abs(a*xm+ym+c) / Math.sqrt(a*a+1);
-            if (dist <= this.stroke) return true;
+
+Shape.prototype.pointer_is_on_the_border_line = function(xm, ym, ctx) {
+    var cursor = new Vertex(xm, ym, 0);
+    // check if the pointer position is relevant by comparing the color under the cursor with the color of the line
+    if (!color_under_cursor_matches_given_color(this.border_color, ctx, cursor,this.stroke)) return false;
+
+    // go over all lines of the border and check if the pointer is on them
+    for (var i = 0; i < this.vertices.length; i++) {
+        var vi = this.vertices[i];
+        var vj = this.vertices[(i + 1) % this.vertices.length];
+        if (point_is_on_line_between_two_points(cursor,vi,vj,this.stroke)) {
+            var dist = relative_position_on_the_line_between_two_points(vi, vj, cursor);
+            return {p1: vi, p2: vj, dist: dist};
         }
     }
     return false;
@@ -656,16 +682,9 @@ Circle.prototype.pointer_is_inside = function(xm, ym) {
 };
 
 Circle.prototype.pointer_is_on_the_border = function(xm, ym, ctx) {
-    var relevant = false;
-    var pixelColor = ctx.getImageData(xm - this.stroke, ym - this.stroke, this.stroke*2, this.stroke*2).data;
-    for (var i = 0; i < 4*this.stroke*this.stroke; i++) {
-        if (pixelColor[i*3] == this.border_color.r && pixelColor[i*3+1] == this.border_color.g && pixelColor[i*3+2] == this.border_color.b) {
-            relevant = true;
-            break;
-        }
-    }
-
-    if (relevant == false) return false;
+    var cursor = new Vertex(xm, ym, 0);
+    // check if the pointer position is relevant by comparing the color under the cursor with the color of the line
+    if (!color_under_cursor_matches_given_color(this.border_color, ctx, cursor,this.stroke)) return false;
 
     return (Math.sqrt(Math.pow(xm-this.x, 2) + Math.pow(ym-this.y,2)) < this.radius + 3 &&
             Math.sqrt(Math.pow(xm-this.x, 2) + Math.pow(ym-this.y,2)) > this.radius - 3);

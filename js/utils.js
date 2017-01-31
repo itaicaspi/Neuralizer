@@ -107,6 +107,57 @@ Vertex.prototype.toMatrix = function() {
 };
 
 
+
+function point_is_on_line_between_two_points(p, v1, v2, allowed_error) {
+    var x = p.x;
+    var y = p.y;
+    // check between points
+    if (((y <= v1.y + allowed_error && y >= v2.y) || (y >= v1.y - allowed_error && y <= v2.y + allowed_error)) &&
+        ((x <= v1.x + allowed_error && x >= v2.x - allowed_error) || (x >= v1.x - allowed_error && x <= v2.x + allowed_error))) {
+        // vertical lines
+        if (v1.x == v2.x && (x <= v1.x + allowed_error) && (x >= v1.x - allowed_error)) {
+            return true;
+        } else {
+            // the slope of the line between the two points
+            var m = (v2.y - v1.y) / (v2.x - v1.x);
+            // the distance between the third point and the line
+            var a = -m;
+            var c = -v1.y+m*v1.x;
+            var dist = Math.abs(a*x+y+c) / Math.sqrt(a*a+1);
+            if (dist <= allowed_error) return true;
+        }
+    }
+
+    return false;
+}
+
+function direction_of_line_between_two_points(v1, v2, allowed_error) {
+    if (Math.abs(v1.y - v2.y) <= allowed_error) {
+        return "horizontal";
+    } else if (Math.abs(v1.x - v2.x) <= allowed_error) {
+        return "vertical";
+    }
+    return "diagonal";
+}
+
+function color_under_cursor_matches_given_color(color, ctx, p, allowed_error) {
+    var pixelColor = ctx.getImageData(p.x - allowed_error, p.y - allowed_error, allowed_error*2, allowed_error*2).data;
+    for (var i = 0; i < 4*allowed_error*allowed_error; i++) {
+        if (pixelColor[i*3] == color.r && pixelColor[i*3+1] == color.g && pixelColor[i*3+2] == color.b) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function relative_position_on_the_line_between_two_points(v1,v2,p) {
+    if (Math.abs(v2.y - v1.y) > Math.abs(v2.x - v1.x)) {
+        return Math.abs((v2.y-p.y)/(v2.y-v1.y));
+    } else {
+        return Math.abs((v2.x-p.x)/(v2.x-v1.x));
+    }
+}
+
 /////////////////////////////////////////
 // Matrix
 
@@ -150,3 +201,4 @@ Matrix.prototype.normalize = function() {
     }
     this.normalizer = normalizer;
 };
+
