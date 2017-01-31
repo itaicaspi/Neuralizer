@@ -196,8 +196,7 @@ Line.prototype.draw = function(ctx) {
 
 Line.prototype.move = function(dx, dy) {
 	for (var v = 0; v < this.vertices.length; v++) {
-		this.vertices[v].x += dx;
-        this.vertices[v].y += dy;
+		this.vertices[v].translate(dx,dy,0);
 	}
 };
 
@@ -213,10 +212,10 @@ Line.prototype.move_start = function(dx, dy) {
     else if (this.endDir == "horizontal" && this.points % 2 == 0) startDir = "horizontal";
 
     if (this.points > 2) {
-        if (startDir == "vertical") this.vertices[1].x += dx;
-        if (startDir == "horizontal") this.vertices[1].y += dy;
-        this.vertices[0].x += dx;
-        this.vertices[0].y += dy;
+        if (startDir == "vertical") this.vertices[1].translate(dx,0,0);
+        if (startDir == "horizontal") this.vertices[1].translate(0,dy,0);
+        this.vertices[0].translate(dx,0,0);
+        this.vertices[0].translate(0,dy,0);
     } else if (this.points == 2) {
         var newVertices = this.vertices;
         var midX, midY;
@@ -237,10 +236,10 @@ Line.prototype.move_start = function(dx, dy) {
 Line.prototype.move_end = function(dx, dy) {
     var last = this.vertices.length-1;
     if (this.points > 2 || (this.endDir == "horizontal" && dy == 0) || (this.endDir == "vertical" && dx == 0)) {
-        if (this.endDir == "vertical") this.vertices[last - 1].x += dx;
-        if (this.endDir == "horizontal") this.vertices[last - 1].y += dy;
-        this.vertices[last].x += dx;
-        this.vertices[last].y += dy;
+        if (this.endDir == "vertical") this.vertices[last - 1].translate(dx,0,0);
+        if (this.endDir == "horizontal") this.vertices[last - 1].translate(0,dy,0);
+        this.vertices[last].translate(dx,0,0);
+        this.vertices[last].translate(0,dy,0);
     } else if (this.points == 2) {
         var newVertices = this.vertices;
         var midX, midY;
@@ -303,8 +302,7 @@ Line.prototype.pointer_is_on_end = function(xm, ym, ctx) {
 //  Shape
 
 
-var Shape = function(x, y, width, height, radius, stroke, text, color, border_color, dashedBorder, mathjax_element, key) {
-    mathjax_element = ""; // TODO: remove mathjax from the app
+var Shape = function(x, y, width, height, radius, stroke, text, color, border_color, dashedBorder, key) {
     this.x = x;
     this.y = y;
     this.baseWidth = width;
@@ -319,19 +317,20 @@ var Shape = function(x, y, width, height, radius, stroke, text, color, border_co
     this.border_color = new Color(border_color);
     this.vertices = [];
     this.dashedBorder = (typeof dashedBorder != 'undefined') ? dashedBorder : false;
-    this.update_text((typeof text != 'undefined') ? text : "", mathjax_element);
-    this.mathjax_element = mathjax_element;
+    this.update_text((typeof text != 'undefined') ? text : "");
 
     this.key = new Uint32Array(1);
     window.crypto.getRandomValues(this.key);
     this.key = (typeof key != 'undefined') ? key : this.key[0];
 
     this.set_layer(new Layer());
+    this.full_details = false;
 };
 
 Shape.prototype.set_layer = function(layer) {
     this.layer = layer;
 };
+
 
 Shape.prototype.clone = function() {
 
@@ -401,17 +400,15 @@ Shape.prototype.update_vertices = function() {
 
 Shape.prototype.translate = function(dx, dy) {
     for (var i = 0; i < this.vertices.length; i++) {
-        this.vertices[i].x += dx;
-        this.vertices[i].y += dy;
+        this.vertices[i].translate(dx,dy,0);
     }
     this.x += dx;
     this.y += dy;
 };
 
-Shape.prototype.update_text = function(text, mathjax_element) {
+Shape.prototype.update_text = function(text) {
     var textWidth = text.length * 7;
     this.text = text;
-    this.mathjax_element = (typeof mathjax_element != 'undefined') ? mathjax_element : "";
     if (textWidth > this.baseWidth) {
         this.width = textWidth;
     } else {
@@ -458,25 +455,39 @@ Shape.prototype.darken = function() {
 };
 
 Shape.prototype.full = function() {
-    this.height += 50;
+    if (!this.full_details){
+        this.full_details = true;
+        this.height += 10;
+        this.y -= 5;
+        this.width += 30;
+        this.x -= 15;
+        this.update_vertices();
+    }
 };
 
 
 Shape.prototype.partial = function() {
-    this.height -= 50;
+    if (this.full_details) {
+        this.full_details = false;
+        this.height -= 10;
+        this.y += 5;
+        this.width -= 30;
+        this.x += 15;
+        this.update_vertices();
+    }
 };
 
 /////////////////////////////////////
 //  Rectangle
 
-var Rectangle = function(x, y, width, height, radius, offset, stroke, text, color, border_color, dashedBorder, mathjax_element, key) {
+var Rectangle = function(x, y, width, height, radius, offset, stroke, text, color, border_color, dashedBorder, key) {
     if (typeof x == "object") {
         // copy constructor
         var shape = x;
-        Shape.call(this, shape.x, shape.y, shape.width, shape.height, shape.radius, shape.stroke, shape.text, shape.default_color, shape.default_border_color, shape.dashedBorder, shape.mathjax_element, shape.key);
+        Shape.call(this, shape.x, shape.y, shape.width, shape.height, shape.radius, shape.stroke, shape.text, shape.default_color, shape.default_border_color, shape.dashedBorder, shape.key);
         this.offset = shape.offset;
     } else {
-        Shape.call(this, x, y, width, height, radius, stroke, text, color, border_color, dashedBorder, mathjax_element, key);
+        Shape.call(this, x, y, width, height, radius, stroke, text, color, border_color, dashedBorder, key);
         this.offset = (typeof offset != 'undefined') ? offset : 10;
     }
     this.update_vertices();
@@ -486,7 +497,7 @@ var Rectangle = function(x, y, width, height, radius, offset, stroke, text, colo
 inheritsFrom(Rectangle, Shape);
 
 Rectangle.prototype.clone = function() {
-    return new Rectangle(this.x, this.y, this.width, this.height, this.radius, this.offset, this.stroke, this.text, this.default_color, this.default_border_color, this.dashedBorder, this.mathjax_element);
+    return new Rectangle(this.x, this.y, this.width, this.height, this.radius, this.offset, this.stroke, this.text, this.default_color, this.default_border_color, this.dashedBorder);
 };
 
 
@@ -525,43 +536,25 @@ Rectangle.prototype.draw = function(ctx) {
         ctx.stroke();
 		ctx.setLineDash([0,0]);
     }
-    if (this.mathjax_element == "") {
-        // draw text
-        ctx.font = "14px Calibri";
+    // draw text
+    if (!this.full_details || this.layer.description == "") {
+        ctx.font = "bold 14px Calibri";
         ctx.textAlign = "center";
         ctx.fillStyle = this.textColor;
         ctx.fillText(this.text, this.x + (this.width - this.offset) / 2, this.y + this.height / 2 + 3);
     } else {
-        /*
-        var svg_data = $("#MathJax-Element-" + this.mathjax_element + "-Frame").get(0);
-        var xml;
-        try {
-            xml = new XMLSerializer().serializeToString(svg_data);
-        } catch (err) {
+        ctx.font = "bold 14px Calibri";
 
-        }
+        ctx.textAlign = "center";
+        ctx.fillStyle = this.textColor;
+        ctx.fillText(this.text, this.x + (this.width - this.offset) / 2, this.y + this.height / 2 - 5);
 
-        var x = this.x;
-        var y = this.y-this.height/4-4;
-
-        var data = '<svg xmlns="http://www.w3.org/2000/svg" width="' + this.width + '" height="' + this.height + '">' +
-            '<foreignObject width="100%" height="100%">' +
-            xml +
-            '</foreignObject>' +
-            '</svg>';
-
-        var svg64 = btoa(data);
-        var b64Start = 'data:image/svg+xml;base64,';
-
-        // prepend a "header"
-        var image64 = b64Start + svg64;
-        var img = new Image();
-        img.src = image64;
-        img.onload = function () {
-            ctx.drawImage(img, x, y);
-        };
-        */
+        ctx.font = "12px Calibri";
+        ctx.textAlign = "center";
+        ctx.fillStyle = this.textColor;
+        ctx.fillText(this.layer.description, this.x + (this.width - this.offset) / 2, this.y + this.height / 2 + 13);
     }
+
 };
 
 /////////////////////////////////////
@@ -620,13 +613,13 @@ Triangle.prototype.draw = function(ctx) {
 /////////////////////////////////////
 //  Circle
 
-var Circle = function(x, y, radius, stroke, text, color, border_color, mathjax_element, key) {
+var Circle = function(x, y, radius, stroke, text, color, border_color, key) {
     if (typeof x == "object") {
         // copy constructor
         var shape = x;
-        Shape.call(this, shape.x, shape.y, shape.width, shape.height, shape.radius, shape.stroke, shape.text, shape.default_color, shape.default_border_color, shape.dashedBorder, shape.mathjax_element, shape.key);
+        Shape.call(this, shape.x, shape.y, shape.width, shape.height, shape.radius, shape.stroke, shape.text, shape.default_color, shape.default_border_color, shape.dashedBorder, shape.key);
     } else {
-        Shape.call(this, x + radius, y + radius, radius, radius, radius, stroke, text, color, border_color, false, mathjax_element, key);
+        Shape.call(this, x + radius, y + radius, radius, radius, radius, stroke, text, color, border_color, false, key);
     }
     this.vertices = [];
     this.type = "Circle";
@@ -635,7 +628,7 @@ var Circle = function(x, y, radius, stroke, text, color, border_color, mathjax_e
 inheritsFrom(Circle, Shape);
 
 Circle.prototype.clone = function() {
-    return new Circle(this.x, this.y, this.width, this.stroke, this.text, this.default_color, this.default_border_color, this.mathjax_element);
+    return new Circle(this.x, this.y, this.width, this.stroke, this.text, this.default_color, this.default_border_color);
 };
 
 Circle.prototype.draw = function(ctx) {

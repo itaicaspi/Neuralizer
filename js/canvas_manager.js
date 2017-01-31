@@ -588,3 +588,15 @@ CanvasManager.prototype.show_message = function(msg, slow) {
     $(canvas_overlay).fadeIn(30);
     $(canvas_overlay).fadeOut(fade_out_time);
 };
+
+
+CanvasManager.prototype.show_full_details = function(checked) {
+    for (var s = 0; s < this.selected_shapes.length; s++) {
+        if (checked) {
+            this.selected_shapes[s].full();
+        } else {
+            this.selected_shapes[s].partial();
+        }
+    }
+    this.draw_required = true;
+};

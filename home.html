@@ -134,48 +134,9 @@
             window.open('mailto:'  + '?subject=' +subject + '&body=' + body);
         }
 
-        function switch_mode(mode) {
-            //switch the sidebar mode
-            var modes = ["before", "designer", "import_export", "share_explore", "account", "after"];
-            for (var key in modes) {
-                var mode_icon = $("#" + modes[key] + "_icon");
-                $(mode_icon).parent('div').removeClass("wrapping-side-icon");
-                $(mode_icon).removeClass("before-side-icon");
-                $(mode_icon).removeClass("selected-side-icon");
-                $(mode_icon).removeClass("after-side-icon");
-            }
-            for (var key = 0; key <= modes.length; key++) {
-                if (modes[key] == mode) {
-                    $("#" + modes[key-1] + "_icon").parent('div').addClass("wrapping-side-icon");
-                    $("#" + modes[key-1] + "_icon").addClass("before-side-icon");
-                    $("#" + modes[key] + "_icon").addClass("selected-side-icon");
-                    $("#" + modes[key+1] + "_icon").addClass("after-side-icon");
-                    $("#" + modes[key+1] + "_icon").parent('div').addClass("wrapping-side-icon");
-                    $("#" + modes[key]).fadeIn("fast");
-                } else {
-                    $("#" + modes[key]).hide();
-                }
-            }
-        }
-
         function change_color(color_idx) {
             canvas_manager.change_selected_shapes_color(color_idx);
             sidebar_manager.change_selected_color(color_idx);
-        }
-
-        function show_full_details(checked) {
-            var selected_shapes_list = [];
-            for (var s = 0; s < selected_shapes.length; s++) {
-                if (selected_shapes[s]) {
-                    if (checked) {
-                        shapes[s].full();
-                    } else {
-                        shapes[s].partial();
-                    }
-                    selected_shapes_list.push(shapes[s]);
-                }
-            }
-            draw();
         }
 
         function switch_layer_type(layerType, layerSubtype) {
@@ -227,7 +188,7 @@
             } else if (layerType == "Normalization") {
                 var normalizationType = $("#normalizationType").val();
                 if (normalizationType == "LocalResponseNormalization") {
-                    layer = new LRN();
+                    layer = new LRN($("#numberOfNeighbours").val(), $("#K").val(),$("#alpha").val(),$("#beta").val());
                 } else if (normalizationType == "BatchNormalization") {
                     layer = new BatchNormalization();
                 }
@@ -257,10 +218,6 @@
         }
 
 
-        function remove_layer() {
-            canvas_manager.remove_selected_shapes();
-        }
-
         function add_layer() {
             canvas_manager.reset_selected_shapes();
             canvas_manager.mouse_is_pressed = true;
@@ -271,7 +228,6 @@
                 layer_name = get_short_name(layer_type);
                 $("#layerName").val(layer_name);
             }
-
 
             var x = canvas_manager.cursor_x;
             var y = canvas_manager.cursor_y;
@@ -391,7 +347,7 @@
                 if (evt.keyCode == 46) {
                     // Del ==> Remove selected layers
                     if ($("#addLayerIcon").hasClass('rotated')) {
-                        remove_layer();
+                        canvas_manager.remove_selected_shapes();
                         sidebar_manager.toggle_add_or_remove_button();
                         canvas_manager.draw_required = true;
                     }
@@ -459,31 +415,31 @@
     </div>
     <!-- Designer -->
     <div>
-        <div id="designer_icon" class="side-icon selected-side-icon" onclick="switch_mode('designer')">
+        <div id="designer_icon" class="side-icon selected-side-icon" onclick="sidebar_manager.switch_sidebar_mode('designer')">
             <i data-toggle="tooltip" data-placement="top" title="Designer" class="material-icons">color_lens</i>
         </div>
     </div>
     <!-- Import / Export -->
     <div class="wrapping-side-icon">
-        <div id="import_export_icon" class="side-icon after-side-icon" onclick="switch_mode('import_export')">
+        <div id="import_export_icon" class="side-icon after-side-icon" onclick="sidebar_manager.switch_sidebar_mode('import_export')">
             <i data-toggle="tooltip" data-placement="top" title="Import/Export" class="material-icons">file_download</i>
         </div>
     </div>
     <!-- Share -->
     <!--<div>-->
-        <!--<div id="share_icon" class="side-icon" onclick="switch_mode('share')">-->
+        <!--<div id="share_icon" class="side-icon" onclick="sidebar_manager.switch_sidebar_mode('share')">-->
             <!--<i data-toggle="tooltip" data-placement="top" title="Share" class="material-icons">share</i>-->
         <!--</div>-->
     <!--</div>-->
     <!-- Share / Explore -->
     <div>
-        <div id="share_explore_icon" class="side-icon" onclick="switch_mode('share_explore')">
+        <div id="share_explore_icon" class="side-icon" onclick="sidebar_manager.switch_sidebar_mode('share_explore')">
             <i data-toggle="tooltip" data-placement="top" title="Share/Explore" class="material-icons">explore</i>
         </div>
     </div>
     <!-- Account -->
     <div>
-        <div id="account_icon" class="side-icon" onclick="switch_mode('account')">
+        <div id="account_icon" class="side-icon" onclick="sidebar_manager.switch_sidebar_mode('account')">
             <i data-toggle="tooltip" data-placement="top" title="Account" class="material-icons">account_circle</i>
         </div>
     </div>
@@ -876,7 +832,7 @@
         <div class="form-group">
             <span style="padding-right: 5px; color:white"><b>Full Details</b></span>
             <div class="material-switch pull-right">
-                <input id="fullDetails" name="latexName" type="checkbox" onchange="show_full_details(this.checked)"/>
+                <input id="fullDetails" name="latexName" type="checkbox" onchange="canvas_manager.show_full_details(this.checked)"/>
                 <label for="fullDetails" class="label-success"></label>
             </div>
         </div>

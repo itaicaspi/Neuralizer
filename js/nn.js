@@ -12,6 +12,7 @@ var Layer = function() {
     this.weight = new Tensor();
     this.type = "";
     this.subtype = "";
+    this.description = "";
 };
 
 Layer.prototype.updateOutputSize = function() {
@@ -40,6 +41,7 @@ var Convolution = function(outputDepth, kernelWidth, kernelHeight, strideX, stri
     this.padX = padX;
     this.padY = padY;
     this.type = "Convolution";
+    this.description = "Kernel " + this.kernelHeight + "x" + this.kernelWidth + " Stride " + this.strideX;
 };
 
 inheritsFrom(Convolution, Layer);
@@ -104,6 +106,7 @@ var Deconvolution = function(numOutputs, kernelWidth, kernelHeight, strideX, str
     this.padX = padX;
     this.padY = padY;
     this.type = "Deconvolution";
+    this.description = "Kernel " + this.kernelHeight + "x" + this.kernelWidth + " Stride " + this.strideX;
 };
 
 inheritsFrom(Deconvolution, Layer);
@@ -144,6 +147,7 @@ var LRN = function(numNeighbours, k, alpha, beta) {
     this.alpha = alpha;
     this.beta = beta;
     this.subtype = "LocalResponseNormalization";
+    this.description = "α " + this.alpha + " β " + this.beta + " K " + this.k;
 };
 
 inheritsFrom(LRN, NormalizationLayer);
