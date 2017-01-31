@@ -58,6 +58,7 @@ CanvasManager.prototype.copy_from_clipboard = function() {
     for (i = 0; i < this.selected_shapes.length; i++) {
         // I clone each object so that it will be detached from the original object
         var copiedObject = this.selected_shapes[i].clone();
+        copiedObject.set_layer(this.selected_shapes[i].layer);
         this.clipboard.push(copiedObject);
     }
 };
@@ -71,7 +72,9 @@ CanvasManager.prototype.paste_from_clipboard = function() {
     for (i = 0; i < this.clipboard.length; i++) {
         // I clone again each object from the clipboard so that multiple pastes will be possible
         var copiedObject = this.clipboard[i].clone();
+        copiedObject.set_layer(this.clipboard[i].layer);
         copiedObject.translate(50 + random_translation_x, 50 + random_translation_y);
+
         if (copiedObject.type != "Line") {
             copiedObject.highlight();
             this.shapes.push(copiedObject);
@@ -157,7 +160,6 @@ CanvasManager.prototype.update_pointed_objects = function() {
 CanvasManager.prototype.select_shape = function(shape) {
     this.selected_shapes = [shape];
     this.highlight_selected_shapes();
-
 };
 
 CanvasManager.prototype.update_selected_shapes_from_selection_box = function() {
@@ -435,6 +437,7 @@ CanvasManager.prototype.json_to_curr_state = function(json_state) {
         } else if (shape.type == "Circle") {
             this.shapes[s] = new Circle(shape);
         }
+        this.shapes[s].set_layer(shape.layer);
     }
 
     // parse arrows

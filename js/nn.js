@@ -32,14 +32,21 @@ Layer.prototype.setInput = function(inputTensor) {
 //  Convolution
 
 var Convolution = function(outputDepth, kernelWidth, kernelHeight, strideX, strideY, padX, padY) {
-    Layer.call(this);
-    this.output = new Tensor(1,1,outputDepth);
-    this.kernelWidth = kernelWidth;
-    this.kernelHeight = kernelHeight;
-    this.strideX = strideX;
-    this.strideY = strideY;
-    this.padX = padX;
-    this.padY = padY;
+    if (kernelWidth == undefined) {
+        // copy constructor
+        var layer = outputDepth;
+        assign(this, layer);
+        this.output = new Tensor(layer.output);
+    } else {
+        Layer.call(this);
+        this.output = new Tensor(1,1,outputDepth);
+        this.kernelWidth = kernelWidth;
+        this.kernelHeight = kernelHeight;
+        this.strideX = strideX;
+        this.strideY = strideY;
+        this.padX = padX;
+        this.padY = padY;
+    }
     this.type = "Convolution";
     this.description = "Kernel " + this.kernelHeight + "x" + this.kernelWidth + " Stride " + this.strideX;
 };
@@ -60,11 +67,16 @@ Convolution.prototype.toBox = function(center, color) {
 //  Inner Product
 
 var InnerProduct = function(outputDepth) {
-    Layer.call(this);
-    this.output.width = 1;
-    this.output.height = 1;
-    this.output.depth = outputDepth;
-    this.type = "InnerProduct";
+    if (typeof outputDepth == "object") {
+        // copy constructor
+        assign(this, outputDepth);
+    } else {
+        Layer.call(this);
+        this.output.width = 1;
+        this.output.height = 1;
+        this.output.depth = outputDepth;
+        this.type = "InnerProduct";
+    }
 };
 
 InnerProduct.prototype.updateOutputSize = function() {
@@ -76,15 +88,20 @@ inheritsFrom(InnerProduct, Layer);
 //  Pooling
 
 var Pooling = function(kernelWidth, kernelHeight, strideX, strideY, padX, padY, poolingType) {
-    Layer.call(this);
-    this.kernelWidth = kernelWidth;
-    this.kernelHeight = kernelHeight;
-    this.strideX = strideX;
-    this.strideY = strideY;
-    this.padX = padX;
-    this.padY = padY;
-    this.poolingType = poolingType;
-    this.type = "Pooling";
+    if (typeof kernelWidth == "object") {
+        // copy constructor
+        assign(this, kernelWidth);
+    } else {
+        Layer.call(this);
+        this.kernelWidth = kernelWidth;
+        this.kernelHeight = kernelHeight;
+        this.strideX = strideX;
+        this.strideY = strideY;
+        this.padX = padX;
+        this.padY = padY;
+        this.poolingType = poolingType;
+        this.type = "Pooling";
+    }
 };
 
 inheritsFrom(Pooling, Layer);
@@ -98,15 +115,20 @@ Pooling.prototype.updateOutputSize = function() {
 //  Deconvolution
 
 var Deconvolution = function(numOutputs, kernelWidth, kernelHeight, strideX, strideY, padX, padY, pooling_type) {
-    Layer.call(this);
-    this.kernelWidth = kernelWidth;
-    this.kernelHeight = kernelHeight;
-    this.strideX = strideX;
-    this.strideY = strideY;
-    this.padX = padX;
-    this.padY = padY;
-    this.type = "Deconvolution";
-    this.description = "Kernel " + this.kernelHeight + "x" + this.kernelWidth + " Stride " + this.strideX;
+    if (typeof numOutputs == "object") {
+        // copy constructor
+        assign(this, numOutputs);
+    } else {
+        Layer.call(this);
+        this.kernelWidth = kernelWidth;
+        this.kernelHeight = kernelHeight;
+        this.strideX = strideX;
+        this.strideY = strideY;
+        this.padX = padX;
+        this.padY = padY;
+        this.type = "Deconvolution";
+        this.description = "Kernel " + this.kernelHeight + "x" + this.kernelWidth + " Stride " + this.strideX;
+    }
 };
 
 inheritsFrom(Deconvolution, Layer);
@@ -141,13 +163,18 @@ inheritsFrom(NormalizationLayer, Layer);
 //  Local Response Normalization
 
 var LRN = function(numNeighbours, k, alpha, beta) {
-    NormalizationLayer.call(this);
-    this.numNeighbours = numNeighbours;
-    this.k = k;
-    this.alpha = alpha;
-    this.beta = beta;
-    this.subtype = "LocalResponseNormalization";
-    this.description = "α " + this.alpha + " β " + this.beta + " K " + this.k;
+    if (typeof numNeighbours == "object") {
+        // copy constructor
+        assign(this, numNeighbours);
+    } else {
+        NormalizationLayer.call(this);
+        this.numNeighbours = numNeighbours;
+        this.k = k;
+        this.alpha = alpha;
+        this.beta = beta;
+        this.subtype = "LocalResponseNormalization";
+        this.description = "α " + this.alpha + " β " + this.beta + " K " + this.k;
+    }
 };
 
 inheritsFrom(LRN, NormalizationLayer);

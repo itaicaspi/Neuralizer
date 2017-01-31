@@ -2,22 +2,25 @@
  * Created by Itai Caspi on 26/07/2016.
  */
 
+function assign(object, source) {
+    Object.keys(source).forEach(function(key) {
+        object[key] = source[key];
+    });
+}
+
 /////////////////////////////////////////
 //  Color
 
 
 var Color = function(r, g, b, a) {
     if (typeof r == "object") {
-        var color = r;
-        r = color.r;
-        g = color.g;
-        b = color.b;
-        a = color.a;
+        assign(this, r);
+    } else {
+        this.r = r;
+        this.g = g;
+        this.b = b;
+        this.a = a;
     }
-    this.r = r;
-    this.g = g;
-    this.b = b;
-    this.a = a;
 };
 
 Color.prototype.to_string = function() {

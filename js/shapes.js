@@ -8,10 +8,10 @@ var inheritsFrom = function (child, parent) {
 };
 
 var Line = function(vertices, radius, color, stroke, key) {
-
     if (radius == undefined) {
         // copy constructor
         var shape = vertices;
+        assign(this, shape);
         this.vertices = [];
         for (var i = 0; i < shape.vertices.length; i++) {
             this.vertices.push(new Vertex(shape.vertices[i]));
@@ -19,14 +19,6 @@ var Line = function(vertices, radius, color, stroke, key) {
         this.default_color = new Color(shape.color);
         this.color = new Color(shape.color);
         this.border_color = new Color(shape.color);
-        this.stroke = shape.stroke;
-        this.radius = shape.radius;
-        this.points = shape.points;
-        this.linkStart = shape.linkStart;
-        this.linkEnd = shape.linkEnd;
-        this.startDir = shape.startDir;
-        this.endDir = shape.endDir;
-        this.type = shape.type;
     } else {
         this.vertices = vertices;
         this.default_color = color;
@@ -79,7 +71,6 @@ Line.prototype.shapes_are_linked = function(shapes) {
 
 
 Line.prototype.linked_shapes_moved = function(dx, dy, shapes) {
-
 	var results = this.shapes_are_linked(shapes);
 	var start_moved = results[0];
 	var end_moved = results[1];
@@ -367,7 +358,15 @@ var Shape = function(x, y, width, height, radius, stroke, text, color, border_co
 };
 
 Shape.prototype.set_layer = function(layer) {
-    this.layer = layer;
+    if (layer.type == "Convolution") {
+        this.layer = new Convolution(layer);
+    } else if (layer.type == "InnerProduct") {
+        this.layer = new InnerProduct(layer);
+    } else if (layer.subtype == "LocalResponseNormalization") {
+        this.layer = new LRN(layer);
+    } else {
+        this.layer = layer;
+    }
 };
 
 
