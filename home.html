@@ -387,6 +387,9 @@
                         canvas_manager.current_arrow.points--;
                         canvas_manager.draw_required = true;
                     }
+                } else if (evt.ctrlKey && evt.keyCode == 88) {
+                    // Ctrl + X ==> Printing graph test
+                    console.log(canvas_manager.to_graph());
                 }
                 canvas_manager.draw_curr_state_if_necessary();
             }

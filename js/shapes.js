@@ -50,6 +50,19 @@ Line.prototype.clone = function() {
     return new Line(this);
 };
 
+
+Line.prototype.has_border_line = function(line_points) {
+    var i;
+    for (i = 0; i < this.vertices.length; i++) {
+        var vi = this.vertices[i];
+        var vj = this.vertices[(i + 1) % this.vertices.length];
+        if (vi.key == line_points.p1.key && vj.key == line_points.p2.key) {
+            return true;
+        }
+    }
+    return false;
+};
+
 Line.prototype.shapes_are_linked = function(shapes) {
 	var is_start = false;
 	var is_end = false;
@@ -73,20 +86,19 @@ Line.prototype.linked_shapes_moved = function(dx, dy, shapes) {
 
     if (start_moved && end_moved && start_moved.type != "Line" && end_moved.type != "Line") {
         this.move(dx,dy);
-    } else {
-        if (start_moved) {
-            this.linkStart.p1 = start_moved.get_vertex_by_key(this.linkStart.p1.key);
-            this.linkStart.p2 = start_moved.get_vertex_by_key(this.linkStart.p2.key);
-            this.sync_start();
-            //this.move_start(dx, dy);
-        }
-        if (end_moved) {
-            this.linkEnd.p1 = end_moved.get_vertex_by_key(this.linkEnd.p1.key);
-            this.linkEnd.p2 = end_moved.get_vertex_by_key(this.linkEnd.p2.key);
-            //console.log(this.linkEnd);
-            this.sync_end();
-            //this.move_end(dx, dy);
-        }
+    }
+    if (start_moved) {
+        this.linkStart.p1 = start_moved.get_vertex_by_key(this.linkStart.p1.key);
+        this.linkStart.p2 = start_moved.get_vertex_by_key(this.linkStart.p2.key);
+        this.sync_start();
+        //this.move_start(dx, dy);
+    }
+    if (end_moved) {
+        this.linkEnd.p1 = end_moved.get_vertex_by_key(this.linkEnd.p1.key);
+        this.linkEnd.p2 = end_moved.get_vertex_by_key(this.linkEnd.p2.key);
+        //console.log(this.linkEnd);
+        this.sync_end();
+        //this.move_end(dx, dy);
     }
 };
 
@@ -276,17 +288,6 @@ Line.prototype.sync_end = function() {
     this.move_end(new_x - this.vertices[this.vertices.length-1].x, new_y - this.vertices[this.vertices.length-1].y);
 };
 
-Line.prototype.has_border_line = function(line_points) {
-    var i;
-    for (i = 0; i < this.vertices.length; i++) {
-        var vi = this.vertices[i];
-        var vj = this.vertices[(i + 1) % this.vertices.length];
-        if (vi.key == line_points.p1.key && vj.key == line_points.p2.key) {
-            return true;
-        }
-    }
-    return false;
-};
 
 Line.prototype.pointer_is_on_the_border = function(xm, ym, ctx) {
     var cursor = new Vertex(xm, ym, 0);

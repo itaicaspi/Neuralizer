@@ -617,3 +617,62 @@ CanvasManager.prototype.show_full_details = function(checked) {
     }
     this.draw_required = true;
 };
+
+
+
+/////////////////////////////
+//  Building the graph
+
+CanvasManager.prototype.find_preceding_arrows = function(shapes) {
+    var i;
+    var connected_arrows = [];
+    for (i = 0; i < this.arrows.length; i++) {
+        var arrow = this.arrows[i];
+        var result = arrow.shapes_are_linked(shapes);
+        if (result[1]) {
+            connected_arrows.push(arrow);
+        }
+    }
+    return connected_arrows;
+};
+
+CanvasManager.prototype.find_preceding_shapes = function(shape) {
+    var i;
+    var preceding_shapes = [];
+    var preceding_arrows = [];
+    // get all preceding arrows
+    var temp_preceding_arrows = this.find_preceding_arrows([shape]);
+    while (temp_preceding_arrows.length > 0) {
+        for (i = 0; i < temp_preceding_arrows.length; i++) {
+            preceding_arrows.push(temp_preceding_arrows[i]);
+        }
+        temp_preceding_arrows = this.find_preceding_arrows(temp_preceding_arrows);
+    }
+
+    // get all preceding shapes
+    for (i = 0; i < preceding_arrows.length; i++) {
+        var arrow = this.arrows[i];
+        var result = arrow.shapes_are_linked(this.shapes);
+        if (result[0] && result[0].type != "Line") {
+            preceding_shapes.push(result[0]);
+        }
+    }
+
+    return preceding_shapes;
+};
+
+CanvasManager.prototype.to_graph = function() {
+    var i;
+    var j;
+    var graph = {};
+    for (i = 0; i < this.shapes.length; i++) {
+        var shape = this.shapes[i];
+        graph[shape.key] = shape.layer;
+        graph[shape.key].input_layers = [];
+        var preceding_shapes = this.find_preceding_shapes(shape);
+        for (j = 0; j < preceding_shapes.length; j++) {
+            graph[shape.key].input_layers.push(preceding_shapes[j].key);
+        }
+    }
+    return graph;
+};
