@@ -49,13 +49,22 @@ for (var i = 0; i < border_colors.length; i++) {
 //  Vertex - a 3D point in space
 
 var Vertex = function (x, y, z, key) {
-    this.x = parseFloat(x);
-    this.y = parseFloat(y);
-    this.z = parseFloat(z);
+    if (y == undefined) {
+        var vertex = x;
+        this.x = vertex.x;
+        this.y = vertex.y;
+        this.z = vertex.z;
+        this.key = vertex.key;
+    } else {
+        this.x = parseFloat(x);
+        this.y = parseFloat(y);
+        this.z = parseFloat(z);
 
-    this.key = new Uint32Array(1);
-    window.crypto.getRandomValues(this.key);
-    this.key = (typeof key != 'undefined') ? key : this.key[0];
+        this.key = new Uint32Array(1);
+        window.crypto.getRandomValues(this.key);
+        this.key = (typeof key != 'undefined') ? key : this.key[0];
+    }
+
 };
 
 Vertex.prototype.translate = function(dx,dy,dz) {

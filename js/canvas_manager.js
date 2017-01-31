@@ -228,12 +228,13 @@ CanvasManager.prototype.highlight_selected_shapes = function() {
 CanvasManager.prototype.remove_selected_shapes = function() {
     for (var a = this.arrows.length - 1; a >= 0; a--) {
         var result = this.arrows[a].shapes_are_linked(this.selected_shapes);
-        if (result[0] == true || result[1] == true) {
+        if (result[0] || result[1]) {
             this.arrows.splice(a, 1);
         }
     }
     for (var s = this.selected_shapes.length - 1; s >= 0; s--) {
-        this.shapes.splice(this.get_shape_index(this.selected_shapes[s]), 1);
+        var shape_index = this.get_shape_index(this.selected_shapes[s]);
+        this.shapes.splice(shape_index, 1);
         this.selected_shapes.splice(s, 1);
     }
     this.draw_required = true;
@@ -256,7 +257,10 @@ CanvasManager.prototype.shape_is_selected = function(shape) {
 };
 
 CanvasManager.prototype.select_all_shapes = function() {
-    this.selected_shapes = this.shapes;
+    this.selected_shapes = [];
+    for (var i = 0; i < this.shapes.length; i++) {
+        this.selected_shapes.push(this.shapes[i]);
+    }
     this.highlight_selected_shapes();
 };
 
@@ -311,7 +315,7 @@ CanvasManager.prototype.draw_curr_state = function() {
     this.update_key_info();
 
     // draw cursor markers
-    if (this.arrow_with_end_pointed_by_cursor) {
+    if (this.arrow_with_end_pointed_by_cursor && this.current_arrow.points == 0) {
         this.draw_circle(this.arrow_with_end_pointed_by_cursor.border_color.to_string(), "white", 4, this.cursor_x, this.cursor_y, 5);
         this.draw_text("click to detach", this.cursor_x+50, this.cursor_y, 14);
     } else if (this.shape_with_border_pointed_by_cursor) {
@@ -419,6 +423,8 @@ CanvasManager.prototype.json_to_curr_state = function(json_state) {
     this.shapes = state["shapes"];
     this.arrows = state["arrows"];
 
+    this.selected_shapes = [];
+
     // parse shapes
     for (var s = this.shapes.length-1; s >= 0; s--) {
         var shape = this.shapes[s];
@@ -486,7 +492,7 @@ CanvasManager.prototype.reset_current_arrow = function() {
 CanvasManager.prototype.get_shape_index = function(shape) {
     var i;
     for (i = 0; i < this.shapes.length; i++) {
-        if (this.shapes.key == shape.key) {
+        if (this.shapes[i].key == shape.key) {
             return i;
         }
     }
@@ -524,7 +530,7 @@ CanvasManager.prototype.extend_current_arrow = function() {
     if (this.arrow_with_end_pointed_by_cursor) {
         // detach pointed arrow
         this.current_arrow = this.arrow_with_end_pointed_by_cursor;
-        this.arrows.splice(this.get_arrow_index(this.arrow_with_end_pointed_by_cursor), 1);
+        //this.arrows.splice(this.get_arrow_index(this.arrow_with_end_pointed_by_cursor), 1);
         this.current_arrow.points--;
         this.arrow_with_end_pointed_by_cursor = false;
 
@@ -532,7 +538,7 @@ CanvasManager.prototype.extend_current_arrow = function() {
     } else if (shape) {
         // start a new line
         var line_points = shape.pointer_is_on_the_border_line(this.cursor_x, this.cursor_y, this.ctx);
-        line_points.type = shape.type;
+        line_points.shape = shape;
 
         var point = new Vertex(this.cursor_x, this.cursor_y, 0);
         if (this.current_arrow.points == 0) {
@@ -540,7 +546,7 @@ CanvasManager.prototype.extend_current_arrow = function() {
             this.current_arrow.start_line(point, shape.border_color, line_points);
         } else {
             // make sure the line is not linked to itself
-            if (!(this.current_arrow.shapes_are_linked([shape])[0]) || this.current_arrow.linkStart.type != "Line") {
+            if (!(this.current_arrow.shapes_are_linked([shape])[0]) || this.current_arrow.linkStart.shape.type != "Line") {
                 this.current_arrow.end_line(point, line_points);
                 this.arrows.push(this.current_arrow);
                 this.current_arrow = new Line([], 5, new Color(0, 0, 0, 1), 3);
@@ -605,6 +611,9 @@ CanvasManager.prototype.show_full_details = function(checked) {
         } else {
             this.selected_shapes[s].partial();
         }
+    }
+    for (var i = 0; i < this.arrows.length; i++) {
+        this.arrows[i].linked_shapes_moved(0, 0, this.selected_shapes);
     }
     this.draw_required = true;
 };

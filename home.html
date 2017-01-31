@@ -266,13 +266,14 @@
                 canvas_manager.hide_selection_box();
                 canvas_manager.update_cursor_state(evt.clientX, evt.clientY, evt.button, true);
 
-                // select the currently pointed shape if it not already selected
-                if (canvas_manager.shape_with_content_pointed_by_cursor && !canvas_manager.shape_is_selected(canvas_manager.shape_with_content_pointed_by_cursor)) {
-                    canvas_manager.select_shape(canvas_manager.shape_with_content_pointed_by_cursor);
-                }
 
-                // add points to curr arrow or attach / detach an arrow
-                if (!canvas_manager.shape_with_content_pointed_by_cursor && canvas_manager.pressed_mouse_button == "left") {
+                if (canvas_manager.shape_with_content_pointed_by_cursor) {
+                    if (!canvas_manager.shape_is_selected(canvas_manager.shape_with_content_pointed_by_cursor)) {
+                        // select the currently pointed shape if it not already selected
+                        canvas_manager.select_shape(canvas_manager.shape_with_content_pointed_by_cursor);
+                    }
+                } else if (canvas_manager.pressed_mouse_button == "left") {
+                    // add points to curr arrow or attach / detach an arrow
                     canvas_manager.extend_current_arrow();
                     canvas_manager.reset_selected_shapes();
                 }

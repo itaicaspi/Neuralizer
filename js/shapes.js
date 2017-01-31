@@ -12,7 +12,10 @@ var Line = function(vertices, radius, color, stroke, key) {
     if (radius == undefined) {
         // copy constructor
         var shape = vertices;
-        this.vertices = shape.vertices;
+        this.vertices = [];
+        for (var i = 0; i < shape.vertices.length; i++) {
+            this.vertices.push(new Vertex(shape.vertices[i]));
+        }
         this.default_color = new Color(shape.color);
         this.color = new Color(shape.color);
         this.border_color = new Color(shape.color);
@@ -22,7 +25,7 @@ var Line = function(vertices, radius, color, stroke, key) {
         this.linkStart = shape.linkStart;
         this.linkEnd = shape.linkEnd;
         this.startDir = shape.startDir;
-        this.endDir = shape.endDir  ;
+        this.endDir = shape.endDir;
         this.type = shape.type;
     } else {
         this.vertices = vertices;
@@ -72,10 +75,15 @@ Line.prototype.linked_shapes_moved = function(dx, dy, shapes) {
         this.move(dx,dy);
     } else {
         if (start_moved) {
+            this.linkStart.p1 = start_moved.get_vertex_by_key(this.linkStart.p1.key);
+            this.linkStart.p2 = start_moved.get_vertex_by_key(this.linkStart.p2.key);
             this.sync_start();
             //this.move_start(dx, dy);
         }
         if (end_moved) {
+            this.linkEnd.p1 = end_moved.get_vertex_by_key(this.linkEnd.p1.key);
+            this.linkEnd.p2 = end_moved.get_vertex_by_key(this.linkEnd.p2.key);
+            //console.log(this.linkEnd);
             this.sync_end();
             //this.move_end(dx, dy);
         }
@@ -153,6 +161,9 @@ Line.prototype.draw = function(ctx) {
         vertical = (this.vertices[v].x == this.vertices[v-1].x);
         over = (horizontal && this.vertices[v].x >= this.vertices[v-1].x) || (vertical && this.vertices[v].y >= this.vertices[v-1].y);
         offset = (over ? -this.radius : this.radius);
+        if (this.vertices[v].subtract(this.vertices[v-1]).norm() < this.radius) {
+            offset*=0.1;
+        }
         if (horizontal) {
             if (v > 1) ctx.quadraticCurveTo(this.vertices[v-1].x, this.vertices[v-1].y, this.vertices[v-1].x - offset, this.vertices[v-1].y);
             ctx.lineTo(this.vertices[v].x + (last ? 0 : offset), this.vertices[v].y);
@@ -182,7 +193,7 @@ Line.prototype.draw = function(ctx) {
     ctx.fillStyle = this.border_color.to_string();
     ctx.fill();
 
-    if (this.linkStart.type == "Line") {
+    if (this.linkStart.shape.type == "Line") {
         ctx.beginPath();
         ctx.arc(this.vertices[0].x, this.vertices[0].y, 5, 0, 2 * Math.PI, false);
         ctx.fillStyle = this.border_color.to_string();
@@ -315,6 +326,15 @@ Line.prototype.pointer_is_on_end = function(xm, ym, ctx) {
     var dist = pointer.subtract(this.vertices[this.vertices.length-1]).norm();
     var radius = 5; //px
     return dist < radius;
+};
+
+
+Line.prototype.get_vertex_by_key = function(key) {
+    for (var i = 0; i < this.vertices.length; i++) {
+        if (this.vertices[i].key == key) {
+            return this.vertices[i];
+        }
+    }
 };
 
 //////////////////////////////////
@@ -503,6 +523,22 @@ Shape.prototype.partial = function() {
     }
 };
 
+
+Shape.prototype.get_vertex_by_key = function(key) {
+    for (var i = 0; i < this.vertices.length; i++) {
+        if (this.vertices[i].key == key) {
+            return this.vertices[i];
+        }
+    }
+};
+
+Shape.prototype.clone_vertices = function(shape){
+    this.vertices = [];
+    for (var i = 0; i < shape.vertices.length; i++) {
+        this.vertices.push(new Vertex(shape.vertices[i]));
+    }
+};
+
 /////////////////////////////////////
 //  Rectangle
 
@@ -511,6 +547,7 @@ var Rectangle = function(x, y, width, height, radius, offset, stroke, text, colo
         // copy constructor
         var shape = x;
         Shape.call(this, shape.x, shape.y, shape.width, shape.height, shape.radius, shape.stroke, shape.text, shape.default_color, shape.default_border_color, shape.dashedBorder, shape.key);
+        this.clone_vertices(shape);
         this.offset = shape.offset;
     } else {
         Shape.call(this, x, y, width, height, radius, stroke, text, color, border_color, dashedBorder, key);
@@ -528,11 +565,15 @@ Rectangle.prototype.clone = function() {
 
 
 Rectangle.prototype.update_vertices = function() {
+    var keys = [];
+    for (var i = 0; i < this.vertices.length; i++) {
+        keys.push(this.vertices[i].key);
+    }
     this.vertices = [
-        new Vertex(this.x, this.y, 0),
-        new Vertex(this.x + this.width, this.y, 0),
-        new Vertex(this.x + this.width - this.offset, this.y + this.height, 0),
-        new Vertex(this.x - this.offset, this.y + this.height, 0)
+        new Vertex(this.x, this.y, 0, keys[0]),
+        new Vertex(this.x + this.width, this.y, 0, keys[1]),
+        new Vertex(this.x + this.width - this.offset, this.y + this.height, 0, keys[2]),
+        new Vertex(this.x - this.offset, this.y + this.height, 0, keys[3])
     ];
 };
 
@@ -591,10 +632,11 @@ var Triangle = function(x, y, width, height, radius, stroke, color, border_color
         // copy constructor
         var shape = x;
         Shape.call(this, shape.x, shape.y, shape.width, shape.height, shape.radius, shape.stroke, shape.text, shape.default_color, shape.default_border_color, shape.key);
+        this.clone_vertices(shape);
     } else {
         Shape.call(this, x, y, width, height, radius, stroke, "", color, border_color, key);
+        this.update_vertices();
     }
-    this.update_vertices();
     this.type = "Triangle";
 };
 
