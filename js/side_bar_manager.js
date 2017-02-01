@@ -10,6 +10,7 @@ var SidebarManager = function() {
     }
     this.add_layer_icon = $("#addLayerIcon");
     this.layer_name = $("#layerName");
+    this.full_details_switch = $("#fullDetails");
 };
 
 SidebarManager.prototype.change_selected_color = function(color_idx) {
@@ -54,6 +55,11 @@ SidebarManager.prototype.focus_layer_name = function() {
         $(this.layer_name).focus();
     }, 1);
 };
+
+SidebarManager.prototype.set_full_details_switch = function(value) {
+    $(this.full_details_switch)[0].checked = value;
+};
+
 
 SidebarManager.prototype.switch_sidebar_mode = function(mode) {
     //switch the sidebar mode

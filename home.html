@@ -77,9 +77,11 @@
                              "LeakyReLU": {"id": "#leakyReluParams"},
                              "ParametericReLU": {"id": "#parametericReluParams"},
                              "ELU": {"id": "#eluParams"},
-                             "Sigmoid": {"id": "#sigmoidParams"},
+                             "Sigmoid": {"id": "#sigmoidParams",
+                                         "short_name": "σ"},
                              "HardSigmoid": {"id": "#hardSigmoidParams"},
-                             "TanH": {"id": "#tanhParams"},
+                             "TanH": {"id": "#tanhParams",
+                                      "short_name": "tanh"},
                              "Softmax": {"id": "#softmaxParams"},
                              "Softsign": {"id": "#softsignParams"},
                              "Softplux": {"id": "#softplusParams"}}},
@@ -184,7 +186,18 @@
             } else if (layerType == "Deconvolution") {
                 layer = new Deconvolution($("#numOfms").val(),$("#kernelWidth").val(),$("#kernelHeight").val(),$("#kernelStride").val(),$("#kernelStride").val(),0,0);
             } else if (layerType == "Activation") {
-
+                var activationType = $("#activationType").val();
+                if (activationType == "ReLU") {
+                    layer = new ReLU();
+                } else if (activationType == "ELU") {
+                    layer = new ELU();
+                } else if (activationType == "Sigmoid") {
+                    layer = new Sigmoid();
+                } else if (activationType == "HardSigmoid") {
+                    layer = new HardSigmoid();
+                } else if (activationType == "TanH") {
+                    layer = new TanH();
+                }
             } else if (layerType == "Normalization") {
                 var normalizationType = $("#normalizationType").val();
                 if (normalizationType == "LocalResponseNormalization") {
@@ -205,6 +218,9 @@
         function get_short_name(layer_type) {
             // get a short default name for a layer
             if (layer_types[layer_type] != undefined) {
+                if (layer_types[layer_type]["subtype"] != undefined) {
+
+                }
                 return layer_types[layer_type]["short_name"];
             }
             return "";
@@ -290,6 +306,7 @@
                 if (selected_shape) {
                     sidebar_manager.set_layer_name(selected_shape.text);
                     sidebar_manager.change_selected_color(canvas_manager.get_shape_color_idx(selected_shape));
+                    sidebar_manager.set_full_details_switch(selected_shape.full_details);
                 } else {
                     sidebar_manager.set_layer_name("");
                 }

@@ -31,6 +31,8 @@ var Line = function(vertices, radius, color, stroke, key) {
         this.linkEnd = {};
         this.startDir = [];
         this.endDir = [];
+        this.broken_start = false;
+        this.broken_end = false;
         this.type = "Line";
     }
     this.key = new Uint32Array(1);
@@ -183,6 +185,14 @@ Line.prototype.draw = function(ctx) {
         ctx.stroke();
     }
 
+    //TODO:
+    // for (var v = 0; v < this.vertices.length; v++) {
+    //     ctx.beginPath();
+    //     ctx.arc(this.vertices[v].x, this.vertices[v].y, 5, 0, 2 * Math.PI, false);
+    //     ctx.fillStyle = this.border_color.to_string();
+    //     ctx.fill();
+    // }
+
     ctx.beginPath();
     ctx.moveTo(this.vertices[this.vertices.length-1].x, this.vertices[this.vertices.length-1].y);
     if (horizontal) {
@@ -214,6 +224,24 @@ Line.prototype.translate = function(dx,dy) {
     this.move(dx,dy);
 };
 
+Line.prototype.update_vertices = function() {
+    var startDir;
+    if (this.endDir == "vertical" && this.points % 2 == 1) startDir = "horizontal";
+    else if (this.endDir == "vertical" && this.points % 2 == 0) startDir = "vertical";
+    else if (this.endDir == "horizontal" && this.points % 2 == 1) startDir = "vertical";
+    else if (this.endDir == "horizontal" && this.points % 2 == 0) startDir = "horizontal";
+
+    for (var v = 1; v < this.vertices.length; v++) {
+        if ((startDir == "horizontal" && v % 2 == 0) || (startDir == "vertical" && v % 2 == 1)) {
+            this.vertices[v].x = this.vertices[v-1].x;
+        } else {
+            this.vertices[v].y = this.vertices[v-1].y;
+        }
+    }
+
+    this.points = this.vertices.length;
+};
+
 Line.prototype.move_start = function(dx, dy) {
     var startDir;
     if (this.endDir == "vertical" && this.points % 2 == 1) startDir = "horizontal";
@@ -221,12 +249,76 @@ Line.prototype.move_start = function(dx, dy) {
     else if (this.endDir == "horizontal" && this.points % 2 == 1) startDir = "vertical";
     else if (this.endDir == "horizontal" && this.points % 2 == 0) startDir = "horizontal";
 
+    // wrapping the arrow around the shape
+    if (this.vertices.length > 1) {
+        if (startDir == "vertical") {
+            var sign_y = (this.vertices[1].y - this.vertices[0].y > 0 ? 1 : -1);
+            if (!this.broken_start) {
+                var testing_point_x = this.vertices[1].x;
+                var testing_point_y = 20*sign_y + this.vertices[1].y;
+                // detect if line break needed
+                if (this.linkStart.shape.pointer_is_inside(testing_point_x, testing_point_y)) {
+                    this.vertices[1].y = this.vertices[0].y - sign_y*20;
+                    this.vertices[2].y = this.vertices[1].y;
+                    var mid_point = this.vertices[2].add(this.vertices[1]).mul(0.5);
+                    this.vertices.splice(2, 0, new Vertex(mid_point.x, this.vertices[1].y, 0));
+                    this.vertices.splice(3, 0, new Vertex(mid_point.x, this.vertices[3].y, 0));
+                    this.points = this.vertices.length;
+                    this.broken_start = true;
+                    return;
+                }
+            } else {
+                // detect if line break not needed anymore
+                if ((this.vertices[2].y - this.vertices[3].y)*sign_y < 0) {
+                    this.broken_start = false;
+                    this.vertices.splice(2,2);
+                    this.update_vertices();
+                } else {
+                    // update the vertices
+                    this.vertices[2].translate(0,dy,0);
+                    this.vertices[1].translate(dx,dy,0);
+                    this.vertices[0].translate(dx,dy,0);
+                }
+                return;
+            }
+        } else if (startDir == "horizontal") {
+            var sign_x = (this.vertices[1].x - this.vertices[0].x > 0 ? 1 : -1);
+            if (!this.broken_start) {
+                var testing_point_x = 20*sign_x + this.vertices[1].x;
+                var testing_point_y = this.vertices[1].y;
+                if (this.linkStart.shape.pointer_is_inside(testing_point_x, testing_point_y)) {
+                    this.vertices[1].x = this.vertices[0].x - sign_x*20;
+                    this.vertices[2].x = this.vertices[1].x;
+                    var mid_point = this.vertices[2].add(this.vertices[1]).mul(0.5);
+                    this.vertices.splice(2, 0, new Vertex(this.vertices[1].x, mid_point.y, 0));
+                    this.vertices.splice(3, 0, new Vertex(this.vertices[3].x, mid_point.y, 0));
+                    this.points = this.vertices.length;
+                    this.broken_start = true;
+                    return;
+                }
+            } else {
+                if ((this.vertices[2].x - this.vertices[3].x)*sign_x < 0) {
+                    this.broken_start = false;
+                    this.vertices.splice(2,2);
+                    this.update_vertices();
+                } else {
+                    this.vertices[2].translate(dx,0,0);
+                    this.vertices[1].translate(dx,dy,0);
+                    this.vertices[0].translate(dx,dy,0);
+                }
+                return;
+            }
+        }
+
+    }
+
     if (this.points > 2) {
+        // just move the arrow
         if (startDir == "vertical") this.vertices[1].translate(dx,0,0);
         if (startDir == "horizontal") this.vertices[1].translate(0,dy,0);
-        this.vertices[0].translate(dx,0,0);
-        this.vertices[0].translate(0,dy,0);
+        this.vertices[0].translate(dx,dy,0);
     } else if (this.points == 2) {
+        // break the arrow and move it
         var newVertices = this.vertices;
         var midX, midY;
         if (this.endDir == "horizontal" && dy != 0) {
@@ -245,6 +337,69 @@ Line.prototype.move_start = function(dx, dy) {
 
 Line.prototype.move_end = function(dx, dy) {
     var last = this.vertices.length-1;
+
+    // wrapping the arrow around the shape
+    if (this.vertices.length > 1) {
+        if (this.endDir == "vertical") {
+            var sign_y = (this.vertices[last-1].y - this.vertices[last].y > 0 ? 1 : -1);
+            if (!this.broken_end) {
+                var testing_point_x = this.vertices[last-1].x;
+                var testing_point_y = 20 * sign_y + this.vertices[last-1].y;
+                // detect if line break needed
+                if (this.linkEnd.shape.pointer_is_inside(testing_point_x, testing_point_y)) {
+                    this.vertices[last-1].y = this.vertices[last].y - sign_y * 20;
+                    this.vertices[last-2].y = this.vertices[last-1].y;
+                    var mid_point = this.vertices[last-2].add(this.vertices[last-1]).mul(0.5);
+                    this.vertices.splice(last-1, 0, new Vertex(mid_point.x, this.vertices[last-2].y, 0));
+                    this.vertices.splice(last-1, 0, new Vertex(mid_point.x, this.vertices[last-1].y, 0));
+                    this.points = this.vertices.length;
+                    this.broken_end = true;
+                    return;
+                }
+            } else {
+                // detect if line break not needed anymore
+                if ((this.vertices[last-2].y - this.vertices[last-3].y) * sign_y < 0) {
+                    this.broken_end = false;
+                    this.vertices.splice(last-3, 2);
+                    this.update_vertices();
+                } else {
+                    // update the vertices
+                    this.vertices[last-2].translate(0, dy, 0);
+                    this.vertices[last-1].translate(dx, dy, 0);
+                    this.vertices[last].translate(dx, dy, 0);
+                }
+                return;
+            }
+        } else if (this.endDir == "horizontal") {
+            var sign_x = (this.vertices[last-1].x - this.vertices[last].x > 0 ? 1 : -1);
+            if (!this.broken_end) {
+                var testing_point_x = 20 * sign_x + this.vertices[last-1].x;
+                var testing_point_y = this.vertices[last-1].y;
+                if (this.linkEnd.shape.pointer_is_inside(testing_point_x, testing_point_y)) {
+                    this.vertices[last-1].x = this.vertices[last].x - sign_x * 20;
+                    this.vertices[last-2].x = this.vertices[last-1].x;
+                    var mid_point = this.vertices[last-2].add(this.vertices[last-1]).mul(0.5);
+                    this.vertices.splice(last-1, 0, new Vertex(this.vertices[last-2].x, mid_point.y, 0));
+                    this.vertices.splice(last-1, 0, new Vertex(this.vertices[last-1].x, mid_point.y, 0));
+                    this.points = this.vertices.length;
+                    this.broken_end = true;
+                    return;
+                }
+            } else {
+                if ((this.vertices[last-2].x - this.vertices[last-3].x) * sign_x < 0) {
+                    this.broken_end = false;
+                    this.vertices.splice(last-3, 2);
+                    this.update_vertices();
+                } else {
+                    this.vertices[last-2].translate(dx, 0, 0);
+                    this.vertices[last-1].translate(dx, dy, 0);
+                    this.vertices[last].translate(dx, dy, 0);
+                }
+                return;
+            }
+        }
+    }
+
     if (this.points > 2 || (this.endDir == "horizontal" && dy == 0) || (this.endDir == "vertical" && dx == 0)) {
         if (this.endDir == "vertical") this.vertices[last - 1].translate(dx,0,0);
         if (this.endDir == "horizontal") this.vertices[last - 1].translate(0,dy,0);
@@ -333,28 +488,42 @@ Line.prototype.get_vertex_by_key = function(key) {
 //  Shape
 
 var Shape = function(x, y, width, height, radius, stroke, text, color, border_color, dashedBorder, key) {
-    this.x = x;
-    this.y = y;
-    this.baseWidth = width;
-    this.width = width;
-    this.height = height;
-    this.radius = (typeof radius != 'undefined') ? radius : 2;
-    this.stroke = (typeof stroke != 'undefined') ? stroke : 1;
-    this.textColor = "white";
-    this.default_color = new Color(color);
-    this.color = new Color(color);
-    this.default_border_color = new Color(border_color);
-    this.border_color = new Color(border_color);
-    this.vertices = [];
-    this.dashedBorder = (typeof dashedBorder != 'undefined') ? dashedBorder : false;
-    this.update_text((typeof text != 'undefined') ? text : "");
+    if (typeof x == "object") {
+        assign(this, x);
+        this.default_color = new Color(this.default_color);
+        this.color = new Color(this.color);
+        this.default_border_color = new Color(this.default_border_color);
+        this.border_color = new Color(this.border_color);
+        this.set_layer(this.layer);
+    } else {
+        this.x = x;
+        this.y = y;
+        this.baseWidth = width;
+        this.width = width;
+        this.height = height;
+        this.radius = (typeof radius != 'undefined') ? radius : 2;
+        this.stroke = (typeof stroke != 'undefined') ? stroke : 1;
+        this.textColor = "white";
+        this.default_color = new Color(color);
+        this.color = new Color(color);
+        this.default_border_color = new Color(border_color);
+        this.border_color = new Color(border_color);
+        this.vertices = [];
+        this.dashedBorder = (typeof dashedBorder != 'undefined') ? dashedBorder : false;
+        this.update_text((typeof text != 'undefined') ? text : "");
 
+        this.key = (typeof key != 'undefined') ? key : this.generate_new_key();
+
+        this.set_layer(new Layer());
+        this.full_details = false;
+    }
+
+};
+
+Shape.prototype.generate_new_key = function() {
     this.key = new Uint32Array(1);
     window.crypto.getRandomValues(this.key);
-    this.key = (typeof key != 'undefined') ? key : this.key[0];
-
-    this.set_layer(new Layer());
-    this.full_details = false;
+    return this.key[0];
 };
 
 Shape.prototype.set_layer = function(layer) {
@@ -508,9 +677,8 @@ Shape.prototype.full = function() {
     if (!this.full_details){
         this.full_details = true;
         this.height += 10;
-        this.y -= 5;
-        this.width += 30;
-        this.x -= 15;
+        this.width += 50;
+        this.translate(-25, -5);
         this.update_vertices();
     }
 };
@@ -520,9 +688,8 @@ Shape.prototype.partial = function() {
     if (this.full_details) {
         this.full_details = false;
         this.height -= 10;
-        this.y += 5;
-        this.width -= 30;
-        this.x += 15;
+        this.width -= 50;
+        this.translate(25, 5);
         this.update_vertices();
     }
 };
@@ -543,6 +710,10 @@ Shape.prototype.clone_vertices = function(shape){
     }
 };
 
+Shape.prototype.get_center = function(shape) {
+    return new Vertex(this.x + this.width/2, this.y + this.height/2,0);
+};
+
 /////////////////////////////////////
 //  Rectangle
 
@@ -550,7 +721,7 @@ var Rectangle = function(x, y, width, height, radius, offset, stroke, text, colo
     if (typeof x == "object") {
         // copy constructor
         var shape = x;
-        Shape.call(this, shape.x, shape.y, shape.width, shape.height, shape.radius, shape.stroke, shape.text, shape.default_color, shape.default_border_color, shape.dashedBorder, shape.key);
+        Shape.call(this, shape);
         this.clone_vertices(shape);
         this.offset = shape.offset;
     } else {
@@ -564,7 +735,11 @@ var Rectangle = function(x, y, width, height, radius, offset, stroke, text, colo
 inheritsFrom(Rectangle, Shape);
 
 Rectangle.prototype.clone = function() {
-    return new Rectangle(this.x, this.y, this.width, this.height, this.radius, this.offset, this.stroke, this.text, this.default_color, this.default_border_color, this.dashedBorder);
+    var shape = new Rectangle(this);
+    shape.key = shape.generate_new_key();
+    shape.vertices = [];
+    shape.update_vertices();
+    return shape;
 };
 
 
@@ -635,7 +810,7 @@ var Triangle = function(x, y, width, height, radius, stroke, color, border_color
     if (typeof x == "object") {
         // copy constructor
         var shape = x;
-        Shape.call(this, shape.x, shape.y, shape.width, shape.height, shape.radius, shape.stroke, shape.text, shape.default_color, shape.default_border_color, shape.key);
+        Shape.call(this, shape);
         this.clone_vertices(shape);
     } else {
         Shape.call(this, x, y, width, height, radius, stroke, "", color, border_color, key);
@@ -648,7 +823,11 @@ inheritsFrom(Triangle, Shape);
 
 
 Triangle.prototype.clone = function() {
-    return new Triangle(this.x, this.y, this.width, this.height, this.radius, this.stroke, this.default_color, this.default_border_color);
+    var shape = new Triangle(this);
+    shape.key = shape.generate_new_key();
+    shape.vertices = [];
+    shape.update_vertices();
+    return shape;
 };
 
 Triangle.prototype.update_vertices = function() {
@@ -689,7 +868,7 @@ var Circle = function(x, y, radius, stroke, text, color, border_color, key) {
     if (typeof x == "object") {
         // copy constructor
         var shape = x;
-        Shape.call(this, shape.x, shape.y, shape.width, shape.height, shape.radius, shape.stroke, shape.text, shape.default_color, shape.default_border_color, shape.dashedBorder, shape.key);
+        Shape.call(this, shape);
     } else {
         Shape.call(this, x + radius, y + radius, radius, radius, radius, stroke, text, color, border_color, false, key);
     }
@@ -700,7 +879,11 @@ var Circle = function(x, y, radius, stroke, text, color, border_color, key) {
 inheritsFrom(Circle, Shape);
 
 Circle.prototype.clone = function() {
-    return new Circle(this.x, this.y, this.width, this.stroke, this.text, this.default_color, this.default_border_color);
+    var shape = new Circle(this);
+    shape.key = shape.generate_new_key();
+    shape.vertices = [];
+    shape.update_vertices();
+    return shape;
 };
 
 Circle.prototype.draw = function(ctx) {

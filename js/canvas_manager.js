@@ -228,10 +228,22 @@ CanvasManager.prototype.highlight_selected_shapes = function() {
 };
 
 CanvasManager.prototype.remove_selected_shapes = function() {
+    var i, j;
+    var connected_arrows = [];
+    // get all connected arrows
+    var temp_connected_arrows = this.find_connected_arrows(this.selected_shapes);
+    while (temp_connected_arrows.length > 0) {
+        for (i = 0; i < temp_connected_arrows.length; i++) {
+            connected_arrows.push(temp_connected_arrows[i]);
+        }
+        temp_connected_arrows = this.find_connected_arrows(temp_connected_arrows);
+    }
     for (var a = this.arrows.length - 1; a >= 0; a--) {
-        var result = this.arrows[a].shapes_are_linked(this.selected_shapes);
-        if (result[0] || result[1]) {
-            this.arrows.splice(a, 1);
+        for (j = 0; j < connected_arrows.length; j++) {
+            if (connected_arrows[j].key == this.arrows[a].key) {
+                this.arrows.splice(a, 1);
+                break;
+            }
         }
     }
     for (var s = this.selected_shapes.length - 1; s >= 0; s--) {
@@ -595,12 +607,12 @@ CanvasManager.prototype.add_shape = function(shape) {
 };
 
 CanvasManager.prototype.move_shapes_with_alignment = function(shapes, diff_x, diff_y) {
-    var snap_threshold = 6;
+    var snap_threshold = 5;
     var i;
     // move shapes
     for (i = 0; i < shapes.length; i++) {
         // align to nearest center
-        var shape_center = new Vertex(shapes[i].x, shapes[i].y, 0);
+        var shape_center = shapes[i].get_center();
         var nearest_center = this.nearest_shape_center(shape_center);
         if (Math.abs(nearest_center.dist_x) >= snap_threshold && Math.abs(-nearest_center.dist_x + diff_x) < snap_threshold) {
             diff_x = nearest_center.dist_x;
@@ -668,7 +680,7 @@ CanvasManager.prototype.nearest_shape_center = function(p) {
     var dist_x = Infinity;
     var dist_y = Infinity;
     for (var i = 0; i < unselected_shapes.length; i++) {
-        var shape_center = new Vertex(unselected_shapes[i].x, unselected_shapes[i].y, 0);
+        var shape_center = unselected_shapes[i].get_center();
         if (Math.abs(p.x - shape_center.x) < Math.abs(dist_x)) {
             dist_x = p.x - shape_center.x;
         }
@@ -681,6 +693,20 @@ CanvasManager.prototype.nearest_shape_center = function(p) {
 
 /////////////////////////////
 //  Building the graph
+
+CanvasManager.prototype.find_connected_arrows = function(shapes) {
+    var i;
+    var connected_arrows = [];
+    for (i = 0; i < this.arrows.length; i++) {
+        var arrow = this.arrows[i];
+        var result = arrow.shapes_are_linked(shapes);
+        if (result[0] || result[1]) {
+            connected_arrows.push(arrow);
+        }
+    }
+    return connected_arrows;
+};
+
 
 CanvasManager.prototype.find_preceding_arrows = function(shapes) {
     var i;

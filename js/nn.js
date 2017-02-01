@@ -48,7 +48,7 @@ var Convolution = function(outputDepth, kernelWidth, kernelHeight, strideX, stri
         this.padY = padY;
     }
     this.type = "Convolution";
-    this.description = "Kernel " + this.kernelHeight + "x" + this.kernelWidth + " Stride " + this.strideX;
+    this.description = "Kernel " + this.kernelHeight + "x" + this.kernelWidth + " Stride " + this.strideX + " OFMs " + outputDepth;
 };
 
 inheritsFrom(Convolution, Layer);
@@ -101,6 +101,7 @@ var Pooling = function(kernelWidth, kernelHeight, strideX, strideY, padX, padY, 
         this.padY = padY;
         this.poolingType = poolingType;
         this.type = "Pooling";
+        this.description = "Kernel " + this.kernelHeight + "x" + this.kernelWidth + " Stride " + this.strideX;
     }
 };
 
@@ -192,6 +193,69 @@ inheritsFrom(BatchNormalization, NormalizationLayer);
 
 
 ////////////////////////////////////////
+//  Activatrion
+
+var ActivationLayer = function() {
+    Layer.call(this);
+    this.type = "Activation";
+};
+
+inheritsFrom(ActivationLayer, Layer);
+
+////////////////////////////////////////
+//  ReLU
+
+var ReLU = function() {
+    ActivationLayer.call(this);
+    this.subtype = "ReLU";
+};
+
+inheritsFrom(ReLU, ActivationLayer);
+
+////////////////////////////////////////
+//  Sigmoid
+
+var Sigmoid = function() {
+    ActivationLayer.call(this);
+    this.subtype = "Sigmoid";
+};
+
+inheritsFrom(Sigmoid, ActivationLayer);
+
+////////////////////////////////////////
+//  TanH
+
+var TanH = function() {
+    ActivationLayer.call(this);
+    this.subtype = "TanH";
+};
+
+inheritsFrom(TanH, ActivationLayer);
+
+
+////////////////////////////////////////
+//  ELU
+
+var ELU = function() {
+    ActivationLayer.call(this);
+    this.subtype = "ELU";
+};
+
+inheritsFrom(ELU, ActivationLayer);
+
+
+////////////////////////////////////////
+//  HardSigmoid
+
+var HardSigmoid = function() {
+    ActivationLayer.call(this);
+    this.subtype = "HardSigmoid";
+};
+
+inheritsFrom(HardSigmoid, ActivationLayer);
+
+
+////////////////////////////////////////
 //  Regularization
 
 var RegularizationLayer = function() {
@@ -243,6 +307,9 @@ var Zoneout = function() {
 };
 
 inheritsFrom(Zoneout, RegularizationLayer);
+
+
+
 
 ///////////////////////////////////////
 // Sequential
