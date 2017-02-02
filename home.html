@@ -5,14 +5,12 @@
     <title>Neuralizer</title>
 
 
-    <script type='text/javascript' src='http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG'></script>
-    <!--jQuery-->
-    <script src="js/jquery-3.0.0.min.js"></script>
     <!-- bootstrap -->
     <link href="css/bootstrap-glyphicons.css" rel="stylesheet">
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <!-- bootstrap select -->
-    <link rel="stylesheet" href="css/bootstrap-select.css"> <!-- js is at the end -->
+    <!--<link rel="stylesheet" href="css/bootstrap-select.css"> &lt;!&ndash; js is at the end &ndash;&gt;-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.2/css/bootstrap-select.min.css">
     <!--Pulling Awesome Font -->
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
     <!-- style -->
@@ -22,6 +20,9 @@
     <link href="css/style.css" rel="stylesheet">
     <link href="css/social.css" rel="stylesheet">
     <link href="css/keys.css" rel="stylesheet">
+    <!--jQuery-->
+    <script src="js/jquery-3.0.0.min.js"></script>
+
     <!-- neuralizer scripts -->
     <script src="js/utils.js"></script>
     <script src="js/shapes.js"></script>
@@ -35,6 +36,8 @@
     <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="96x96" href="images/favicon-96x96.png">
     <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
+
+    <script type='text/javascript' src='http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG'></script>
 
     <script type="text/x-mathjax-config">
     MathJax.Hub.Config({
@@ -469,10 +472,10 @@
         </div>
     </div>
 </div>
-<div class="col-xs-2 divContainer side-bar">
+<div class="col-xs-2 side-bar">
     <div class="appName">
-        <h1>neuralizer</h1>
-        <b style="font-size: 17px;text-align: center;">visual neural network designer</b>
+        <h1 class="title">neuralizer</h1>
+        <b class="title-subscript">visual neural network designer</b>
     </div>
     <br>
     <div id="designer">
@@ -1069,7 +1072,8 @@
     <canvas id="cnv" width="100%" height="100%"></canvas>
 </div>
 <script src="js/bootstrap.min.js"></script>
-<script src="js/bootstrap-select.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.2/js/bootstrap-select.min.js"></script>
+<!--<script src="js/bootstrap-select.js"></script>-->
 <script>
     $(document).ready(function () {
         // Initiate with custom caret icon

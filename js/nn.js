@@ -48,7 +48,7 @@ var Convolution = function(outputDepth, kernelWidth, kernelHeight, strideX, stri
         this.padY = padY;
     }
     this.type = "Convolution";
-    this.description = "Kernel " + this.kernelHeight + "x" + this.kernelWidth + " Stride " + this.strideX + " OFMs " + outputDepth;
+    this.description = "Kernel " + this.kernelHeight + "x" + this.kernelWidth + " Stride " + this.strideX + " OFMs " + this.output.depth;
 };
 
 inheritsFrom(Convolution, Layer);

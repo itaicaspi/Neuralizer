@@ -19,10 +19,15 @@ input {
     outline-width: 0;
 }
 
-h1 {
-    font-size: 60px;
+.title {
+    font-size: 3.5vw;
     margin: 0;
     text-shadow: -2px 1px rgba(0, 0, 0, 0.2), -4px 2px rgba(0, 0, 0, 0.1), -6px 3px rgba(0, 0, 0, 0.05), -8px 4px rgba(0, 0, 0, 0.025);
+}
+
+.title-subscript {
+    font-size: 0.8vw;
+    text-align: center;
 }
 
 .appName {

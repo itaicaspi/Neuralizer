@@ -89,22 +89,23 @@ Line.prototype.linked_shapes_moved = function(dx, dy, shapes) {
 	var start_moved = results[0];
 	var end_moved = results[1];
 
-    if (start_moved && end_moved && start_moved.type != "Line" && end_moved.type != "Line") {
+    if (start_moved && end_moved) {//} && start_moved.type != "Line" && end_moved.type != "Line") {
         this.move(dx,dy);
     }
     if (start_moved) {
         this.linkStart.p1 = start_moved.get_vertex_by_key(this.linkStart.p1.key);
         this.linkStart.p2 = start_moved.get_vertex_by_key(this.linkStart.p2.key);
         this.sync_start();
-        //this.move_start(dx, dy);
     }
+
     if (end_moved) {
         this.linkEnd.p1 = end_moved.get_vertex_by_key(this.linkEnd.p1.key);
         this.linkEnd.p2 = end_moved.get_vertex_by_key(this.linkEnd.p2.key);
-        //console.log(this.linkEnd);
         this.sync_end();
-        //this.move_end(dx, dy);
     }
+
+    this.sync_start();
+    this.sync_end();
 };
 
 Line.prototype.linked_shape_color_change = function(shape, arrows) {
@@ -264,7 +265,15 @@ Line.prototype.update_vertices = function(reverse) {
         }
     }
 
-
+    // remove groups of 3 vertices lying on the same line
+    for (var v = this.vertices.length-1; v >= 2; v--) {
+        if (this.vertices.length > 2) {
+            if ((this.vertices[v-2].x == this.vertices[v-1].x && this.vertices[v-1].x == this.vertices[v].x) ||
+                (this.vertices[v-2].y == this.vertices[v-1].y && this.vertices[v-1].y == this.vertices[v].y)) {
+                this.vertices.splice(v-2,2);
+            }
+        }
+    }
 
     this.points = this.vertices.length;
 };
@@ -276,16 +285,19 @@ Line.prototype.move_start = function(dx, dy) {
     else if (this.endDir == "horizontal" && this.points % 2 == 1) startDir = "vertical";
     else if (this.endDir == "horizontal" && this.points % 2 == 0) startDir = "horizontal";
 
+    if (this.linkStart.p2 == undefined) return;
+    var new_x = this.linkStart.p2.x - (this.linkStart.p2.x - this.linkStart.p1.x) * this.linkStart.dist;
+    var new_y = this.linkStart.p2.y - (this.linkStart.p2.y - this.linkStart.p1.y) * this.linkStart.dist;
+
     // wrapping the arrow around the shape
     if (this.vertices.length > 1 && (!this.broken_end || this.vertices != 6)) {
         if (startDir == "vertical") {
-            var sign_y = (this.vertices[1].y - this.vertices[0].y > 0 ? 1 : -1);
+            var sign_y = (this.vertices[1].y+dy - new_y > 0 ? 1 : -1);
             if (!this.broken_start) {
-                var testing_point_x = this.vertices[1].x;
-                var testing_point_y = 30*sign_y + this.vertices[1].y;
                 // detect if line break needed
-                if (this.linkStart.shape.pointer_is_inside(testing_point_x, testing_point_y)) {
-                    this.vertices[1].y = this.vertices[0].y - sign_y*20;
+                if (this.linkStart.shape.type != "Line" && this.linkStart.shape.pointer_is_inside(new_x, 20*sign_y + new_y)) {
+                    this.vertices[0].y = new_y;
+                    this.vertices[1].y = new_y - sign_y*20;
                     var mid_point = this.vertices[2].add(this.vertices[1]).mul(0.5);
                     this.vertices.splice(2, 0, new Vertex(mid_point.x, this.vertices[1].y, 0));
                     this.vertices.splice(3, 0, new Vertex(mid_point.x, this.vertices[3].y, 0));
@@ -294,26 +306,25 @@ Line.prototype.move_start = function(dx, dy) {
                     return;
                 }
             } else {
+                // update the vertices
+                this.vertices[2].translate(0,dy,0);
+                this.vertices[1].translate(dx,dy,0);
+                this.vertices[0].translate(dx,dy,0);
+
                 // detect if line break not needed anymore
-                if ((this.vertices[2].y - this.vertices[3].y)*sign_y < 0) {
+                if ((this.vertices[2].y - this.vertices[3].y)*sign_y <= 0) {
                     this.broken_start = false;
                     this.vertices.splice(2,2);
-                    this.update_vertices();
-                } else {
-                    // update the vertices
-                    this.vertices[2].translate(0,dy,0);
-                    this.vertices[1].translate(dx,dy,0);
-                    this.vertices[0].translate(dx,dy,0);
+                    this.update_vertices(true);
                 }
                 return;
             }
         } else if (startDir == "horizontal") {
-            var sign_x = (this.vertices[1].x - this.vertices[0].x > 0 ? 1 : -1);
+            var sign_x = (this.vertices[1].x +dx - new_x > 0 ? 1 : -1);
             if (!this.broken_start) {
-                var testing_point_x = 30*sign_x + this.vertices[1].x;
-                var testing_point_y = this.vertices[1].y;
-                if (this.linkStart.shape.pointer_is_inside(testing_point_x, testing_point_y)) {
-                    this.vertices[1].x = this.vertices[0].x - sign_x*20;
+                if (this.linkStart.shape.type != "Line" && this.linkStart.shape.pointer_is_inside(20*sign_x + new_x, new_y)) {
+                    this.vertices[0].x = new_x;
+                    this.vertices[1].x = new_x - sign_x*20;
                     var mid_point = this.vertices[2].add(this.vertices[1]).mul(0.5);
                     this.vertices.splice(2, 0, new Vertex(this.vertices[1].x, mid_point.y, 0));
                     this.vertices.splice(3, 0, new Vertex(this.vertices[3].x, mid_point.y, 0));
@@ -322,14 +333,14 @@ Line.prototype.move_start = function(dx, dy) {
                     return;
                 }
             } else {
-                if ((this.vertices[2].x - this.vertices[3].x)*sign_x < 0) {
+                this.vertices[2].translate(dx,0,0);
+                this.vertices[1].translate(dx,dy,0);
+                this.vertices[0].translate(dx,dy,0);
+
+                if ((this.vertices[2].x - this.vertices[3].x)*sign_x <= 0) {
                     this.broken_start = false;
                     this.vertices.splice(2,2);
-                    this.update_vertices();
-                } else {
-                    this.vertices[2].translate(dx,0,0);
-                    this.vertices[1].translate(dx,dy,0);
-                    this.vertices[0].translate(dx,dy,0);
+                    this.update_vertices(true);
                 }
                 return;
             }
@@ -342,6 +353,7 @@ Line.prototype.move_start = function(dx, dy) {
         if (startDir == "vertical") this.vertices[1].translate(dx,0,0);
         if (startDir == "horizontal") this.vertices[1].translate(0,dy,0);
         this.vertices[0].translate(dx,dy,0);
+        this.update_vertices();
     } else if (this.points == 2) {
         // break the arrow and move it
         var newVertices = this.vertices;
@@ -354,25 +366,31 @@ Line.prototype.move_start = function(dx, dy) {
             midY = (this.vertices[0].y + this.vertices[1].y) / 2;
             newVertices = [this.vertices[0], new Vertex(this.vertices[0].x, midY, 0),
                 new Vertex(this.vertices[1].x, midY, 0), this.vertices[1]];
+        } else {
+            this.vertices[0].translate(dx,dy,0);
         }
         this.vertices = newVertices;
         this.points = this.vertices.length;
+        // this.update_vertices();
     }
 };
 
 Line.prototype.move_end = function(dx, dy) {
     var last = this.vertices.length-1;
 
+    if (this.linkEnd.p2 == undefined) return;
+    var new_x = this.linkEnd.p2.x - (this.linkEnd.p2.x - this.linkEnd.p1.x) * this.linkEnd.dist;
+    var new_y = this.linkEnd.p2.y - (this.linkEnd.p2.y - this.linkEnd.p1.y) * this.linkEnd.dist;
+
     // wrapping the arrow around the shape
     if (this.vertices.length > 1) {
         if (this.endDir == "vertical") {
-            var sign_y = (this.vertices[last-1].y - this.vertices[last].y > 0 ? 1 : -1);
+            var sign_y = (this.vertices[last-1].y + dy - new_y > 0 ? 1 : -1);
             if (!this.broken_end) {
-                var testing_point_x = this.vertices[last-1].x;
-                var testing_point_y = 30 * sign_y + this.vertices[last-1].y;
                 // detect if line break needed
-                if (this.linkEnd.shape.pointer_is_inside(testing_point_x, testing_point_y)) {
-                    this.vertices[last-1].y = this.vertices[last].y - sign_y * 20;
+                if (this.linkStart.shape.type != "Line" && this.linkEnd.shape.pointer_is_inside(new_x, 20*sign_y+new_y)) {
+                    this.vertices[last].y = new_y;
+                    this.vertices[last-1].y = new_y - sign_y * 20;
                     var mid_point = this.vertices[last-2].add(this.vertices[last-1]).mul(0.5);
                     this.vertices.splice(last-1, 0, new Vertex(mid_point.x, this.vertices[last-2].y, 0));
                     this.vertices.splice(last-1, 0, new Vertex(mid_point.x, this.vertices[last-1].y, 0));
@@ -381,42 +399,41 @@ Line.prototype.move_end = function(dx, dy) {
                     return;
                 }
             } else {
+                // update the vertices
+                this.vertices[last-2].translate(0, dy, 0);
+                this.vertices[last-1].translate(dx, dy, 0);
+                this.vertices[last].translate(dx, dy, 0);
+
                 // detect if line break not needed anymore
-                if ((this.vertices[last-2].y - this.vertices[last-3].y) * sign_y < 0) {
+                if ((this.vertices[last-2].y - this.vertices[last-3].y) * sign_y <= 0) {
                     this.broken_end = false;
                     this.vertices.splice(last-3, 2);
                     this.update_vertices();
-                } else {
-                    // update the vertices
-                    this.vertices[last-2].translate(0, dy, 0);
-                    this.vertices[last-1].translate(dx, dy, 0);
-                    this.vertices[last].translate(dx, dy, 0);
                 }
                 return;
             }
         } else if (this.endDir == "horizontal") {
-            var sign_x = (this.vertices[last-1].x - this.vertices[last].x > 0 ? 1 : -1);
+            var sign_x = (this.vertices[last-1].x + dx - this.vertices[last].x > 0 ? 1 : -1);
             if (!this.broken_end) {
-                var testing_point_x = 30 * sign_x + this.vertices[last-1].x;
-                var testing_point_y = this.vertices[last-1].y;
-                if (this.linkEnd.shape.pointer_is_inside(testing_point_x, testing_point_y)) {
-                    this.vertices[last-1].x = this.vertices[last].x - sign_x * 20;
+                if (this.linkStart.shape.type != "Line" && this.linkEnd.shape.pointer_is_inside(new_x + sign_x*20, new_y)) {
+                    this.vertices[last].x = new_x;
+                    this.vertices[last-1].x = new_x - sign_x * 20;
                     var mid_point = this.vertices[last-2].add(this.vertices[last-1]).mul(0.5);
                     this.vertices.splice(last-1, 0, new Vertex(this.vertices[last-2].x, mid_point.y, 0));
                     this.vertices.splice(last-1, 0, new Vertex(this.vertices[last-1].x, mid_point.y, 0));
                     this.broken_end = true;
-                    this.update_vertices(true   );
+                    this.update_vertices(true);
                     return;
                 }
             } else {
-                if ((this.vertices[last-2].x - this.vertices[last-3].x) * sign_x < 0) {
+                this.vertices[last-2].translate(dx, 0, 0);
+                this.vertices[last-1].translate(dx, dy, 0);
+                this.vertices[last].translate(dx, dy, 0);
+
+                if ((this.vertices[last-2].x - this.vertices[last-3].x) * sign_x <= 0) {
                     this.broken_end = false;
-                    this.vertices.splice(last-3, 2);
+                    this.vertices.splice(last - 3, 2);
                     this.update_vertices();
-                } else {
-                    this.vertices[last-2].translate(dx, 0, 0);
-                    this.vertices[last-1].translate(dx, dy, 0);
-                    this.vertices[last].translate(dx, dy, 0);
                 }
                 return;
             }
@@ -431,8 +448,9 @@ Line.prototype.move_end = function(dx, dy) {
     if (this.points > 2 || (this.endDir == "horizontal" && dy == 0) || (this.endDir == "vertical" && dx == 0)) {
         if (this.endDir == "vertical") this.vertices[last - 1].translate(dx,0,0);
         if (this.endDir == "horizontal") this.vertices[last - 1].translate(0,dy,0);
-        this.vertices[last].translate(dx,0,0);
-        this.vertices[last].translate(0,dy,0);
+        this.vertices[last].translate(dx,dy,0);
+
+        this.update_vertices();
     } else if (this.points == 2) {
         var newVertices = this.vertices;
         var midX, midY;
@@ -444,10 +462,13 @@ Line.prototype.move_end = function(dx, dy) {
             midY = (this.vertices[0].y + this.vertices[1].y) / 2;
             newVertices = [this.vertices[0], new Vertex(this.vertices[0].x, midY, 0),
                 new Vertex(this.vertices[1].x, midY, 0), this.vertices[1]];
+        } else {
+            this.vertices[0].translate(dx,dy,0);
         }
         this.vertices = newVertices;
         this.points = this.vertices.length;
     }
+
 };
 
 Line.prototype.sync_start = function() {
@@ -704,9 +725,13 @@ Shape.prototype.darken = function() {
 Shape.prototype.full = function() {
     if (!this.full_details){
         this.full_details = true;
-        this.height += 10;
-        this.width += 50;
-        this.translate(-25, -5);
+        if (this.type == "Circle") {
+            this.radius += 20;
+        } else {
+            this.height += 10;
+            this.width += 50;
+            this.translate(-25, -5);
+        }
         this.update_vertices();
     }
 };
@@ -715,9 +740,13 @@ Shape.prototype.full = function() {
 Shape.prototype.partial = function() {
     if (this.full_details) {
         this.full_details = false;
-        this.height -= 10;
-        this.width -= 50;
-        this.translate(25, 5);
+        if (this.type == "Circle") {
+            this.radius -= 20;
+        } else {
+            this.height -= 10;
+            this.width -= 50;
+            this.translate(25, 5);
+        }
         this.update_vertices();
     }
 };
@@ -823,7 +852,7 @@ Rectangle.prototype.draw = function(ctx) {
         ctx.fillStyle = this.textColor;
         ctx.fillText(this.text, this.x + (this.width - this.offset) / 2, this.y + this.height / 2 - 5);
 
-        ctx.font = "12px Calibri";
+        ctx.font = "11px Calibri";
         ctx.textAlign = "center";
         ctx.fillStyle = this.textColor;
         ctx.fillText(this.layer.description, this.x + (this.width - this.offset) / 2, this.y + this.height / 2 + 13);
@@ -902,6 +931,7 @@ var Circle = function(x, y, radius, stroke, text, color, border_color, key) {
     }
     this.vertices = [];
     this.type = "Circle";
+    this.update_vertices();
 };
 
 inheritsFrom(Circle, Shape);
@@ -912,6 +942,18 @@ Circle.prototype.clone = function() {
     shape.vertices = [];
     shape.update_vertices();
     return shape;
+};
+
+Circle.prototype.update_vertices = function() {
+    var keys = [];
+    for (var i = 0; i < this.vertices.length; i++) {
+        keys.push(this.vertices[i].key);
+    }
+    this.vertices = [];
+    var num_vertices = 18;
+    for (var i = 0; i < num_vertices; i++) {
+        this.vertices.push(new Vertex(this.x + this.radius*Math.cos(i*2*Math.PI/num_vertices), this.y + this.radius*Math.sin(i*2*Math.PI/num_vertices), 0, keys[i]));
+    }
 };
 
 Circle.prototype.draw = function(ctx) {

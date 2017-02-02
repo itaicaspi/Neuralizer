@@ -70,6 +70,13 @@ var Vertex = function (x, y, z, key) {
 
 };
 
+Vertex.prototype.move_to = function(x,y,z) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+};
+
+
 Vertex.prototype.translate = function(dx,dy,dz) {
     this.x += dx;
     this.y += dy;
