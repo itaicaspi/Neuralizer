@@ -472,8 +472,26 @@ CanvasManager.prototype.json_to_curr_state = function(json_state) {
 
     // parse arrows
     for (var a = this.arrows.length-1; a >= 0; a--) {
-        this.arrows[a] = new Line(this.arrows[a]);
+        // this is a nasty workaround which should be changed
+        var start = false;
+        var end = false;
+        for (var s = 0; s < this.shapes.length; s++) {
+            if (this.arrows[a].linkStart.shape.key == this.shapes[s].key) {
+                start = this.shapes[s];
+            } else if (this.arrows[a].linkEnd.shape.key == this.shapes[s].key) {
+                end = this.shapes[s];
+            }
+        }
+        for (var i = 0; i < this.arrows.length; i++) {
+            if (this.arrows[a].linkStart.shape.key == this.arrows[i].key) {
+                start = this.arrows[i];
+            } else if (this.arrows[a].linkEnd.shape.key == this.arrows[i].key) {
+                end = this.arrows[i];
+            }
+        }
+        this.arrows[a] = new Line(this.arrows[a], start, end);
     }
+
 };
 
 CanvasManager.prototype.save_state = function() {
@@ -490,6 +508,7 @@ CanvasManager.prototype.load_state = function(state) {
     this.json_to_curr_state(state);
 
     this.draw_required = true;
+    this.draw_curr_state_if_necessary();
 };
 
 

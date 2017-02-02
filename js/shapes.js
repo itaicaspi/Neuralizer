@@ -9,6 +9,8 @@ function object_to_shape(obj) {
         return new Triangle(obj);
     } else if (obj.type == "Circle") {
         return new Circle(obj);
+    } else if (obj.type == "Line") {
+        return new Line(obj);
     }
 }
 
@@ -18,19 +20,23 @@ var inheritsFrom = function (child, parent) {
 };
 
 var Line = function(vertices, radius, color, stroke, key) {
-    if (radius == undefined) {
+    if (stroke == undefined) {
         // copy constructor
         var shape = vertices;
+        var linkStart = radius;
+        var linkEnd = color;
         assign(this, shape);
         this.vertices = [];
         for (var i = 0; i < shape.vertices.length; i++) {
             this.vertices.push(new Vertex(shape.vertices[i]));
         }
-        this.linkStart.shape = object_to_shape(this.linkStart.shape);
-        this.linkEnd.shape = object_to_shape(this.linkEnd.shape);
+        this.linkStart.shape = linkStart;
+        this.linkEnd.shape = linkEnd;
         this.default_color = new Color(shape.color);
         this.color = new Color(shape.color);
         this.border_color = new Color(shape.color);
+
+        this.key = shape.key;
     } else {
         this.vertices = vertices;
         this.default_color = color;
@@ -46,14 +52,15 @@ var Line = function(vertices, radius, color, stroke, key) {
         this.broken_start = false;
         this.broken_end = false;
         this.type = "Line";
+
+        this.key = new Uint32Array(1);
+        window.crypto.getRandomValues(this.key);
+        this.key = (typeof key != 'undefined') ? key : this.key[0];
     }
-    this.key = new Uint32Array(1);
-    window.crypto.getRandomValues(this.key);
-    this.key = (typeof key != 'undefined') ? key : this.key[0];
 };
 
 Line.prototype.clone = function() {
-    return new Line(this);
+    return new Line(this, this.linkStart.shape, this.linkEnd.shape);
 };
 
 
@@ -222,12 +229,12 @@ Line.prototype.draw = function(ctx) {
     ctx.fillStyle = this.border_color.to_string();
     ctx.fill();
 
-    if (this.linkStart.shape.type == "Line") {
-        ctx.beginPath();
-        ctx.arc(this.vertices[0].x, this.vertices[0].y, 5, 0, 2 * Math.PI, false);
-        ctx.fillStyle = this.border_color.to_string();
-        ctx.fill();
-    }
+    // if (this.linkStart.shape.type == "Line") {
+    //     ctx.beginPath();
+    //     ctx.arc(this.vertices[0].x, this.vertices[0].y, 5, 0, 2 * Math.PI, false);
+    //     ctx.fillStyle = this.border_color.to_string();
+    //     ctx.fill();
+    // }
 };
 
 Line.prototype.move = function(dx, dy) {
