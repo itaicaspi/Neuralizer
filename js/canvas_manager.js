@@ -305,7 +305,7 @@ CanvasManager.prototype.set_selection_box = function() {
 };
 
 CanvasManager.prototype.selection_box_is_active = function() {
-    return this.selection_box.width > 0 || this.selection_box.height > 0;
+    return this.selection_box.width != 0 || this.selection_box.height != 0;
 };
 
 CanvasManager.prototype.get_unselected_shapes = function() {

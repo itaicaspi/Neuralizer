@@ -82,5 +82,26 @@ SidebarManager.prototype.switch_sidebar_mode = function(mode) {
             $("#" + this.modes[key]).hide();
         }
     }
+    if (mode == "account") {
+        $("#sidebar_container").removeClass("col-xs-2").addClass("col-xs-3", "slow");
+        $("#canvas_container").removeClass("col-xs-9").addClass("col-xs-8", "slow");
+    } else {
+        $("#sidebar_container").removeClass("col-xs-3").addClass("col-xs-2", "slow");
+        $("#canvas_container").removeClass("col-xs-8").addClass("col-xs-9", "slow");
+    }
 
+};
+
+
+SidebarManager.prototype.start = function() {
+    $("#welcome_screen_container").fadeOut("slow");
+    // $('.main').css({
+    //     '-webkit-filter':'none',
+    //     '-moz-filter':'none',
+    //     '-o-filter':'none',
+    //     '-ms-filter':'none',
+    //     'filter':'none',
+    // });
+    $("#sidebar_icons_container").fadeIn("slow");
+    $("#sidebar_container").fadeIn("slow");
 };

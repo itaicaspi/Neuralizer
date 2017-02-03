@@ -895,10 +895,14 @@ Triangle.prototype.clone = function() {
 };
 
 Triangle.prototype.update_vertices = function() {
+    var keys = [];
+    for (var i = 0; i < this.vertices.length; i++) {
+        keys.push(this.vertices[i].key);
+    }
     this.vertices = [
-        new Vertex(this.x, this.y, 0),
-        new Vertex(this.x + this.width, this.y + this.height/2, 0),
-        new Vertex(this.x, this.y + this.height, 0)
+        new Vertex(this.x, this.y, 0, keys[0]),
+        new Vertex(this.x + this.width, this.y + this.height/2, 0, keys[1]),
+        new Vertex(this.x, this.y + this.height, 0, keys[2])
     ];
 };
 
@@ -933,12 +937,13 @@ var Circle = function(x, y, radius, stroke, text, color, border_color, key) {
         // copy constructor
         var shape = x;
         Shape.call(this, shape);
+        this.clone_vertices(shape);
     } else {
         Shape.call(this, x + radius, y + radius, radius, radius, radius, stroke, text, color, border_color, false, key);
+        this.vertices = [];
+        this.type = "Circle";
+        this.update_vertices();
     }
-    this.vertices = [];
-    this.type = "Circle";
-    this.update_vertices();
 };
 
 inheritsFrom(Circle, Shape);

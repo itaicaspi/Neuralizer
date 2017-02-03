@@ -63,3 +63,9 @@ function load_state_from_file() {
         canvas_manager.show_message("File not supported!");
     }
 }
+
+function export_current_state_to_framework_file() {
+    canvas_manager.show_message("Downloading topology", true);
+    var text = JSON.stringify(canvas_manager.to_graph(), null, "\t");
+    download_as_file($("#filename").val(), text, "text");
+}

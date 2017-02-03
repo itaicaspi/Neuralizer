@@ -428,11 +428,11 @@
 <body onload="run()" style="overflow: hidden;" oncontextmenu="return false">
 <!-- Github Form Me Ribbon -->
 <a href="https://github.com/itaicaspi/Neuralizer">
-    <img style="z-index: 10; position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png">
+    <img class="non-selectable" style="z-index: 10; position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png">
 </a>
 <!--------------------------->
-
-<div class="col-xs-1 icons-side-bar">
+<span class="main">
+<div class="col-xs-1 icons-side-bar" id="sidebar_icons_container" style="display: none;">
     <div class="wrapping-side-icon" style="height: 100px;">
         <div id="before_icon" class="side-icon before-side-icon" style="height: 100px; cursor: default">
         </div>
@@ -472,7 +472,7 @@
         </div>
     </div>
 </div>
-<div class="col-xs-2 side-bar">
+<div class="col-xs-2 side-bar" id="sidebar_container" style="display: none;">
     <div class="appName">
         <h1 class="title">neuralizer</h1>
         <b class="title-subscript">visual neural network designer</b>
@@ -925,7 +925,7 @@
             </select>
         </div>
         <div class="form-group">
-            <button type="button" id="saveTopologyToFramework" class="form-control" onclick="">Save Topology</button>
+            <button type="button" id="saveTopologyToFramework" class="form-control" onclick="export_current_state_to_framework_file()">Save Topology</button>
         </div>
 
     </div>
@@ -980,6 +980,12 @@
                                         <b>AlexNet</b>
                                         <br>
                                         Author: Itai Caspi
+                                        <div class="stars">
+                                            <span>
+                                            <i class="fa fa-star" aria-hidden="true"></i>
+                                            1000
+                                            </span>
+                                        </div>
                                     </div>
                                 </a>
                             </div>
@@ -1060,7 +1066,7 @@
 
     </div>
 </div>
-<div class="col-xs-9" style="height:100%">
+<div class="col-xs-9" id="canvas_container" style="height:100%">
     <div id="canvas_keys">
 
     </div>
@@ -1070,6 +1076,41 @@
         </div>
     </div>
     <canvas id="cnv" width="100%" height="100%"></canvas>
+</div>
+</span>
+<div id="welcome_screen_container">
+    <div id="welcome_screen">
+        <div id="welcome_screen_frame">
+            <div class="appName" style="padding-top: 1%">
+                <h1 class="title">neuralizer</h1>
+                <b class="title-subscript">visual neural network designer</b>
+            </div>
+
+            <div id="welcome_screen_content" style="text-align: center; margin-top: 1%">
+                <div id="carousel-example-generic" class="carousel slide" data-ride="carousel" style="height: 100%">
+                    <!-- Indicators -->
+                    <ol class="carousel-indicators">
+                        <li data-target="#carousel-example-generic" data-slide-to="0" class="active"></li>
+                        <li data-target="#carousel-example-generic" data-slide-to="1"></li>
+                        <li data-target="#carousel-example-generic" data-slide-to="2"></li>
+                    </ol>
+
+                    <!-- Wrapper for slides -->
+                    <div class="carousel-inner" role="listbox">
+                        <div class="item active">
+                            <img class="img-responsive center-block" src="images/test.png" alt="..." style="margin-top: 40px">
+                            <!--<div class="carousel-caption">-->
+                                <!--Model Based Generative Imitation Leaning-->
+                            <!--</div>-->
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <a class="btn rect-btn white" onclick="sidebar_manager.start()"> Start </a>
+            <a class="btn rect-btn red"> Explore </a>
+        </div>
+    </div>
 </div>
 <script src="js/bootstrap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.2/js/bootstrap-select.min.js"></script>
