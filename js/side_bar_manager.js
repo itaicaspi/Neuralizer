@@ -82,7 +82,7 @@ SidebarManager.prototype.switch_sidebar_mode = function(mode) {
             $("#" + this.modes[key]).hide();
         }
     }
-    if (mode == "account") {
+    if (mode == "share_explore") {
         $("#sidebar_container").removeClass("col-xs-2").addClass("col-xs-3", "slow");
         $("#canvas_container").removeClass("col-xs-9").addClass("col-xs-8", "slow");
     } else {

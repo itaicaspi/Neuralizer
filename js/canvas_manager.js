@@ -12,7 +12,7 @@ var CanvasManager = function(canvas) {
     this.current_arrow = new Line([], 5, new Color(0, 0, 0, 1), 3);
 
     // canvas selection
-    this.selection_box = new Rectangle(0, 0, 0, 0, 2, 0, 2, "", new Color(0, 0, 0, 0), new Color(255, 255, 255, 1), true);
+    this.selection_box = new Rectangle(0, 0, 0, 0, 2, 0, 2, "", new Color(0, 0, 0, 0), new Color(100, 100, 100, 1), true);
     this.selected_shapes = [];
     this.selected_color_idx = 0;
 
@@ -372,8 +372,8 @@ CanvasManager.prototype.draw_array = function(array) {
 CanvasManager.prototype.draw_text = function(text, x, y, size) {
     this.ctx.font = size + "px Calibri";
     this.ctx.textAlign = "center";
-    this.ctx.fillStyle = "white";
-    this.ctx.shadowColor = "black";
+    this.ctx.fillStyle = "black";
+    this.ctx.shadowColor = "white";
     this.ctx.shadowOffsetX = 1;
     this.ctx.shadowOffsetY = 1;
     this.ctx.shadowBlur = 1;

@@ -561,7 +561,7 @@ var Shape = function(x, y, width, height, radius, stroke, text, color, border_co
         this.height = height;
         this.radius = (typeof radius != 'undefined') ? radius : 2;
         this.stroke = (typeof stroke != 'undefined') ? stroke : 1;
-        this.textColor = "white";
+        this.textColor = "rgb(50,50,50)";
         this.default_color = new Color(color);
         this.color = new Color(color);
         this.default_border_color = new Color(border_color);
@@ -727,8 +727,8 @@ Shape.prototype.highlight = function() {
 };
 
 Shape.prototype.darken = function() {
-    this.textColor = "white";
-    this.color.a = 0;
+    this.textColor = "rgb(50,50,50)";
+    this.color.a = 0.3;
 };
 
 Shape.prototype.full = function() {
@@ -984,7 +984,7 @@ Circle.prototype.draw = function(ctx) {
     }
 
     // draw text
-    ctx.font="14px Calibri";
+    ctx.font="bold 14px Calibri";
     ctx.textAlign="center";
     ctx.fillStyle = this.textColor;
     ctx.fillText(this.text,this.x, this.y + 3);

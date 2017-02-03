@@ -1,9 +1,14 @@
+element{
+    --dark-menu: rgb(39,44,51);
+    --logo-green: rgb(153,196,50);
+}
 
 html, body, canvas {
     margin: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(51, 51, 51, 1);
+    background-color: rgba(235 , 236, 237, 1);
+    color:rgb(110,116,125);
 }
 
 input {
@@ -33,6 +38,7 @@ input {
 .appName {
     text-align: center;
     font-family: 'Lato', sans-serif;
+    color: rgb(153,196,50);
 }
 
 .non-selectable {
@@ -69,7 +75,7 @@ input {
     left: 50%;
     margin-left: -320px;
     margin-top: -80px;
-    color: white
+    color: black
 }
 
 #welcome_screen_container {
@@ -81,7 +87,7 @@ input {
 }
 
 #welcome_screen_frame {
-    background-image: linear-gradient(to bottom, #FF533D, rgba(251,172,95,1) 85%);
+    background-image: linear-gradient(to bottom, rgb(63,70,82), rgba(89,93,158,1) 85%);
     border-radius: 15px;
     /*border: 3px solid white;*/
     box-shadow: rgba(0,0,0,0.2) 0px 20px 30px;
@@ -138,7 +144,7 @@ input {
 .icons-side-bar {
     width: 50px;
     height: 100%;
-    background: #af392a;
+    background: rgb(39,44,51);
     padding: 40px 0 0;
     /*box-shadow: 0px 5px 20px 5px rgba(0, 0, 0, 0.1) inset;*/
 }
@@ -156,21 +162,22 @@ input {
 }
 
 .wrapping-side-icon {
-    background: #FF533D;
+    background: rgb(63,70,82);
 }
 
 .before-side-icon {
-    background: #af392a;
+    background: rgb(39,44,51);
     border-radius: 0 0 5px 0;
 }
 
 .after-side-icon {
-    background: #af392a;
+    background: rgb(39,44,51);
     border-radius: 0 5px 0 0;
 }
 
 .selected-side-icon {
-    background: #FF533D;
+    background: rgb(63,70,82);
+    color: white;
     box-shadow: 0 5px 20px 5px rgba(0, 0, 0, 0.1);
 }
 
@@ -181,7 +188,7 @@ input {
 .side-bar {
     padding: 20px;
     height: 100%;
-    background-color: #FF533D;
+    background-color: rgb(63,70,82);
     border: 3px none #FEFEFE;
     border-right-style: solid;
     overflow-y: auto;
@@ -225,7 +232,7 @@ input {
     -ms-transform: rotate(45deg); /* IE 9 */
     -o-transform: rotate(45deg); /* Opera 10.50-12.00 */
     transform: rotate(45deg); /* Firefox 16+, IE 10+, Opera 12.10+ */
-    color: rgba(230, 0, 0, 1);
+    color: #e14329;
 }
 
 .material-switch > input[type="checkbox"] {
@@ -283,13 +290,13 @@ input {
     margin-right: -5px;
     overflow: auto;
     overflow-x: hidden;
-    background: rgba(175,57,42,1);
+    background: rgb(110,116,125);
     border-color: transparent;
 }
 
 .ModelItem {
     border-color: transparent;
-    background: #5cb85c;
+    background: rgb(102,78,151);
     color: white;
     /*border-radius: 2px;*/
     /*box-shadow: 0 0px 10px rgba(0,0,0,0.2);*/
@@ -326,7 +333,7 @@ a.thumbnail:hover, a.thumbnail:focus, a.thumbnail.active {
     margin-right: 10px;
     vertical-align: middle;
     height: 40px;
-    color: rgba(255,255,255,0.8);
+    color: rgba(50,50,50,0.8);
     font-weight: bold;
 }
 
