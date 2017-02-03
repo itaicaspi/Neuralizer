@@ -82,7 +82,7 @@ input {
 
 #welcome_screen_frame {
     background-image: linear-gradient(to bottom, #FF533D, rgba(251,172,95,1) 85%);
-    border-radius: 5px;
+    border-radius: 15px;
     /*border: 3px solid white;*/
     box-shadow: rgba(0,0,0,0.2) 0px 20px 30px;
     height:100%;

@@ -274,7 +274,9 @@ Line.prototype.update_vertices = function(reverse) {
 
     // remove groups of 3 vertices lying on the same line
     for (var v = this.vertices.length-1; v >= 2; v--) {
-        if (this.vertices.length > 2) {
+        if (this.broken_start && v <= 4) break;
+        if (this.broken_end && v >= this.vertices.length-5) continue;
+        if (this.vertices.length > 3) {
             if ((this.vertices[v-2].x == this.vertices[v-1].x && this.vertices[v-1].x == this.vertices[v].x) ||
                 (this.vertices[v-2].y == this.vertices[v-1].y && this.vertices[v-1].y == this.vertices[v].y)) {
                 this.vertices.splice(v-2,2);
