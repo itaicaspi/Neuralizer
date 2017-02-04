@@ -31,15 +31,23 @@ function download_as_file(filename, data, type) {
 function save_current_state_as_image(filename) {
     // download the current state to the user's machine as an image
     canvas_manager.show_message("Downloading topology image", true);
+    // canvas_manager.select_all_shapes();
+    // canvas_manager.draw_curr_state_if_necessary();
     var image = canvas_manager.canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
     download_as_file($("#filename").val(), image, "image");
 }
 
-function save_current_state_to_file() {
+function save_current_state_to_file(framework) {
     // download the current state to the user's machine
     canvas_manager.show_message("Downloading topology", true);
-    var text = JSON.stringify(canvas_manager.stored_states[canvas_manager.current_timestep]);
-    download_as_file($("#filename").val(), text, "text");
+    if (framework == "Neuralizer") {
+        var text = JSON.stringify(canvas_manager.stored_states[canvas_manager.current_timestep]);
+        download_as_file($("#filename").val(), text, "text");
+    } else {
+        canvas_manager.show_message("Downloading topology", true);
+        var text = JSON.stringify(canvas_manager.to_graph(), null, "\t");
+        download_as_file($("#filename").val(), text, "text");
+    }
 }
 
 function load_state_from_file() {
@@ -63,9 +71,9 @@ function load_state_from_file() {
         canvas_manager.show_message("File not supported!");
     }
 }
-
-function export_current_state_to_framework_file() {
-    canvas_manager.show_message("Downloading topology", true);
-    var text = JSON.stringify(canvas_manager.to_graph(), null, "\t");
-    download_as_file($("#filename").val(), text, "text");
-}
+//
+// function export_current_state_to_framework_file() {
+//     canvas_manager.show_message("Downloading topology", true);
+//     var text = JSON.stringify(canvas_manager.to_graph(), null, "\t");
+//     download_as_file($("#filename").val(), text, "text");
+// }

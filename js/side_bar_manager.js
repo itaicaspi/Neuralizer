@@ -177,6 +177,7 @@ SidebarManager.prototype.switch_sidebar_mode = function(mode) {
 
 
 SidebarManager.prototype.start = function() {
+    $("#welcome_screen_container").addClass("zoomOut");
     $("#welcome_screen_container").fadeOut("slow");
     // $('.main').css({
     //     '-webkit-filter':'none',
@@ -186,7 +187,9 @@ SidebarManager.prototype.start = function() {
     //     'filter':'none',
     // });
     $("#sidebar_icons_container").fadeIn("slow");
+    // $("#sidebar_icons_container").addClass("fadeInLeft");
     $("#sidebar_container").fadeIn("slow");
+    $("#sidebar_container").addClass("fadeInLeft");
 };
 
 

@@ -10,6 +10,7 @@ var CanvasManager = function(canvas) {
     this.shapes = [];
     this.arrows = [];
     this.current_arrow = new Line([], 5, new Color(0, 0, 0, 1), 3);
+    this.snap_threshold = 10;
 
     // canvas selection
     this.selection_box = new Rectangle(0, 0, 0, 0, 2, 0, 2, "", new Color(0, 0, 0, 0), new Color(100, 100, 100, 1), true);
@@ -18,6 +19,7 @@ var CanvasManager = function(canvas) {
 
     // clipboard
     this.clipboard = [];
+    this.paste_random_move_size = 20;
 
     // cursor management
     this.shape_with_content_pointed_by_cursor = false;
@@ -28,6 +30,8 @@ var CanvasManager = function(canvas) {
     this.cursor_diff_y = 0;
     this.cursor_x = 0;
     this.cursor_y = 0;
+    this.cursor_accum_x = 0;
+    this.cursor_accum_y = 0;
     this.mouse_is_pressed = false;
     this.available_mouse_buttons = ["left", "middle", "right"];
     this.pressed_mouse_button = this.available_mouse_buttons[0];
@@ -65,8 +69,8 @@ CanvasManager.prototype.copy_from_clipboard = function() {
 
 CanvasManager.prototype.paste_from_clipboard = function() {
     var i;
-    var random_translation_x = 20*Math.random();
-    var random_translation_y = 20*Math.random();
+    var random_translation_x = this.paste_random_move_size*Math.random();
+    var random_translation_y = this.paste_random_move_size*Math.random();
     this.reset_selected_shapes();
     this.darken_all_shapes();
     for (i = 0; i < this.clipboard.length; i++) {
@@ -119,7 +123,6 @@ CanvasManager.prototype.get_primary_selected_shape = function() {
 
 
 CanvasManager.prototype.update_cursor_state = function(x, y, pressed_button, is_pressed) {
-
     this.cursor_diff_x = x - this.canvas.getBoundingClientRect().left - this.cursor_x;
     this.cursor_diff_y = y - this.canvas.getBoundingClientRect().top - this.cursor_y;
     this.cursor_x = x - this.canvas.getBoundingClientRect().left;
@@ -256,7 +259,9 @@ CanvasManager.prototype.remove_selected_shapes = function() {
 
 
 CanvasManager.prototype.move_selected_shapes = function() {
-    this.move_shapes_with_alignment(this.selected_shapes, this.cursor_diff_x, this.cursor_diff_y);
+    var diff_used = this.move_shapes_with_alignment(this.selected_shapes, this.cursor_diff_x + this.cursor_accum_x, this.cursor_diff_y + this.cursor_accum_y);
+    this.cursor_accum_x = (this.cursor_diff_x + this.cursor_accum_x - diff_used.x);
+    this.cursor_accum_y = (this.cursor_diff_y + this.cursor_accum_y - diff_used.y);
 };
 
 CanvasManager.prototype.shape_is_selected = function(shape) {
@@ -626,25 +631,25 @@ CanvasManager.prototype.add_shape = function(shape) {
 };
 
 CanvasManager.prototype.move_shapes_with_alignment = function(shapes, diff_x, diff_y) {
-    var snap_threshold = 5;
     var i;
     // move shapes
     for (i = 0; i < shapes.length; i++) {
         // align to nearest center
         var shape_center = shapes[i].get_center();
         var nearest_center = this.nearest_shape_center(shape_center);
-        if (Math.abs(nearest_center.dist_x) >= snap_threshold && Math.abs(-nearest_center.dist_x + diff_x) < snap_threshold) {
+        if (Math.abs(nearest_center.dist_x) >= this.snap_threshold && Math.abs(-nearest_center.dist_x + diff_x) < this.snap_threshold) {
             diff_x = nearest_center.dist_x;
-        } else if (Math.abs(nearest_center.dist_x) < snap_threshold && Math.abs(diff_x) < snap_threshold) {
+        } else if (Math.abs(nearest_center.dist_x) < this.snap_threshold && Math.abs(diff_x) < this.snap_threshold) {
             diff_x = 0;
         }
-        if (Math.abs(nearest_center.dist_y) >= snap_threshold && Math.abs(-nearest_center.dist_y + diff_y) < snap_threshold) {
+        if (Math.abs(nearest_center.dist_y) >= this.snap_threshold && Math.abs(-nearest_center.dist_y + diff_y) < this.snap_threshold) {
             diff_y = nearest_center.dist_y;
-        } else if (Math.abs(nearest_center.dist_y) < snap_threshold && Math.abs(diff_y) < snap_threshold) {
+        } else if (Math.abs(nearest_center.dist_y) < this.snap_threshold && Math.abs(diff_y) < this.snap_threshold) {
             diff_y = 0;
         }
     }
     this.move_shapes(shapes, diff_x, diff_y);
+    return {x: diff_x, y: diff_y};
 };
 
 CanvasManager.prototype.move_shapes = function(shapes, diff_x, diff_y) {
