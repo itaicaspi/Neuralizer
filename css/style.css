@@ -15,13 +15,13 @@ input {
     -webkit-border-radius: 7px;
     -moz-border-radius: 7px;
     border-radius: 7px;
-    padding: 5px;
     font-size: medium;
-    border: 1px solid transparent;
+    border: 0px solid transparent;
     border-top: none;
-    border-bottom: 1px solid #DDD;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, .39), 0 -1px 1px #FFF, 0 1px 0 #FFF;
+    border-bottom: 0px solid #DDD;
+    /*box-shadow: inset 0 1px 2px rgba(0, 0, 0, .39), 0 -1px 1px #FFF, 0 1px 0 #FFF;*/
     outline-width: 0;
+    padding: 5px 5px 5px 10px;
 }
 
 .title {
@@ -131,6 +131,12 @@ input {
     min-width: 140px;
 }
 
+
+.green {
+    background-color: rgb(153,196,50);
+    color: #fff;
+}
+
 .red {
     background-color: #e14329;
     color: #fff;
@@ -138,7 +144,7 @@ input {
 
 .white {
     background-color: #fff;
-    color: #e14329;
+    color: rgb(110,116,125);
 }
 
 .icons-side-bar {
@@ -202,9 +208,8 @@ input {
 }
 
 .layer-color {
-    border-style: none none solid none;
-    border-color: rgba(255, 255, 255, 0.3);
-    border-width: 2px;
+    border: 2px none rgba(255, 255, 255, 0.3);
+    border-bottom-style: solid;
     float: left;
     width: calc(100% / 6);
     height: 27px;

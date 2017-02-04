@@ -53,86 +53,6 @@
         var canvas_manager;
         var sidebar_manager;
 
-        var layer_types = {
-            "DataPlaceholder": {
-                "id": "#dataParams",
-                "short_name": "data"
-            },
-            "Pooling": {
-                "id": "#poolingParams",
-                "short_name": "pool",
-                "subtype_selector_id": "#poolingType",
-                "subtypes": {"MaxPooling": {"id": "#maxPoolingParams"},
-                             "AveragePooling": {"id": "#averagePoolingParams"},
-                             "StochasticPooling": {"id": "#stochasticPoolingParams"}}},
-            "Convolution": {
-                "id": "#convolutionParams",
-                "short_name": "conv"},
-            "Deconvolution": {
-                "id": "#deconvolutionParams",
-                "short_name": "deconv"},
-            "Activation": {
-                "id": "#activationParams",
-                "short_name": "activation",
-                "subtype_selector_id": "#activationType",
-                "subtypes": {"ReLU": {"id": "#reluParams"},
-                             "ReLU6": {"id": "#relu6Params"},
-                             "LeakyReLU": {"id": "#leakyReluParams"},
-                             "ParametericReLU": {"id": "#parametericReluParams"},
-                             "ELU": {"id": "#eluParams"},
-                             "Sigmoid": {"id": "#sigmoidParams",
-                                         "short_name": "σ"},
-                             "HardSigmoid": {"id": "#hardSigmoidParams"},
-                             "TanH": {"id": "#tanhParams",
-                                      "short_name": "tanh"},
-                             "Softmax": {"id": "#softmaxParams"},
-                             "Softsign": {"id": "#softsignParams"},
-                             "Softplux": {"id": "#softplusParams"}}},
-            "Normalization": {
-                "id": "#normalizationParams",
-                "short_name": "norm",
-                "subtype_selector_id": "#normalizationType",
-                "subtypes": {"LocalResponseNormalization": {"id": "#localResponseNormalizationParams"},
-                             "BatchNormalization": {"id": "#batchNormalizationParams"},
-                             "L2Normalization": {"id": "#l2NormalizationParams"}}},
-            "Regularization": {
-                "id": "#regularizationParams",
-                "short_name": "regularize",
-                "subtype_selector_id": "#regularizationType",
-                "subtypes": {"Dropout": {"id": "#dropoutParams"},
-                             "Maxout": {"id": "#maxoutParams"},
-                             "Zoneout": {"id": "#zoneoutParams"},
-                             "DropConnect": {"id": "#dropConnectParams"}}},
-            "DataManipulation": {
-                "id": "#dataManipulationParams",
-                "short_name": "manipulate",
-                "subtype_selector_id": "#dataManipulationType",
-                "subtype": {"Reshape": {"id": "#reshapeParams"},
-                            "Concatenate": {"id": "#concatenateParams"},
-                            "Flatten": {"id": "#flattenParams"},
-                            "Permute": {"id": "#permuteParams"}}},
-            "ElementWise": {
-                "id": "#elementWiseParams",
-                "short_name": "+",
-                "subtype_selector_id": "#elementWiseType",
-                "subtype": {"Add": {"id": "#addParams"},
-                            "Multiply": {"id": "#multiplyParams"}}},
-            "Stochastic": {
-                "id": "#stochasticParams",
-                "short_name": "stochastic",
-                "subtype": {"GaussianNoise": {"id": "#gaussianParams"},
-                            "UniformNoise": {"id": "#uniformParams"},
-                            "GumbleSoftmax": {"id": "#gumbleSoftmaxParams"}}},
-            "InnerProduct": {"id": "#innerProductParams", "short_name": "fc"},
-            "SpecialBlock": {"id": "#specialBlockParams", "short_name": "special"},
-            "Recurrent": {"id": "#recurrentParams", "short_name": "recurrent"},
-            "Advanced": {
-                "id": "#advancedParams",
-                "short_name": "advanced",
-                "subtype": {"Memory": {"id": "#memoryParams"},
-                            "Attention": {"id": "#attentionParams"}}}
-        };
-
         function send_email() {
             var body = JSON.stringify(canvas_manager.stored_states[canvas_manager.current_timestep]);
             var subject = "Neuralizer Topology";
@@ -142,39 +62,6 @@
         function change_color(color_idx) {
             canvas_manager.change_selected_shapes_color(color_idx);
             sidebar_manager.change_selected_color(color_idx);
-        }
-
-        function switch_layer_type(layerType, layerSubtype) {
-            var key;
-            // close all other than the given type
-            for (key in layer_types) {
-                if (layerType == key) {
-                    $(layer_types[key]["id"]).show("fast");
-                } else {
-                    $(layer_types[key]["id"]).hide("fast");
-                }
-            }
-
-            // choose subtype
-            for (key in layer_types[layerType]["subtypes"]) {
-                if (layerSubtype == key) {
-                    $(layer_types[layerType]["subtypes"][key]["id"]).show("fast");
-                } else {
-                    $(layer_types[layerType]["subtypes"][key]["id"]).hide("fast");
-                }
-            }
-        }
-
-        function select_layer_type() {
-            // open the parameters section for the selected layer type only
-            var layerType = $("#layerType").val();
-            var layerSubtype = $(layer_types[layerType]["subtype_selector_id"]).val();
-            switch_layer_type(layerType, layerSubtype);
-        }
-
-        function change_selected_layer_type(layerType, layerSubtype) {
-            $("#layerType").val(layerType);
-            $(layer_types[layerType]["subtype_selector_id"]).val(layerSubtype);
         }
 
         function create_new_layer() {
@@ -294,6 +181,11 @@
                     // add points to curr arrow or attach / detach an arrow
                     canvas_manager.extend_current_arrow();
                     canvas_manager.reset_selected_shapes();
+                }
+
+                if (evt.button == 2) {
+                    canvas_manager.copy_from_clipboard();
+                    canvas_manager.paste_from_clipboard();
                 }
 
                 // sidebar add/remove button toggle
@@ -425,6 +317,8 @@
             window.addEventListener('resize', function() { canvas_manager.fix_canvas_size(document.getElementById('cnv')) });
             var fileInput = document.getElementById('fileInput');
             fileInput.addEventListener('change', load_state_from_file);
+
+            sidebar_manager.select_layer_type();
         }
     </script>
 </head>
@@ -496,7 +390,7 @@
         </div>
         <div class="form-group">
             <label for="layerType" style="color:white">Layer Type</label>
-            <select id="layerType" class="form-control selectpicker" onchange="select_layer_type(this)">
+            <select id="layerType" class="form-control selectpicker" onchange="sidebar_manager.select_layer_type(this)">
                 <optgroup label="Data">
                     <option value="DataPlaceholder">Data Placeholder</option>
                 </optgroup>
@@ -693,7 +587,7 @@
         <!-- Activation -->
         <div class="form-group" style="display: none;" id="activationParams">
             <label for="activationType" style="color:white">Activation Type</label>
-            <select id="activationType" class="form-control selectpicker" onchange="select_layer_type()">
+            <select id="activationType" class="form-control selectpicker" onchange="sidebar_manager.select_layer_type()">
                 <option value="ReLU">ReLU</option>
                 <option value="ReLU6">ReLU6</option>
                 <option value="LeakyReLU">Leaky ReLU</option>
@@ -711,7 +605,7 @@
         <!-- Normalization -->
         <div class="form-group" style="display: none;" id="normalizationParams">
             <label for="normalizationType" style="color:white">Normalization Type</label>
-            <select id="normalizationType" class="form-control selectpicker" onchange="select_layer_type()">
+            <select id="normalizationType" class="form-control selectpicker" onchange="sidebar_manager.select_layer_type()">
                 <option value="BatchNormalization">Batch Normalization</option>
                 <option value="LocalResponseNormalization">Local Response Normalization</option>
                 <option value="L2Normalization">L2 Normalization</option>
@@ -757,7 +651,7 @@
         <!-- Regularization -->
         <div class="form-group" style="display: none;" id="regularizationParams">
             <label for="regularizationType" style="color:white">Regularization Type</label>
-            <select id="regularizationType" class="form-control selectpicker" onchange="select_layer_type()">
+            <select id="regularizationType" class="form-control selectpicker" onchange="sidebar_manager.select_layer_type()">
                 <option value="Dropout">Dropout</option>
                 <option value="Maxout">Maxout</option>
                 <option value="DropConnect">DropConnect</option>
@@ -1101,7 +995,7 @@
                     <!-- Wrapper for slides -->
                     <div class="carousel-inner" role="listbox">
                         <div class="item active">
-                            <img class="img-responsive center-block" src="images/test.png" alt="..." style="margin-top: 40px">
+                            <img class="img-responsive center-block" src="images/test.png" alt="..." style="margin-top: 50px">
                             <!--<div class="carousel-caption">-->
                                 <!--Model Based Generative Imitation Leaning-->
                             <!--</div>-->
@@ -1111,7 +1005,7 @@
                 </div>
             </div>
             <a class="btn rect-btn white" onclick="sidebar_manager.start()"> Start </a>
-            <a class="btn rect-btn red"> Explore </a>
+            <a class="btn rect-btn green"> Explore </a>
         </div>
     </div>
 </div>
@@ -1125,7 +1019,6 @@
         // Initiate tooltip
         $('[data-toggle="tooltip"]').tooltip();
 
-        select_layer_type();
     });
 </script>
 <script>

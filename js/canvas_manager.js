@@ -376,7 +376,7 @@ CanvasManager.prototype.draw_text = function(text, x, y, size) {
     this.ctx.shadowColor = "white";
     this.ctx.shadowOffsetX = 1;
     this.ctx.shadowOffsetY = 1;
-    this.ctx.shadowBlur = 1;
+    this.ctx.shadowBlur = 2;
     this.ctx.fillText(text, x, y);
     this.ctx.shadowColor = "transparent";
 };

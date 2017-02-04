@@ -2,6 +2,88 @@
  * Created by icaspi on 1/30/2017.
  */
 
+
+var layer_types = {
+    "DataPlaceholder": {
+        "id": "#dataParams",
+        "short_name": "data"
+    },
+    "Pooling": {
+        "id": "#poolingParams",
+        "short_name": "pool",
+        "subtype_selector_id": "#poolingType",
+        "subtypes": {"MaxPooling": {"id": "#maxPoolingParams"},
+            "AveragePooling": {"id": "#averagePoolingParams"},
+            "StochasticPooling": {"id": "#stochasticPoolingParams"}}},
+    "Convolution": {
+        "id": "#convolutionParams",
+        "short_name": "conv"},
+    "Deconvolution": {
+        "id": "#deconvolutionParams",
+        "short_name": "deconv"},
+    "Activation": {
+        "id": "#activationParams",
+        "short_name": "activation",
+        "subtype_selector_id": "#activationType",
+        "subtypes": {"ReLU": {"id": "#reluParams"},
+            "ReLU6": {"id": "#relu6Params"},
+            "LeakyReLU": {"id": "#leakyReluParams"},
+            "ParametericReLU": {"id": "#parametericReluParams"},
+            "ELU": {"id": "#eluParams"},
+            "Sigmoid": {"id": "#sigmoidParams",
+                "short_name": "σ"},
+            "HardSigmoid": {"id": "#hardSigmoidParams"},
+            "TanH": {"id": "#tanhParams",
+                "short_name": "tanh"},
+            "Softmax": {"id": "#softmaxParams"},
+            "Softsign": {"id": "#softsignParams"},
+            "Softplux": {"id": "#softplusParams"}}},
+    "Normalization": {
+        "id": "#normalizationParams",
+        "short_name": "norm",
+        "subtype_selector_id": "#normalizationType",
+        "subtypes": {"LocalResponseNormalization": {"id": "#localResponseNormalizationParams"},
+            "BatchNormalization": {"id": "#batchNormalizationParams"},
+            "L2Normalization": {"id": "#l2NormalizationParams"}}},
+    "Regularization": {
+        "id": "#regularizationParams",
+        "short_name": "regularize",
+        "subtype_selector_id": "#regularizationType",
+        "subtypes": {"Dropout": {"id": "#dropoutParams"},
+            "Maxout": {"id": "#maxoutParams"},
+            "Zoneout": {"id": "#zoneoutParams"},
+            "DropConnect": {"id": "#dropConnectParams"}}},
+    "DataManipulation": {
+        "id": "#dataManipulationParams",
+        "short_name": "manipulate",
+        "subtype_selector_id": "#dataManipulationType",
+        "subtype": {"Reshape": {"id": "#reshapeParams"},
+            "Concatenate": {"id": "#concatenateParams"},
+            "Flatten": {"id": "#flattenParams"},
+            "Permute": {"id": "#permuteParams"}}},
+    "ElementWise": {
+        "id": "#elementWiseParams",
+        "short_name": "+",
+        "subtype_selector_id": "#elementWiseType",
+        "subtype": {"Add": {"id": "#addParams"},
+            "Multiply": {"id": "#multiplyParams"}}},
+    "Stochastic": {
+        "id": "#stochasticParams",
+        "short_name": "stochastic",
+        "subtype": {"GaussianNoise": {"id": "#gaussianParams"},
+            "UniformNoise": {"id": "#uniformParams"},
+            "GumbleSoftmax": {"id": "#gumbleSoftmaxParams"}}},
+    "InnerProduct": {"id": "#innerProductParams", "short_name": "fc"},
+    "SpecialBlock": {"id": "#specialBlockParams", "short_name": "special"},
+    "Recurrent": {"id": "#recurrentParams", "short_name": "recurrent"},
+    "Advanced": {
+        "id": "#advancedParams",
+        "short_name": "advanced",
+        "subtype": {"Memory": {"id": "#memoryParams"},
+            "Attention": {"id": "#attentionParams"}}}
+};
+
+
 var SidebarManager = function() {
     this.modes = ["before", "designer", "import_export", "share_explore", "account", "after"];
     this.mode_icons = [];
@@ -11,6 +93,7 @@ var SidebarManager = function() {
     this.add_layer_icon = $("#addLayerIcon");
     this.layer_name = $("#layerName");
     this.full_details_switch = $("#fullDetails");
+    this.layer_type = $("#layerType");
 };
 
 SidebarManager.prototype.change_selected_color = function(color_idx) {
@@ -105,3 +188,38 @@ SidebarManager.prototype.start = function() {
     $("#sidebar_icons_container").fadeIn("slow");
     $("#sidebar_container").fadeIn("slow");
 };
+
+
+
+SidebarManager.prototype.switch_layer_type = function(layerType, layerSubtype) {
+    var key;
+    // close all other than the given type
+    for (key in layer_types) {
+        if (layerType == key) {
+            $(layer_types[key]["id"]).show("fast");
+        } else {
+            $(layer_types[key]["id"]).hide("fast");
+        }
+        // choose subtype
+        for (var subtype_key in layer_types[key]["subtypes"]) {
+            if (layerSubtype == subtype_key) {
+                $(layer_types[key]["subtypes"][subtype_key]["id"]).show("fast");
+            } else {
+                $(layer_types[key]["subtypes"][subtype_key]["id"]).hide("fast");
+            }
+        }
+    }
+};
+
+SidebarManager.prototype.select_layer_type = function() {
+    // open the parameters section for the selected layer type only
+    var layerType = $(this.layer_type).val();
+    var layerSubtype = $(layer_types[layerType]["subtype_selector_id"]).val();
+    this.switch_layer_type(layerType, layerSubtype);
+};
+
+
+SidebarManager.prototype.change_selected_layer_type = function(layerType, layerSubtype) {
+    $(this.layer_type).val(layerType);
+    $(layer_types[layerType]["subtype_selector_id"]).val(layerSubtype);
+}
