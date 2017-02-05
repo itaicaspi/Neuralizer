@@ -4,32 +4,28 @@
     <meta charset="UTF-8">
     <title>Neuralizer</title>
 
-
     <!-- bootstrap -->
-    <link href="css/bootstrap-glyphicons.css" rel="stylesheet">
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <!-- bootstrap select -->
-    <!--<link rel="stylesheet" href="css/bootstrap-select.css"> &lt;!&ndash; js is at the end &ndash;&gt;-->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.2/css/bootstrap-select.min.css">
     <!--Pulling Awesome Font -->
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
-    <!-- style -->
-
-    <!-- Material Design -->
-    <!--<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">-->
-    <!--<link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.light_green-deep_purple.min.css">-->
-    <!--<script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>-->
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css?family=Lato:100,700" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
-          rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Styles -->
     <link href="css/style.css" rel="stylesheet">
     <link href="css/social.css" rel="stylesheet">
     <link href="css/keys.css" rel="stylesheet">
+    <!--<link rel="stylesheet" type="text/css" href="css/gitgraph.css" />-->
     <!-- Animate -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
     <!--jQuery-->
-    <script src="js/jquery-3.0.0.min.js"></script>
-    <!-- neuralizer scripts -->
+    <script src="js/jquery-3.1.1.min.js"></script>
+    <!--<script src="http://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.2/modernizr.js"></script>-->
+    <!--<script src="js/gitgraph.min.js"></script>-->
+
+    <!-- Neuralizer Scripts -->
     <script src="js/utils.js"></script>
     <script src="js/shapes.js"></script>
     <script src="js/objects.js"></script>
@@ -38,13 +34,14 @@
     <script src="js/files.js"></script>
     <script src="js/canvas_manager.js"></script>
     <script src="js/side_bar_manager.js"></script>
+
     <!-- favicon -->
     <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="96x96" href="images/favicon-96x96.png">
     <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
 
+    <!-- MathJax -->
     <script type='text/javascript' src='http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG'></script>
-
     <script type="text/x-mathjax-config">
     MathJax.Hub.Config({
       tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
@@ -54,6 +51,7 @@
     });
     </script>
 
+    <!---->
     <script type="text/javascript">
 
         var canvas_manager;
@@ -170,6 +168,10 @@
 
 
         function run() {
+
+            // Animate loader off screen
+            $(".se-pre-con").fadeOut("slow");
+
             canvas_manager = new CanvasManager(document.getElementById('cnv'));
             sidebar_manager = new SidebarManager();
 
@@ -329,663 +331,666 @@
     </script>
 </head>
 <body onload="run()" style="overflow: hidden;" oncontextmenu="return false">
+<div class="se-pre-con"></div>
 <!-- Github Form Me Ribbon -->
 <a href="https://github.com/itaicaspi/Neuralizer">
     <img class="non-selectable" style="z-index: 10; position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png">
 </a>
 <!--------------------------->
 <span class="main">
-<div class="col-xs-1 icons-side-bar animated" id="sidebar_icons_container" style="display: none;">
-    <div class="wrapping-side-icon" style="height: 100px;">
-        <div id="before_icon" class="side-icon before-side-icon" style="height: 100px; cursor: default">
+    <div class="col-xs-1 icons-side-bar animated" id="sidebar_icons_container" style="display: none;">
+        <div class="wrapping-side-icon" style="height: 100px;">
+            <div id="before_icon" class="side-icon before-side-icon" style="height: 100px; cursor: default">
+            </div>
         </div>
-    </div>
-    <!-- Designer -->
-    <div>
-        <div id="designer_icon" class="side-icon selected-side-icon" onclick="sidebar_manager.switch_sidebar_mode('designer')">
-            <i data-toggle="tooltip" data-placement="top" title="Designer" class="material-icons">color_lens</i>
+        <!-- Designer -->
+        <div>
+            <div id="designer_icon" class="side-icon selected-side-icon" onclick="sidebar_manager.switch_sidebar_mode('designer')">
+                <i data-toggle="tooltip" data-placement="top" title="Designer" class="material-icons">color_lens</i>
+            </div>
         </div>
-    </div>
-    <!-- Import / Export -->
-    <div class="wrapping-side-icon">
-        <div id="import_export_icon" class="side-icon after-side-icon" onclick="sidebar_manager.switch_sidebar_mode('import_export')">
-            <i data-toggle="tooltip" data-placement="top" title="Import/Export" class="material-icons">file_download</i>
+        <!-- Import / Export -->
+        <div class="wrapping-side-icon">
+            <div id="import_export_icon" class="side-icon after-side-icon" onclick="sidebar_manager.switch_sidebar_mode('import_export')">
+                <i data-toggle="tooltip" data-placement="top" title="Import/Export" class="material-icons">file_download</i>
+            </div>
         </div>
-    </div>
-    <!-- Share -->
-    <!--<div>-->
-        <!--<div id="share_icon" class="side-icon" onclick="sidebar_manager.switch_sidebar_mode('share')">-->
-            <!--<i data-toggle="tooltip" data-placement="top" title="Share" class="material-icons">share</i>-->
+        <!-- Share -->
+        <!--<div>-->
+            <!--<div id="share_icon" class="side-icon" onclick="sidebar_manager.switch_sidebar_mode('share')">-->
+                <!--<i data-toggle="tooltip" data-placement="top" title="Share" class="material-icons">share</i>-->
+            <!--</div>-->
         <!--</div>-->
-    <!--</div>-->
-    <!-- Share / Explore -->
-    <div>
-        <div id="share_explore_icon" class="side-icon" onclick="sidebar_manager.switch_sidebar_mode('share_explore')">
-            <i data-toggle="tooltip" data-placement="top" title="Share/Explore" class="material-icons">explore</i>
+        <!-- Share / Explore -->
+        <div>
+            <div id="share_explore_icon" class="side-icon" onclick="sidebar_manager.switch_sidebar_mode('share_explore')">
+                <i data-toggle="tooltip" data-placement="top" title="Share/Explore" class="material-icons">explore</i>
+            </div>
+        </div>
+        <!-- Account -->
+        <div>
+            <div id="account_icon" class="side-icon" onclick="sidebar_manager.switch_sidebar_mode('account')">
+                <i data-toggle="tooltip" data-placement="top" title="Account" class="material-icons">account_circle</i>
+            </div>
+        </div>
+        <div style="height: 100px;">
+            <div id="after_icon" class="side-icon" style="height:100px; cursor: default">
+            </div>
         </div>
     </div>
-    <!-- Account -->
-    <div>
-        <div id="account_icon" class="side-icon" onclick="sidebar_manager.switch_sidebar_mode('account')">
-            <i data-toggle="tooltip" data-placement="top" title="Account" class="material-icons">account_circle</i>
-        </div>
-    </div>
-    <div style="height: 100px;">
-        <div id="after_icon" class="side-icon" style="height:100px; cursor: default">
-        </div>
-    </div>
-</div>
-<div class="col-xs-2 side-bar animated" id="sidebar_container" style="display: none;">
-    <div class="appName animated fadeInUp">
-        <h1 class="title">neuralizer</h1>
-        <b class="title-subscript">visual neural network designer</b>
-    </div>
-    <br>
-    <div id="designer">
-        <div class="form-group">
-            <label for="layerName" style="color:white">Layer Name</label>
-            <!-- Latex support -->
-            <!--
-            <div class="material-switch pull-right">
-                <span style="padding-right: 5px;"><img src="images/latex.png" height="17px"></span>
-                <input id="latexName" name="latexName" type="checkbox" />
-                <label for="latexName" class="label-success"></label>
-            </div>
-            -->
-            <input type="text" id="layerName" class="form-control" placeholder="Layer name" onkeyup="update_shape_name()">
-        </div>
-        <div class="form-group">
-            <label for="layerType" style="color:white">Layer Type</label>
-            <select id="layerType" class="form-control selectpicker" onchange="sidebar_manager.select_layer_type(this)">
-                <optgroup label="Data">
-                    <option value="DataPlaceholder">Data Placeholder</option>
-                </optgroup>
-                <optgroup label="Preprocessing">
-                    <option value="Whitening">Whitening</option>
-                    <option value="Augmentation">Augmentation</option>
-                </optgroup>
-                <optgroup label="Layers">
-                    <option value="Convolution">Convolution</option>
-                    <option value="Pooling">Pooling</option>
-                    <option value="InnerProduct">Inner Product</option>
-                    <option value="Deconvolution">Deconvolution</option>
-                    <option value="Activation">Activation</option>
-                    <option value="Regularization">Regularization</option>
-                    <option value="DataManipulation">Data Manipulation</option>
-                    <option value="Normalization">Normalization</option>
-                    <option value="ElementWise">Element-Wise</option>
-                    <option value="Stochastic">Stochastic</option>
-                    <option value="Recurrent">Recurrent</option>
-                    <option value="SpecialBlock">Special Block</option>
-                </optgroup>
-                <optgroup label="Objectives">
-                    <option value="Softmax">Softmax</option>
-                    <option value="CategoricalCrossentropy">Categorical Crossentropy</option>
-                    <option value="BinaryCrossentropy">Binary Crossentropy</option>
-                    <option value="MeanSquareLoss">Mean Square Loss</option>
-                    <option value="Hinge Loss">Hinge Loss</option>
-                    <option value="L2Loss">L2 Loss</option>
-                    <option value="L1Loss">L1 Loss</option>
-                </optgroup>
-            </select>
-        </div>
-        <hr class="separator">
-
-
-        <!-- Data -->
-        <div class="form-group" style="display: none;" id="dataParams">
-            <label style="color:white; margin-bottom: 20px">Data Properties</label>
-            <div class="row">
-                <div class="col-xs-3">
-                    <label for="dataWidth" style="color:white">Width</label>
-                </div>
-                <div class="col-xs-3 no-left-padding">
-                    <input id="dataWidth" type="number" class="form-control" min="1" max="10000" value="1">
-                </div>
-                <div class="col-xs-3">
-                    <label for="dataHeight" style="color:white">Height</label>
-                </div>
-                <div class="col-xs-3 no-left-padding">
-                    <input id="dataHeight" type="number" class="form-control" min="1" max="10000" value="1">
-                </div>
-            </div>
-            <br>
-            <div class="row">
-                <div class="col-xs-3">
-                    <label for="dataDepth" style="color:white">Depth</label>
-                </div>
-                <div class="col-xs-3 no-left-padding">
-                    <input id="dataDepth" type="number" class="form-control" min="1" max="10000" value="1">
-                </div>
-            </div>
-        </div>
-
-        <!-- Convolution -->
-        <div class="form-group" style="display: none;" id="convolutionParams">
-            <label style="color:white; margin-bottom: 20px">Kernel Properties</label>
-            <div class="row">
-                <div class="col-xs-3">
-                    <label for="kernelWidth" style="color:white">Width</label>
-                </div>
-                <div class="col-xs-3 no-left-padding">
-                    <input id="kernelWidth" type="number" class="form-control" min="1" max="100" value="1">
-                </div>
-                <div class="col-xs-3">
-                    <label for="kernelHeight" style="color:white">Height</label>
-                </div>
-                <div class="col-xs-3 no-left-padding">
-                    <input id="kernelHeight" type="number" class="form-control" min="1" max="100" value="1">
-                </div>
-            </div>
-            <br>
-            <div class="row">
-                <div class="col-xs-3">
-                    <label for="kernelStride" style="color:white">Stride</label>
-                </div>
-                <div class="col-xs-3 no-left-padding">
-                    <input id="kernelStride" type="number" class="form-control" min="1" max="100" value="1">
-                </div>
-                <div class="col-xs-3">
-                    <label for="kernelDilation" style="color:white">Dilation</label>
-                </div>
-                <div class="col-xs-3 no-left-padding">
-                    <input id="kernelDilation" type="number" class="form-control" min="1" max="100" value="1">
-                </div>
-            </div>
-            <br>
-            <div class="row">
-                <div class="col-lg-6">
-                    <label for="numOfms" style="color:white">Number of OFMs</label>
-                </div>
-                <div class="col-lg-6 no-left-padding" style="text-align: right;">
-                    <input id="numOfms" type="number" class="form-control" min="1" max="100000" value="1">
-                </div>
-            </div>
-        </div>
-
-
-        <!-- Deconvolution -->
-        <div class="form-group" style="display: none;" id="deconvolutionParams">
-            <label style="color:white; margin-bottom: 20px">Kernel Properties</label>
-            <div class="row">
-                <div class="col-xs-3">
-                    <label for="deconvKernelWidth" style="color:white">Width</label>
-                </div>
-                <div class="col-xs-3 no-left-padding">
-                    <input id="deconvKernelWidth" type="number" class="form-control" min="1" max="100" value="1">
-                </div>
-                <div class="col-xs-3">
-                    <label for="deconvKernelHeight" style="color:white">Height</label>
-                </div>
-                <div class="col-xs-3 no-left-padding">
-                    <input id="deconvKernelHeight" type="number" class="form-control" min="1" max="100" value="1">
-                </div>
-            </div>
-            <br>
-            <div class="row">
-                <div class="col-xs-3">
-                    <label for="deconvKernelStride" style="color:white">Stride</label>
-                </div>
-                <div class="col-xs-3 no-left-padding">
-                    <input id="deconvKernelStride" type="number" class="form-control" min="1" max="100" value="1">
-                </div>
-            </div>
-            <br>
-            <div class="row">
-                <div class="col-lg-6">
-                    <label for="deconvNumOfms" style="color:white">Number of OFMs</label>
-                </div>
-                <div class="col-lg-6 no-left-padding" style="text-align: right;">
-                    <input id="deconvNumOfms" type="number" class="form-control" min="1" max="100000" value="1">
-                </div>
-            </div>
-        </div>
-
-        <!-- InnerProduct -->
-        <div class="form-group" style="display: none;" id="innerProductParams">
-            <div class="row">
-                <div class="col-lg-6">
-                    <label for="innerProductNumOutputs" style="color:white">Output Size</label>
-                </div>
-                <div class="col-lg-6 no-left-padding">
-                    <input id="innerProductNumOutputs" type="number" class="form-control" min="1" max="10000" value="1">
-                </div>
-            </div>
-        </div>
-
-
-        <!-- Pooling -->
-        <div class="form-group " style="display: none;" id="poolingParams">
-            <label for="poolingType" style="color:white">Pooling Type</label>
-            <select id="poolingType" class="form-control selectpicker">
-                <option value="Max">Max</option>
-                <option value="Average">Average</option>
-                <option value="Stochastic">Stochastic</option>
-            </select>
-            <br><br>
-            <label style="color:white; margin-bottom: 20px">Window Properties</label>
-            <div class="row">
-                <div class="col-xs-3">
-                    <label for="windowWidth" style="color:white">Width</label>
-                </div>
-                <div class="col-xs-3 no-left-padding">
-                    <input id="windowWidth" type="number" class="form-control" min="1" max="100" value="1">
-                </div>
-                <div class="col-xs-3">
-                    <label for="windowHeight" style="color:white">Height</label>
-                </div>
-                <div class="col-xs-3 no-left-padding">
-                    <input id="windowHeight" type="number" class="form-control" min="1" max="100" value="1">
-                </div>
-            </div>
-            <br>
-            <div class="row">
-                <div class="col-xs-3">
-                    <label for="windowStride" style="color:white">Stride</label>
-                </div>
-                <div class="col-xs-3 no-left-padding">
-                    <input id="windowStride" type="number" class="form-control" min="1" max="100" value="1">
-                </div>
-            </div>
-        </div>
-
-
-        <!-- Activation -->
-        <div class="form-group" style="display: none;" id="activationParams">
-            <label for="activationType" style="color:white">Activation Type</label>
-            <select id="activationType" class="form-control selectpicker" onchange="sidebar_manager.select_layer_type()">
-                <option value="ReLU">ReLU</option>
-                <option value="ReLU6">ReLU6</option>
-                <option value="LeakyReLU">Leaky ReLU</option>
-                <option value="pReLU">Parametric ReLU</option>
-                <option value="ELU">ELU</option>
-                <option value="Sigmoid">Sigmoid</option>
-                <option value="HardSigmoid">Hard Sigmoid</option>
-                <option value="TanH">TanH</option>
-                <option value="Softmax">Softmax</option>
-                <option value="Softsign">Softsign</option>
-                <option value="Softplus">Softplus</option>
-            </select>
-        </div>
-
-        <!-- Normalization -->
-        <div class="form-group" style="display: none;" id="normalizationParams">
-            <label for="normalizationType" style="color:white">Normalization Type</label>
-            <select id="normalizationType" class="form-control selectpicker" onchange="sidebar_manager.select_layer_type()">
-                <option value="BatchNormalization">Batch Normalization</option>
-                <option value="LocalResponseNormalization">Local Response Normalization</option>
-                <option value="L2Normalization">L2 Normalization</option>
-            </select>
-        </div>
-
-        <!-- Local Response Normalization -->
-        <div class="form-group" style="display: none;" id="localResponseNormalizationParams">
-            <div class="row">
-                <div class="col-xs-8">
-                    <label for="numberOfNeighbours" style="color:white">Number of Neighbours</label>
-                </div>
-                <div class="col-xs-4 no-left-padding" style="text-align: right;">
-                    <input id="numberOfNeighbours" type="number" class="form-control" min="1" max="100000" value="1">
-                </div>
-            </div>
-            <br>
-            <div class="row">
-                <div class="col-xs-3">
-                    <label for="alpha" style="color:white">$\alpha$</label>
-                </div>
-                <div class="col-xs-3 no-left-padding">
-                    <input id="alpha" type="number" class="form-control" min="0" max="1" step="0.001" value="1">
-                </div>
-                <div class="col-xs-3">
-                    <label for="beta" style="color:white">$\beta$</label>
-                </div>
-                <div class="col-xs-3 no-left-padding">
-                    <input id="beta" type="number" class="form-control" min="0" max="1" step="0.001" value="1">
-                </div>
-            </div>
-            <br>
-            <div class="row">
-                <div class="col-xs-3">
-                    <label for="K" style="color:white">K</label>
-                </div>
-                <div class="col-xs-3 no-left-padding">
-                    <input id="K" type="number" class="form-control" min="1" max="100" value="1">
-                </div>
-            </div>
-            <br>
-        </div>
-
-
-
-        <!-- Regularization -->
-        <div class="form-group" style="display: none;" id="regularizationParams">
-            <label for="regularizationType" style="color:white">Regularization Type</label>
-            <select id="regularizationType" class="form-control selectpicker" onchange="sidebar_manager.select_layer_type()">
-                <option value="Dropout">Dropout</option>
-                <option value="Maxout">Maxout</option>
-                <option value="DropConnect">DropConnect</option>
-                <option value="Zoneout">Zoneout</option>
-            </select>
-            <br><br>
-            <div class="row">
-                <div class="col-lg-6">
-                    <label for="keepProbability" style="color:white">Keep Probability</label>
-                </div>
-                <div class="col-lg-6 no-left-padding" style="text-align: right;">
-                    <input id="keepProbability" type="number" class="form-control" min="0" max="1" value="1">
-                </div>
-            </div>
-        </div>
-
-        <!-- Data Manipulation -->
-        <div class="form-group" style="display: none;" id="dataManipulationParams">
-            <label for="reshapeType" style="color:white">Reshape Type</label>
-            <select id="reshapeType" class="form-control selectpicker">
-                <option value="Concatenate">Concatenate</option>
-                <option value="Reshape">Reshape</option>
-                <option value="Flatten">Flatten</option>
-                <option value="Permute">Permute</option>
-                <option value="Repeat">Repeat</option>
-            </select>
-        </div>
-
-        <!-- Stochastic -->
-        <div class="form-group" style="display: none;" id="stochasticParams">
-            <label for="stochasticType" style="color:white">Probabilistic Layer Type</label>
-            <select id="stochasticType" class="form-control selectpicker">
-                <option value="GaussianNoise">Gaussian Noise</option>
-                <option value="UniformNoise">Uniform Noise</option>
-                <option value="GumbleSoftmax">Gumble Softmax</option>
-            </select>
-        </div>
-
-        <!-- Element-Wise -->
-        <div class="form-group" style="display: none;" id="elementWiseParams">
-            <label for="elementWiseOperator" style="color:white">Element-wise Operator</label>
-            <select id="elementWiseOperator" class="form-control selectpicker">
-                <option value="Add">Add</option>
-                <option value="Multiply">Multiply</option>
-            </select>
-        </div>
-
-        <!-- Special Block -->
-        <div class="form-group" style="display: none;" id="specialBlockParams">
-            <label for="specialBlockType" style="color:white">Block Type</label>
-            <select id="specialBlockType" class="form-control selectpicker">
-                <option value="Inception">Inception</option>
-                <option value="ResidualBlock">Residual Block</option>
-                <option value="DenseEncoder">Dense Encoder</option>
-                <option value="DenseDecoder">Dense Decoder</option>
-                <option value="ConvEncoder">Convolutional Encoder</option>
-                <option value="ConvDecoder">Convolutional Decoder</option>
-            </select>
-        </div>
-
-
-        <!-- Recurrent -->
-        <div class="form-group" style="display: none;" id="recurrentParams">
-            <label for="nodeType" style="color:white">Node Type</label>
-            <select id="nodeType" class="form-control selectpicker">
-                <option value="RNN">RNN</option>
-                <option value="LSTM">LSTM</option>
-                <option value="GRU">GRU</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="layerColor" style="color:white">Color</label>
-            <div style="width:100%;cursor:pointer;" id="layerColor">
-                <div class="layer-color" id="color0" onclick="change_color(0)"
-                     style="background-color: rgb(142, 68, 173); border-top-left-radius: 3px;border-bottom-left-radius: 3px; ">
-                    <i class="glyphicon glyphicon-ok"
-                       style="margin-top: 3px;margin-left:50%;left:-8px;color:rgba(255,255,255,0.7)"></i>
-                </div>
-                <div class="layer-color" id="color1" onclick="change_color(1)"
-                     style="background-color: rgb(52, 152, 219); ">
-                </div>
-                <div class="layer-color" id="color2" onclick="change_color(2)"
-                     style="background-color: rgb(39, 174, 96); ">
-                </div>
-                <div class="layer-color" id="color3" onclick="change_color(3)"
-                     style="background-color: rgb(241, 196, 15);">
-                </div>
-                <div class="layer-color" id="color4" onclick="change_color(4)"
-                     style="background-color: rgb(230, 126, 34);">
-
-                </div>
-                <div class="layer-color" id="color5" onclick="change_color(5)"
-                     style="background-color: rgb(231, 76, 60);border-top-right-radius: 3px;border-bottom-right-radius: 3px; border-style: none solid solid none;">
-                </div>
-            </div>
+    <div class="col-xs-2 side-bar animated" id="sidebar_container" style="display: none;">
+        <div class="appName animated fadeInUp">
+            <h1 class="title">neuralizer</h1>
+            <b class="title-subscript">visual neural network designer</b>
         </div>
         <br>
-        <div class="form-group">
-            <span style="padding-right: 5px; color:white"><b>Full Details</b></span>
-            <div class="material-switch pull-right">
-                <input id="fullDetails" name="latexName" type="checkbox" onchange="canvas_manager.show_full_details(this.checked)"/>
-                <label for="fullDetails" class="label-success"></label>
-            </div>
-        </div>
-        <div class="form-group" style="text-align:center;">
-            <button type="button" id="addLayer" class="btn btn-default btn-circle btn-lg"
-                    onclick="add_or_remove_layer()" style="outline:none;">
-                <i data-toggle="tooltip" data-placement="top"
-                     title="Add" id="addLayerIcon"
-                     class="glyphicon glyphicon-plus"></i>
-            </button>
-        </div>
-        <hr class="separator">
-    </div>
-
-    <div id="import_export" style="display: none">
-        <div class="form-group">
-            <label for="filename" style="color:white">Topology Name</label>
-            <input type="text" id="filename" class="form-control" placeholder="Topology Name">
-        </div>
-        <div class="form-group">
-            <label for="framework" style="color:white">Save Topology to Framework</label>
-            <select id="framework" class="form-control selectpicker">
-                <option data-content="<img src='images/icon-neuralizer-new.png' style='margin-right:10px'>Neuralizer"
-                value="Neuralizer">Neuralizer
-                </option>
-                <option data-content="<img src='images/icon-tensorflow.png' style='margin-right:10px'>TensorFlow"
-                        value="TensorFlow">TensorFlow
-                </option>
-                <option data-content="<img src='images/icon-caffe.png' style='margin-right:10px'> Caffe" value="Caffe">
-                    Caffe
-                </option>
-                <option data-content="<img src='images/icon-theano.png' style='margin-right:10px'> Theano"
-                        value="Theano">Theano
-                </option>
-                <option data-content="<img src='images/icon-torch.png' style='margin-right:10px'> Torch" value="Torch">
-                    Torch
-                </option>
-                <option data-content="<img src='images/icon-keras.png' style='margin-right:10px'> Keras" value="Keras">
-                    Keras
-                </option>
-                <option data-content="<img src='images/icon-pytorch.png' style='margin-right:10px'> PyTorch"
-                        value="Keras">PyTorch
-                </option>
+        <div id="designer">
+            <div class="form-group">
+                <label for="layerName" style="color:white">Layer Name</label>
+                <!-- Latex support -->
                 <!--
-                    <option data-content="<span style='width: 80px; display: inline-block'><img src='images/icon-tensorflow.png'></span>TensorFlow" value="TensorFlow">TensorFlow</option>
-                    <option data-content="<span style='width: 80px; display: inline-block'><img src='images/icon-caffe.png'></span>Caffe" value="Caffe">Caffe</option>
-                    <option data-content="<span style='width: 80px; display: inline-block'><img src='images/icon-theano.png'></span>Theano" value="Theano">Theano</option>
-                    <option data-content="<span style='width: 80px; display: inline-block'><img src='images/icon-torch.png'></span>Torch" value="Torch">Torch</option>
-                    <option data-content="<span style='width: 80px; display: inline-block'><img src='images/icon-keras.png'></span>Keras" value="Keras">Keras</option>
-                    <option data-content="<span style='width: 80px; display: inline-block'><img src='images/icon-pytorch.png'></span>PyTorch" value="Keras">PyTorch</option>
+                <div class="material-switch pull-right">
+                    <span style="padding-right: 5px;"><img src="images/latex.png" height="17px"></span>
+                    <input id="latexName" name="latexName" type="checkbox" />
+                    <label for="latexName" class="label-success"></label>
+                </div>
                 -->
-            </select>
-        </div>
-        <!-- Save Topology to File -->
-        <div class="form-group">
-            <div style="text-align: center; width: 100%">
-                <a class="btn rect-btn purple small-rect" id="saveTopology" onclick="save_current_state_to_file($('#framework').val())">
-                    <i class="fa fa-download" aria-hidden="true"></i> Save
-                </a>
-                <a class="btn rect-btn purple small-rect" id="loadTopology" onclick="document.getElementById('fileInput').click()">
-                    <i class="fa fa-upload" aria-hidden="true"></i> Load
-                </a>
-                <input type="file" id="fileInput" style="display: none;">
+                <input type="text" id="layerName" class="form-control" placeholder="Layer name" onkeyup="update_shape_name()">
             </div>
-        </div>
-        <!-- Save Topology Image -->
-        <div class="form-group">
-            <label for="saveTopology" style="color:white">Save Topology Image</label>
-            <div style="text-align: center; width: 100%">
-                <a class="btn rect-btn big-rect purple" id="saveTopologyImage" class="form-control" onclick="save_current_state_as_image()"><i class="fa fa-picture-o" aria-hidden="true"></i> Save </a>
+            <div class="form-group">
+                <label for="layerType" style="color:white">Layer Type</label>
+                <select id="layerType" class="form-control selectpicker" onchange="sidebar_manager.select_layer_type(this)">
+                    <optgroup label="Data">
+                        <option value="DataPlaceholder">Data Placeholder</option>
+                    </optgroup>
+                    <optgroup label="Preprocessing">
+                        <option value="Whitening">Whitening</option>
+                        <option value="Augmentation">Augmentation</option>
+                    </optgroup>
+                    <optgroup label="Layers">
+                        <option value="Convolution">Convolution</option>
+                        <option value="Pooling">Pooling</option>
+                        <option value="InnerProduct">Inner Product</option>
+                        <option value="Deconvolution">Deconvolution</option>
+                        <option value="Activation">Activation</option>
+                        <option value="Regularization">Regularization</option>
+                        <option value="DataManipulation">Data Manipulation</option>
+                        <option value="Normalization">Normalization</option>
+                        <option value="ElementWise">Element-Wise</option>
+                        <option value="Stochastic">Stochastic</option>
+                        <option value="Recurrent">Recurrent</option>
+                        <option value="SpecialBlock">Special Block</option>
+                    </optgroup>
+                    <optgroup label="Objectives">
+                        <option value="Softmax">Softmax</option>
+                        <option value="CategoricalCrossentropy">Categorical Crossentropy</option>
+                        <option value="BinaryCrossentropy">Binary Crossentropy</option>
+                        <option value="MeanSquareLoss">Mean Square Loss</option>
+                        <option value="Hinge Loss">Hinge Loss</option>
+                        <option value="L2Loss">L2 Loss</option>
+                        <option value="L1Loss">L1 Loss</option>
+                    </optgroup>
+                </select>
             </div>
-        </div>
-    </div>
-    <div id="share_explore" style="display: none">
-        <div class="form-group">
-            <label style="color:white">Sharing Options</label>
-        </div>
-        <div class="row">
-            <div class="col-lg-12">
-                <ul class="social-network social-circle">
-                    <li>
-                        <a href="#" class="icoFacebook" title="Facebook">
-                            <i data-toggle="tooltip" data-placement="top" title="Share on Neuralizer" class="fa fa-facebook"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" class="icoTwitter" title="Twitter">
-                            <i data-toggle="tooltip" data-placement="top" title="Share on Twitter" class="fa fa-twitter"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" class="icoGoogle" title="E-Mail" onclick="send_email()">
-                            <i data-toggle="tooltip" data-placement="top" title="Send by email" class="fa fa-envelope"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" class="icoGitHub" title="GitHub Gist">
-                            <i data-toggle="tooltip" data-placement="top" title="Share as Gist" class="fa fa-github"></i>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-        <br>
-        <div class="form-group">
-            <label for="searchModels" style="color:white">Search Models</label>
-            <div class="input-group">
-                <input type="text" class="form-control" id="searchModels" placeholder="Model Name...">
-                <span class="input-group-btn">
-                <button class="btn btn-default" type="button"><span class="glyphicon glyphicon-search"></span></button>
-              </span>
-            </div><!-- /input-group -->
-        </div>
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="well" id="well2">
-                        <div class="row">
-                            <div class="col-xs-12">
-                                <a href="#" class="thumbnail ModelItem">
-                                    <div class="ModelItemContent">
-                                        <b>AlexNet</b>
-                                        <br>
-                                        Author: Itai Caspi
-                                        <div class="stars">
-                                            <span>
-                                            <i class="fa fa-star" aria-hidden="true"></i>
-                                            1000
-                                            </span>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-xs-6 col-md-12">
-                                <a href="#" class="thumbnail ModelItem">
-                                    <div class="ModelItemContent">
-                                        <b>Incpetion v3</b>
-                                        <br>
-                                        Author: Itai Caspi
-                                    </div>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-xs-6 col-md-12">
-                                <a href="#" class="thumbnail ModelItem">
-                                    <div class="ModelItemContent">
-                                        <b>ResNet</b>
-                                        <br>
-                                        Author: Itai Caspi
-                                    </div>
-                                </a>
-                            </div>
-                        </div>
+            <hr class="separator">
 
-                        <div class="row">
-                            <div class="col-xs-6 col-md-12">
-                                <a href="#" class="thumbnail ModelItem">
-                                    <div class="ModelItemContent">
-                                        <b>FCN</b>
-                                        <br>
-                                        Author: Itai Caspi
-                                    </div>
-                                </a>
+
+            <!-- Data -->
+            <div class="form-group" style="display: none;" id="dataParams">
+                <label style="color:white; margin-bottom: 20px">Data Properties</label>
+                <div class="row">
+                    <div class="col-xs-3">
+                        <label for="dataWidth" style="color:white">Width</label>
+                    </div>
+                    <div class="col-xs-3 no-left-padding">
+                        <input id="dataWidth" type="number" class="form-control" min="1" max="10000" value="1">
+                    </div>
+                    <div class="col-xs-3">
+                        <label for="dataHeight" style="color:white">Height</label>
+                    </div>
+                    <div class="col-xs-3 no-left-padding">
+                        <input id="dataHeight" type="number" class="form-control" min="1" max="10000" value="1">
+                    </div>
+                </div>
+                <br>
+                <div class="row">
+                    <div class="col-xs-3">
+                        <label for="dataDepth" style="color:white">Depth</label>
+                    </div>
+                    <div class="col-xs-3 no-left-padding">
+                        <input id="dataDepth" type="number" class="form-control" min="1" max="10000" value="1">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Convolution -->
+            <div class="form-group" style="display: none;" id="convolutionParams">
+                <label style="color:white; margin-bottom: 20px">Kernel Properties</label>
+                <div class="row">
+                    <div class="col-xs-3">
+                        <label for="kernelWidth" style="color:white">Width</label>
+                    </div>
+                    <div class="col-xs-3 no-left-padding">
+                        <input id="kernelWidth" type="number" class="form-control" min="1" max="100" value="1">
+                    </div>
+                    <div class="col-xs-3">
+                        <label for="kernelHeight" style="color:white">Height</label>
+                    </div>
+                    <div class="col-xs-3 no-left-padding">
+                        <input id="kernelHeight" type="number" class="form-control" min="1" max="100" value="1">
+                    </div>
+                </div>
+                <br>
+                <div class="row">
+                    <div class="col-xs-3">
+                        <label for="kernelStride" style="color:white">Stride</label>
+                    </div>
+                    <div class="col-xs-3 no-left-padding">
+                        <input id="kernelStride" type="number" class="form-control" min="1" max="100" value="1">
+                    </div>
+                    <div class="col-xs-3">
+                        <label for="kernelDilation" style="color:white">Dilation</label>
+                    </div>
+                    <div class="col-xs-3 no-left-padding">
+                        <input id="kernelDilation" type="number" class="form-control" min="1" max="100" value="1">
+                    </div>
+                </div>
+                <br>
+                <div class="row">
+                    <div class="col-lg-6">
+                        <label for="numOfms" style="color:white">Number of OFMs</label>
+                    </div>
+                    <div class="col-lg-6 no-left-padding" style="text-align: right;">
+                        <input id="numOfms" type="number" class="form-control" min="1" max="100000" value="1">
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Deconvolution -->
+            <div class="form-group" style="display: none;" id="deconvolutionParams">
+                <label style="color:white; margin-bottom: 20px">Kernel Properties</label>
+                <div class="row">
+                    <div class="col-xs-3">
+                        <label for="deconvKernelWidth" style="color:white">Width</label>
+                    </div>
+                    <div class="col-xs-3 no-left-padding">
+                        <input id="deconvKernelWidth" type="number" class="form-control" min="1" max="100" value="1">
+                    </div>
+                    <div class="col-xs-3">
+                        <label for="deconvKernelHeight" style="color:white">Height</label>
+                    </div>
+                    <div class="col-xs-3 no-left-padding">
+                        <input id="deconvKernelHeight" type="number" class="form-control" min="1" max="100" value="1">
+                    </div>
+                </div>
+                <br>
+                <div class="row">
+                    <div class="col-xs-3">
+                        <label for="deconvKernelStride" style="color:white">Stride</label>
+                    </div>
+                    <div class="col-xs-3 no-left-padding">
+                        <input id="deconvKernelStride" type="number" class="form-control" min="1" max="100" value="1">
+                    </div>
+                </div>
+                <br>
+                <div class="row">
+                    <div class="col-lg-6">
+                        <label for="deconvNumOfms" style="color:white">Number of OFMs</label>
+                    </div>
+                    <div class="col-lg-6 no-left-padding" style="text-align: right;">
+                        <input id="deconvNumOfms" type="number" class="form-control" min="1" max="100000" value="1">
+                    </div>
+                </div>
+            </div>
+
+            <!-- InnerProduct -->
+            <div class="form-group" style="display: none;" id="innerProductParams">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <label for="innerProductNumOutputs" style="color:white">Output Size</label>
+                    </div>
+                    <div class="col-lg-6 no-left-padding">
+                        <input id="innerProductNumOutputs" type="number" class="form-control" min="1" max="10000" value="1">
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Pooling -->
+            <div class="form-group " style="display: none;" id="poolingParams">
+                <label for="poolingType" style="color:white">Pooling Type</label>
+                <select id="poolingType" class="form-control selectpicker">
+                    <option value="Max">Max</option>
+                    <option value="Average">Average</option>
+                    <option value="Stochastic">Stochastic</option>
+                </select>
+                <br><br>
+                <label style="color:white; margin-bottom: 20px">Window Properties</label>
+                <div class="row">
+                    <div class="col-xs-3">
+                        <label for="windowWidth" style="color:white">Width</label>
+                    </div>
+                    <div class="col-xs-3 no-left-padding">
+                        <input id="windowWidth" type="number" class="form-control" min="1" max="100" value="1">
+                    </div>
+                    <div class="col-xs-3">
+                        <label for="windowHeight" style="color:white">Height</label>
+                    </div>
+                    <div class="col-xs-3 no-left-padding">
+                        <input id="windowHeight" type="number" class="form-control" min="1" max="100" value="1">
+                    </div>
+                </div>
+                <br>
+                <div class="row">
+                    <div class="col-xs-3">
+                        <label for="windowStride" style="color:white">Stride</label>
+                    </div>
+                    <div class="col-xs-3 no-left-padding">
+                        <input id="windowStride" type="number" class="form-control" min="1" max="100" value="1">
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Activation -->
+            <div class="form-group" style="display: none;" id="activationParams">
+                <label for="activationType" style="color:white">Activation Type</label>
+                <select id="activationType" class="form-control selectpicker" onchange="sidebar_manager.select_layer_type()">
+                    <option value="ReLU">ReLU</option>
+                    <option value="ReLU6">ReLU6</option>
+                    <option value="LeakyReLU">Leaky ReLU</option>
+                    <option value="pReLU">Parametric ReLU</option>
+                    <option value="ELU">ELU</option>
+                    <option value="Sigmoid">Sigmoid</option>
+                    <option value="HardSigmoid">Hard Sigmoid</option>
+                    <option value="TanH">TanH</option>
+                    <option value="Softmax">Softmax</option>
+                    <option value="Softsign">Softsign</option>
+                    <option value="Softplus">Softplus</option>
+                </select>
+            </div>
+
+            <!-- Normalization -->
+            <div class="form-group" style="display: none;" id="normalizationParams">
+                <label for="normalizationType" style="color:white">Normalization Type</label>
+                <select id="normalizationType" class="form-control selectpicker" onchange="sidebar_manager.select_layer_type()">
+                    <option value="BatchNormalization">Batch Normalization</option>
+                    <option value="LocalResponseNormalization">Local Response Normalization</option>
+                    <option value="L2Normalization">L2 Normalization</option>
+                </select>
+            </div>
+
+            <!-- Local Response Normalization -->
+            <div class="form-group" style="display: none;" id="localResponseNormalizationParams">
+                <div class="row">
+                    <div class="col-xs-8">
+                        <label for="numberOfNeighbours" style="color:white">Number of Neighbours</label>
+                    </div>
+                    <div class="col-xs-4 no-left-padding" style="text-align: right;">
+                        <input id="numberOfNeighbours" type="number" class="form-control" min="1" max="100000" value="1">
+                    </div>
+                </div>
+                <br>
+                <div class="row">
+                    <div class="col-xs-3">
+                        <label for="alpha" style="color:white">$\alpha$</label>
+                    </div>
+                    <div class="col-xs-3 no-left-padding">
+                        <input id="alpha" type="number" class="form-control" min="0" max="1" step="0.001" value="1">
+                    </div>
+                    <div class="col-xs-3">
+                        <label for="beta" style="color:white">$\beta$</label>
+                    </div>
+                    <div class="col-xs-3 no-left-padding">
+                        <input id="beta" type="number" class="form-control" min="0" max="1" step="0.001" value="1">
+                    </div>
+                </div>
+                <br>
+                <div class="row">
+                    <div class="col-xs-3">
+                        <label for="K" style="color:white">K</label>
+                    </div>
+                    <div class="col-xs-3 no-left-padding">
+                        <input id="K" type="number" class="form-control" min="1" max="100" value="1">
+                    </div>
+                </div>
+                <br>
+            </div>
+
+
+
+            <!-- Regularization -->
+            <div class="form-group" style="display: none;" id="regularizationParams">
+                <label for="regularizationType" style="color:white">Regularization Type</label>
+                <select id="regularizationType" class="form-control selectpicker" onchange="sidebar_manager.select_layer_type()">
+                    <option value="Dropout">Dropout</option>
+                    <option value="Maxout">Maxout</option>
+                    <option value="DropConnect">DropConnect</option>
+                    <option value="Zoneout">Zoneout</option>
+                </select>
+                <br><br>
+                <div class="row">
+                    <div class="col-lg-6">
+                        <label for="keepProbability" style="color:white">Keep Probability</label>
+                    </div>
+                    <div class="col-lg-6 no-left-padding" style="text-align: right;">
+                        <input id="keepProbability" type="number" class="form-control" min="0" max="1" value="1">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Manipulation -->
+            <div class="form-group" style="display: none;" id="dataManipulationParams">
+                <label for="reshapeType" style="color:white">Reshape Type</label>
+                <select id="reshapeType" class="form-control selectpicker">
+                    <option value="Concatenate">Concatenate</option>
+                    <option value="Reshape">Reshape</option>
+                    <option value="Flatten">Flatten</option>
+                    <option value="Permute">Permute</option>
+                    <option value="Repeat">Repeat</option>
+                </select>
+            </div>
+
+            <!-- Stochastic -->
+            <div class="form-group" style="display: none;" id="stochasticParams">
+                <label for="stochasticType" style="color:white">Probabilistic Layer Type</label>
+                <select id="stochasticType" class="form-control selectpicker">
+                    <option value="GaussianNoise">Gaussian Noise</option>
+                    <option value="UniformNoise">Uniform Noise</option>
+                    <option value="GumbleSoftmax">Gumble Softmax</option>
+                </select>
+            </div>
+
+            <!-- Element-Wise -->
+            <div class="form-group" style="display: none;" id="elementWiseParams">
+                <label for="elementWiseOperator" style="color:white">Element-wise Operator</label>
+                <select id="elementWiseOperator" class="form-control selectpicker">
+                    <option value="Add">Add</option>
+                    <option value="Multiply">Multiply</option>
+                </select>
+            </div>
+
+            <!-- Special Block -->
+            <div class="form-group" style="display: none;" id="specialBlockParams">
+                <label for="specialBlockType" style="color:white">Block Type</label>
+                <select id="specialBlockType" class="form-control selectpicker">
+                    <option value="Inception">Inception</option>
+                    <option value="ResidualBlock">Residual Block</option>
+                    <option value="DenseEncoder">Dense Encoder</option>
+                    <option value="DenseDecoder">Dense Decoder</option>
+                    <option value="ConvEncoder">Convolutional Encoder</option>
+                    <option value="ConvDecoder">Convolutional Decoder</option>
+                </select>
+            </div>
+
+
+            <!-- Recurrent -->
+            <div class="form-group" style="display: none;" id="recurrentParams">
+                <label for="nodeType" style="color:white">Node Type</label>
+                <select id="nodeType" class="form-control selectpicker">
+                    <option value="RNN">RNN</option>
+                    <option value="LSTM">LSTM</option>
+                    <option value="GRU">GRU</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="layerColor" style="color:white">Color</label>
+                <div style="width:100%;cursor:pointer;" id="layerColor">
+                    <div class="layer-color" id="color0" onclick="change_color(0)"
+                         style="background-color: rgb(142, 68, 173); border-top-left-radius: 3px;border-bottom-left-radius: 3px; ">
+                        <i class="fa fa-check" aria-hidden="true" style="margin-top: 5px;margin-left:35%;color:rgba(255,255,255,0.7)"></i>
+                    </div>
+                    <div class="layer-color" id="color1" onclick="change_color(1)"
+                         style="background-color: rgb(52, 152, 219); ">
+                    </div>
+                    <div class="layer-color" id="color2" onclick="change_color(2)"
+                         style="background-color: rgb(39, 174, 96); ">
+                    </div>
+                    <div class="layer-color" id="color3" onclick="change_color(3)"
+                         style="background-color: rgb(241, 196, 15);">
+                    </div>
+                    <div class="layer-color" id="color4" onclick="change_color(4)"
+                         style="background-color: rgb(230, 126, 34);">
+
+                    </div>
+                    <div class="layer-color" id="color5" onclick="change_color(5)"
+                         style="background-color: rgb(231, 76, 60);border-top-right-radius: 3px;border-bottom-right-radius: 3px; border-style: none solid solid none;">
+                    </div>
+                </div>
+            </div>
+            <br>
+            <div class="form-group">
+                <span style="padding-right: 5px; color:white"><b>Full Details</b></span>
+                <div class="material-switch pull-right">
+                    <input id="fullDetails" name="latexName" type="checkbox" onchange="canvas_manager.show_full_details(this.checked)"/>
+                    <label for="fullDetails" class="label-success"></label>
+                </div>
+            </div>
+            <div class="form-group" style="text-align:center;">
+                <button type="button" id="addLayer" class="btn btn-default btn-circle btn-lg" onclick="add_or_remove_layer()" style="outline:none;">
+                    <i data-toggle="tooltip" data-placement="top" title="Add" id="addLayerIcon" class="fa fa-plus" aria-hidden="true"></i>
+                </button>
+            </div>
+            <hr class="separator">
+        </div>
+
+        <div id="import_export" style="display: none">
+            <div class="form-group">
+                <label for="filename" style="color:white">Topology Name</label>
+                <input type="text" id="filename" class="form-control" placeholder="Topology Name">
+            </div>
+            <div class="form-group">
+                <label for="framework" style="color:white">Save Topology to Framework</label>
+                <select id="framework" class="form-control selectpicker">
+                    <option data-content="<img src='images/icon-neuralizer-new.png' style='margin-right:10px'>Neuralizer"
+                    value="Neuralizer">Neuralizer
+                    </option>
+                    <option data-content="<img src='images/icon-tensorflow.png' style='margin-right:10px'>TensorFlow"
+                            value="TensorFlow">TensorFlow
+                    </option>
+                    <option data-content="<img src='images/icon-caffe.png' style='margin-right:10px'> Caffe" value="Caffe">
+                        Caffe
+                    </option>
+                    <option data-content="<img src='images/icon-theano.png' style='margin-right:10px'> Theano"
+                            value="Theano">Theano
+                    </option>
+                    <option data-content="<img src='images/icon-torch.png' style='margin-right:10px'> Torch" value="Torch">
+                        Torch
+                    </option>
+                    <option data-content="<img src='images/icon-keras.png' style='margin-right:10px'> Keras" value="Keras">
+                        Keras
+                    </option>
+                    <option data-content="<img src='images/icon-pytorch.png' style='margin-right:10px'> PyTorch"
+                            value="Keras">PyTorch
+                    </option>
+                    <!--
+                        <option data-content="<span style='width: 80px; display: inline-block'><img src='images/icon-tensorflow.png'></span>TensorFlow" value="TensorFlow">TensorFlow</option>
+                        <option data-content="<span style='width: 80px; display: inline-block'><img src='images/icon-caffe.png'></span>Caffe" value="Caffe">Caffe</option>
+                        <option data-content="<span style='width: 80px; display: inline-block'><img src='images/icon-theano.png'></span>Theano" value="Theano">Theano</option>
+                        <option data-content="<span style='width: 80px; display: inline-block'><img src='images/icon-torch.png'></span>Torch" value="Torch">Torch</option>
+                        <option data-content="<span style='width: 80px; display: inline-block'><img src='images/icon-keras.png'></span>Keras" value="Keras">Keras</option>
+                        <option data-content="<span style='width: 80px; display: inline-block'><img src='images/icon-pytorch.png'></span>PyTorch" value="Keras">PyTorch</option>
+                    -->
+                </select>
+            </div>
+            <!-- Save Topology to File -->
+            <div class="form-group">
+                <div style="text-align: center; width: 100%">
+                    <a class="btn rect-btn purple small-rect" id="saveTopology" onclick="save_current_state_to_file($('#framework').val())">
+                        <i class="fa fa-download" aria-hidden="true"></i> Save
+                    </a>
+                    <a class="btn rect-btn purple small-rect" id="loadTopology" onclick="document.getElementById('fileInput').click()">
+                        <i class="fa fa-upload" aria-hidden="true"></i> Load
+                    </a>
+                    <input type="file" id="fileInput" style="display: none;">
+                </div>
+            </div>
+            <!-- Save Topology Image -->
+            <div class="form-group">
+                <label for="saveTopology" style="color:white">Save Topology Image</label>
+                <div style="text-align: center; width: 100%">
+                    <a class="btn rect-btn big-rect purple" id="saveTopologyImage" class="form-control" onclick="save_current_state_as_image()"><i class="fa fa-picture-o" aria-hidden="true"></i> Save </a>
+                </div>
+            </div>
+        </div>
+        <div id="share_explore" style="display: none">
+            <div class="form-group">
+                <label style="color:white">Sharing Options</label>
+            </div>
+            <div class="row">
+                <div class="col-lg-12">
+                    <ul class="social-network social-circle">
+                        <li>
+                            <a href="#" class="icoFacebook" title="Facebook">
+                                <i data-toggle="tooltip" data-placement="top" title="Share on Neuralizer" class="fa fa-facebook"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="icoTwitter" title="Twitter">
+                                <i data-toggle="tooltip" data-placement="top" title="Share on Twitter" class="fa fa-twitter"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="icoGoogle" title="E-Mail" onclick="send_email()">
+                                <i data-toggle="tooltip" data-placement="top" title="Send by email" class="fa fa-envelope"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="icoGitHub" title="GitHub Gist">
+                                <i data-toggle="tooltip" data-placement="top" title="Share as Gist" class="fa fa-github"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <br>
+            <div class="form-group">
+                <label for="searchModels" style="color:white">Search Models</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="searchModels" placeholder="Model Name...">
+                    <span class="input-group-btn">
+                    <button class="btn btn-default" type="button"><span class="fa fa-search" aria-hidden="true"></span></button>
+                  </span>
+                </div><!-- /input-group -->
+            </div>
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="well" id="well2">
+                            <div class="row">
+                                <div class="col-xs-12">
+                                    <a href="#" class="thumbnail ModelItem">
+                                        <div class="ModelItemContent">
+                                            <b>AlexNet</b>
+                                            <br>
+                                            Author: Itai Caspi
+                                            <div class="stars">
+                                                <span>
+                                                <i class="fa fa-star" aria-hidden="true"></i>
+                                                1000
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-xs-6 col-md-12">
-                                <a href="#" class="thumbnail ModelItem">
-                                    <div class="ModelItemContent">
-                                        <b>Faster-RCNN</b>
-                                        <br>
-                                        Author: Itai Caspi
-                                    </div>
-                                </a>
+                            <div class="row">
+                                <div class="col-xs-6 col-md-12">
+                                    <a href="#" class="thumbnail ModelItem">
+                                        <div class="ModelItemContent">
+                                            <b>Incpetion v3</b>
+                                            <br>
+                                            Author: Itai Caspi
+                                        </div>
+                                    </a>
+                                </div>
                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-xs-6 col-md-12">
-                                <a href="#" class="thumbnail ModelItem">
-                                    <div class="ModelItemContent">
-                                        <b>AlexNet</b>
-                                        <br>
-                                        Author: Itai Caspi
-                                    </div>
-                                </a>
+                            <div class="row">
+                                <div class="col-xs-6 col-md-12">
+                                    <a href="#" class="thumbnail ModelItem">
+                                        <div class="ModelItemContent">
+                                            <b>ResNet</b>
+                                            <br>
+                                            Author: Itai Caspi
+                                        </div>
+                                    </a>
+                                </div>
                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-xs-6 col-md-12">
-                                <a href="#" class="thumbnail ModelItem">
-                                    <div class="ModelItemContent">
-                                        <b>AlexNet</b>
-                                        <br>
-                                        Author: Itai Caspi
-                                    </div>
-                                </a>
+
+                            <div class="row">
+                                <div class="col-xs-6 col-md-12">
+                                    <a href="#" class="thumbnail ModelItem">
+                                        <div class="ModelItemContent">
+                                            <b>FCN</b>
+                                            <br>
+                                            Author: Itai Caspi
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xs-6 col-md-12">
+                                    <a href="#" class="thumbnail ModelItem">
+                                        <div class="ModelItemContent">
+                                            <b>Faster-RCNN</b>
+                                            <br>
+                                            Author: Itai Caspi
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xs-6 col-md-12">
+                                    <a href="#" class="thumbnail ModelItem">
+                                        <div class="ModelItemContent">
+                                            <b>AlexNet</b>
+                                            <br>
+                                            Author: Itai Caspi
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xs-6 col-md-12">
+                                    <a href="#" class="thumbnail ModelItem">
+                                        <div class="ModelItemContent">
+                                            <b>AlexNet</b>
+                                            <br>
+                                            Author: Itai Caspi
+                                        </div>
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div id="account">
-
-    </div>
-</div>
-<div class="col-xs-9" id="canvas_container" style="height:100%">
-    <div id="canvas_keys">
-
-    </div>
-    <div id="canvas_overlay">
-        <div id="canvas_messages">
-            <h1>Copied to clipboard</h1>
+        <div id="account" style="display: none">
+            <canvas id="gitGraph" width="200" height="500"></canvas>
         </div>
     </div>
-    <canvas id="cnv" width="100%" height="100%"></canvas>
-</div>
+
+    <!-- Canvas -->
+    <div class="col-xs-9" id="canvas_container" style="height:100%">
+        <div id="canvas_keys">
+        </div>
+        <div id="canvas_overlay">
+            <div id="canvas_messages">
+                <h1>Copied to clipboard</h1>
+            </div>
+            <div id="canvas_explore">
+            </div>
+        </div>
+        <canvas id="cnv" width="100%" height="100%"></canvas>
+    </div>
 </span>
+
+<!-- Welcome Screen -->
 <div id="welcome_screen_container" class="animated">
+
     <div id="welcome_screen">
         <div id="welcome_screen_frame">
             <div id="welcome_screen_background">
@@ -1009,6 +1014,12 @@
                                 <img class="img-responsive center-block" src="images/test.png" alt="..." style="margin-top: 50px">
                                 <!--<div class="carousel-caption">-->
                                     <!--Model Based Generative Imitation Leaning-->
+                                <!--</div>-->
+                            </div>
+                            <div class="item">
+                                <img class="img-responsive center-block" src="images/frameworks.png" alt="..." style="margin-top: 50px">
+                                <!--<div class="carousel-caption">-->
+                                <!--Model Based Generative Imitation Leaning-->
                                 <!--</div>-->
                             </div>
                         </div>
