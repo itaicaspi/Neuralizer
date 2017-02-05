@@ -166,11 +166,25 @@ SidebarManager.prototype.switch_sidebar_mode = function(mode) {
         }
     }
     if (mode == "share_explore") {
-        $("#sidebar_container").removeClass("col-xs-2").addClass("col-xs-3", "slow");
-        $("#canvas_container").removeClass("col-xs-9").addClass("col-xs-8", "slow");
+        $("#canvas_explore").show();
+        $('.grid').masonry({
+            // options
+            itemSelector: '.grid-item',
+            columnWidth: 200
+        });
+        $(".grid").removeClass("fadeOutDown");
+        $(".grid").addClass("fadeInUp");
+
+        $(".canvas").addClass("blur");
+        // $("#sidebar_container").removeClass("col-xs-2").addClass("col-xs-3", "slow");
+        // $("#canvas_container").removeClass("col-xs-9").addClass("col-xs-8", "slow");
     } else {
-        $("#sidebar_container").removeClass("col-xs-3").addClass("col-xs-2", "slow");
-        $("#canvas_container").removeClass("col-xs-8").addClass("col-xs-9", "slow");
+        $(".canvas").removeClass("blur");
+        $(".grid").removeClass("fadeInUp");
+        $(".grid").addClass("fadeOutDown");
+        $("#canvas_explore").fadeOut();
+        // $("#sidebar_container").removeClass("col-xs-3").addClass("col-xs-2", "slow");
+        // $("#canvas_container").removeClass("col-xs-8").addClass("col-xs-9", "slow");
     }
 
 };

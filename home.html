@@ -22,8 +22,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
     <!--jQuery-->
     <script src="js/jquery-3.1.1.min.js"></script>
-    <!--<script src="http://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.2/modernizr.js"></script>-->
-    <!--<script src="js/gitgraph.min.js"></script>-->
+
+    <!-- Masonry -->
+    <script src="https://unpkg.com/masonry-layout@4.1/dist/masonry.pkgd.min.js"></script>
 
     <!-- Neuralizer Scripts -->
     <script src="js/utils.js"></script>
@@ -968,7 +969,7 @@
                 </div>
             </div>
         </div>
-        <div id="account" style="display: none">
+        <div id="account" style="display: none" class="blur">
             <canvas id="gitGraph" width="200" height="500"></canvas>
         </div>
     </div>
@@ -981,10 +982,36 @@
             <div id="canvas_messages">
                 <h1>Copied to clipboard</h1>
             </div>
-            <div id="canvas_explore">
+        </div>
+        <div class="canvas" style="width: 100%; height:100%">
+            <canvas id="cnv" width="100%" height="100%"></canvas>
+        </div>
+        <div id="canvas_explore">
+            <div class="grid animated" data-masonry='{ "itemSelector": ".grid-item", "columnWidth": 200 }'>
+                <div class="grid-item">
+                    <figure class="card">
+                        <div class="designCard__clickBarrier"></div>
+                        <div class="designCardThumbnailContainer">
+                            <a class="designCardThumbnail" href="" target="_blank" style="background-image: url('images/card-placeholder.png'); padding-bottom: 141.25%;" draggable="false"></a>
+                        </div>
+                        <figcaption class="designCard__titleSection">
+                            <div class="designCardTitle editable" title="Inception v4">Inception v4</div>
+                        </figcaption>
+                    </figure>
+                </div>
+                <div class="grid-item">
+                    <figure class="card">
+                        <div class="designCard__clickBarrier"></div>
+                        <div class="designCardThumbnailContainer">
+                            <a class="designCardThumbnail" href="" target="_blank" style="background-image: url('images/card-placeholder.png'); padding-bottom: 141.25%;" draggable="false"></a>
+                        </div>
+                        <figcaption class="designCard__titleSection">
+                            <div class="designCardTitle editable" title="ResNet">ResNet</div>
+                        </figcaption>
+                    </figure>
+                </div>
             </div>
         </div>
-        <canvas id="cnv" width="100%" height="100%"></canvas>
     </div>
 </span>
 
@@ -1041,7 +1068,6 @@
         $('select.selectpicker').selectpicker();
         // Initiate tooltip
         $('[data-toggle="tooltip"]').tooltip();
-
     });
 </script>
 <script>
