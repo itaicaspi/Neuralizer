@@ -31,9 +31,27 @@ function download_as_file(filename, data, type) {
 function save_current_state_as_image(filename) {
     // download the current state to the user's machine as an image
     canvas_manager.show_message("Downloading topology image", true);
-    // canvas_manager.select_all_shapes();
-    // canvas_manager.draw_curr_state_if_necessary();
-    var image = canvas_manager.canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+
+    // get relevant area
+    var bb = canvas_manager.get_bounding_box_over_all_shapes();
+    var margin = 20;
+    var width = bb.max_x - bb.min_x + margin*2;
+    var height = bb.max_y - bb.min_y + margin*2;
+    var x = bb.min_x-margin;
+    var y = bb.min_y-margin;
+
+    canvas_manager.select_all_shapes();
+    canvas_manager.draw_curr_state_if_necessary();
+
+    // crop image to relevant area
+    var canvas = canvas_manager.canvas;
+    var tempCanvas = document.createElement("canvas"),
+        tCtx = tempCanvas.getContext("2d");
+    tempCanvas.width = width;
+    tempCanvas.height = height;
+    tCtx.drawImage(canvas_manager.canvas,-x,-y);
+
+    var image = tempCanvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
     download_as_file($("#filename").val(), image, "image");
 }
 
@@ -55,6 +73,7 @@ function load_state_from_file() {
     var fileInput = document.getElementById('fileInput');
 
     var file = fileInput.files[0];
+    var name = fileInput.value.split(/(\\|\/)/g).pop().replace(/\.[^/.]+$/, "");
     var textType = /text.*/;
 
     if (file.type.match(textType)) {
@@ -64,6 +83,8 @@ function load_state_from_file() {
         reader.onload = function(e) {
             var state = JSON.parse(reader.result);
             canvas_manager.load_state(state);
+            sidebar_manager.switch_sidebar_mode('designer');
+            $("#filename").val(name);
         };
         reader.readAsText(file);
 

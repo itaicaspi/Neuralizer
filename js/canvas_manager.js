@@ -3,6 +3,7 @@
  */
 
 var CanvasManager = function(canvas) {
+    this.canvas = canvas;
     this.fix_canvas_size(canvas);
     this.ctx = this.canvas.getContext('2d');
 
@@ -713,6 +714,47 @@ CanvasManager.prototype.nearest_shape_center = function(p) {
         }
     }
     return {dist_x: -dist_x, dist_y: -dist_y};
+};
+
+
+CanvasManager.prototype.get_bounding_box_over_all_shapes = function() {
+    var min_x = this.canvas.width;
+    var max_x = 0;
+    var min_y = this.canvas.height;
+    var max_y = 0;
+    for (var s = 0; s < this.shapes.length; s++) {
+        for (var v = 0; v < this.shapes[s].vertices.length; v++) {
+            if (this.shapes[s].vertices[v].x < min_x) {
+                min_x = this.shapes[s].vertices[v].x;
+            }
+            if (this.shapes[s].vertices[v].x > max_x) {
+                max_x = this.shapes[s].vertices[v].x;
+            }
+            if (this.shapes[s].vertices[v].y < min_y) {
+                min_y = this.shapes[s].vertices[v].y;
+            }
+            if (this.shapes[s].vertices[v].y > max_y) {
+                max_y = this.shapes[s].vertices[v].y;
+            }
+        }
+    }
+    for (var s = 0; s < this.arrows.length; s++) {
+        for (var v = 0; v < this.arrows[s].vertices.length; v++) {
+            if (this.arrows[s].vertices[v].x < min_x) {
+                min_x = this.arrows[s].vertices[v].x;
+            }
+            if (this.arrows[s].vertices[v].x > max_x) {
+                max_x = this.arrows[s].vertices[v].x;
+            }
+            if (this.arrows[s].vertices[v].y < min_y) {
+                min_y = this.arrows[s].vertices[v].y;
+            }
+            if (this.arrows[s].vertices[v].y > max_y) {
+                max_y = this.arrows[s].vertices[v].y;
+            }
+        }
+    }
+    return {min_x: min_x, max_x: max_x, min_y: min_y, max_y: max_y};
 };
 
 /////////////////////////////

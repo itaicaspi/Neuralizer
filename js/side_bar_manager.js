@@ -85,7 +85,7 @@ var layer_types = {
 
 
 var SidebarManager = function() {
-    this.modes = ["before", "designer", "import_export", "share_explore", "account", "after"];
+    this.modes = ["before", "designer", "share_explore", "account", "after"];
     this.mode_icons = [];
     for (var key = 0; key < this.modes.length; key++) {
         this.mode_icons.push($("#" + this.modes[key] + "_icon"));
@@ -166,20 +166,25 @@ SidebarManager.prototype.switch_sidebar_mode = function(mode) {
         }
     }
     if (mode == "share_explore") {
-        $("#canvas_explore").show();
+        $("#canvas_explore").fadeIn();
         $('.grid').masonry({
             // options
             itemSelector: '.grid-item',
-            columnWidth: 200
+            columnWidth: 100
         });
         $(".grid").removeClass("fadeOutDown");
         $(".grid").addClass("fadeInUp");
-
+        $('.grid-item').hover(
+            function(){ $(this).addClass('pulse') },
+            function(){ $(this).removeClass('pulse') }
+        )
         $(".canvas").addClass("blur");
+        $("#canvas_keys").addClass("blur");
         // $("#sidebar_container").removeClass("col-xs-2").addClass("col-xs-3", "slow");
         // $("#canvas_container").removeClass("col-xs-9").addClass("col-xs-8", "slow");
     } else {
         $(".canvas").removeClass("blur");
+        $("#canvas_keys").removeClass("blur");
         $(".grid").removeClass("fadeInUp");
         $(".grid").addClass("fadeOutDown");
         $("#canvas_explore").fadeOut();

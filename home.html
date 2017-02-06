@@ -351,11 +351,11 @@
             </div>
         </div>
         <!-- Import / Export -->
-        <div class="wrapping-side-icon">
-            <div id="import_export_icon" class="side-icon after-side-icon" onclick="sidebar_manager.switch_sidebar_mode('import_export')">
-                <i data-toggle="tooltip" data-placement="top" title="Import/Export" class="material-icons">file_download</i>
-            </div>
-        </div>
+        <!--<div class="wrapping-side-icon">-->
+            <!--<div id="import_export_icon" class="side-icon after-side-icon" onclick="sidebar_manager.switch_sidebar_mode('import_export')">-->
+                <!--<i data-toggle="tooltip" data-placement="top" title="Import/Export" class="material-icons">file_download</i>-->
+            <!--</div>-->
+        <!--</div>-->
         <!-- Share -->
         <!--<div>-->
             <!--<div id="share_icon" class="side-icon" onclick="sidebar_manager.switch_sidebar_mode('share')">-->
@@ -363,8 +363,8 @@
             <!--</div>-->
         <!--</div>-->
         <!-- Share / Explore -->
-        <div>
-            <div id="share_explore_icon" class="side-icon" onclick="sidebar_manager.switch_sidebar_mode('share_explore')">
+        <div class="wrapping-side-icon">
+            <div id="share_explore_icon" class="side-icon after-side-icon" onclick="sidebar_manager.switch_sidebar_mode('share_explore')">
                 <i data-toggle="tooltip" data-placement="top" title="Share/Explore" class="material-icons">explore</i>
             </div>
         </div>
@@ -777,16 +777,49 @@
             <hr class="separator">
         </div>
 
-        <div id="import_export" style="display: none">
+        <!--<div id="import_export" style="display: none">-->
+
+        <!--</div>-->
+        <div id="share_explore" style="display: none">
             <div class="form-group">
                 <label for="filename" style="color:white">Topology Name</label>
                 <input type="text" id="filename" class="form-control" placeholder="Topology Name">
+            </div>
+
+            <div class="form-group">
+                <label style="color:white">Sharing Options</label>
+            </div>
+            <div class="row" style="margin-bottom: 20px">
+                <div class="col-lg-12" style="text-align: center">
+                    <ul class="social-network social-circle">
+                        <li>
+                            <a href="#" class="icoFacebook" title="Facebook">
+                                <i data-toggle="tooltip" data-placement="top" title="Share on Neuralizer" class="fa fa-facebook"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="icoTwitter" title="Twitter">
+                                <i data-toggle="tooltip" data-placement="top" title="Share on Twitter" class="fa fa-twitter"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="icoGoogle" title="E-Mail" onclick="send_email()">
+                                <i data-toggle="tooltip" data-placement="top" title="Send by email" class="fa fa-envelope"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="icoGitHub" title="GitHub Gist">
+                                <i data-toggle="tooltip" data-placement="top" title="Share as Gist" class="fa fa-github"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
             <div class="form-group">
                 <label for="framework" style="color:white">Save Topology to Framework</label>
                 <select id="framework" class="form-control selectpicker">
                     <option data-content="<img src='images/icon-neuralizer-new.png' style='margin-right:10px'>Neuralizer"
-                    value="Neuralizer">Neuralizer
+                            value="Neuralizer">Neuralizer
                     </option>
                     <option data-content="<img src='images/icon-tensorflow.png' style='margin-right:10px'>TensorFlow"
                             value="TensorFlow">TensorFlow
@@ -835,142 +868,10 @@
                     <a class="btn rect-btn big-rect purple" id="saveTopologyImage" class="form-control" onclick="save_current_state_as_image()"><i class="fa fa-picture-o" aria-hidden="true"></i> Save </a>
                 </div>
             </div>
-        </div>
-        <div id="share_explore" style="display: none">
-            <div class="form-group">
-                <label style="color:white">Sharing Options</label>
-            </div>
-            <div class="row">
-                <div class="col-lg-12">
-                    <ul class="social-network social-circle">
-                        <li>
-                            <a href="#" class="icoFacebook" title="Facebook">
-                                <i data-toggle="tooltip" data-placement="top" title="Share on Neuralizer" class="fa fa-facebook"></i>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" class="icoTwitter" title="Twitter">
-                                <i data-toggle="tooltip" data-placement="top" title="Share on Twitter" class="fa fa-twitter"></i>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" class="icoGoogle" title="E-Mail" onclick="send_email()">
-                                <i data-toggle="tooltip" data-placement="top" title="Send by email" class="fa fa-envelope"></i>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" class="icoGitHub" title="GitHub Gist">
-                                <i data-toggle="tooltip" data-placement="top" title="Share as Gist" class="fa fa-github"></i>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            <br>
-            <div class="form-group">
-                <label for="searchModels" style="color:white">Search Models</label>
-                <div class="input-group">
-                    <input type="text" class="form-control" id="searchModels" placeholder="Model Name...">
-                    <span class="input-group-btn">
-                    <button class="btn btn-default" type="button"><span class="fa fa-search" aria-hidden="true"></span></button>
-                  </span>
-                </div><!-- /input-group -->
-            </div>
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="well" id="well2">
-                            <div class="row">
-                                <div class="col-xs-12">
-                                    <a href="#" class="thumbnail ModelItem">
-                                        <div class="ModelItemContent">
-                                            <b>AlexNet</b>
-                                            <br>
-                                            Author: Itai Caspi
-                                            <div class="stars">
-                                                <span>
-                                                <i class="fa fa-star" aria-hidden="true"></i>
-                                                1000
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-xs-6 col-md-12">
-                                    <a href="#" class="thumbnail ModelItem">
-                                        <div class="ModelItemContent">
-                                            <b>Incpetion v3</b>
-                                            <br>
-                                            Author: Itai Caspi
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-xs-6 col-md-12">
-                                    <a href="#" class="thumbnail ModelItem">
-                                        <div class="ModelItemContent">
-                                            <b>ResNet</b>
-                                            <br>
-                                            Author: Itai Caspi
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
 
-                            <div class="row">
-                                <div class="col-xs-6 col-md-12">
-                                    <a href="#" class="thumbnail ModelItem">
-                                        <div class="ModelItemContent">
-                                            <b>FCN</b>
-                                            <br>
-                                            Author: Itai Caspi
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-xs-6 col-md-12">
-                                    <a href="#" class="thumbnail ModelItem">
-                                        <div class="ModelItemContent">
-                                            <b>Faster-RCNN</b>
-                                            <br>
-                                            Author: Itai Caspi
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-xs-6 col-md-12">
-                                    <a href="#" class="thumbnail ModelItem">
-                                        <div class="ModelItemContent">
-                                            <b>AlexNet</b>
-                                            <br>
-                                            Author: Itai Caspi
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-xs-6 col-md-12">
-                                    <a href="#" class="thumbnail ModelItem">
-                                        <div class="ModelItemContent">
-                                            <b>AlexNet</b>
-                                            <br>
-                                            Author: Itai Caspi
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
         <div id="account" style="display: none" class="blur">
-            <canvas id="gitGraph" width="200" height="500"></canvas>
+
         </div>
     </div>
 
@@ -987,29 +888,160 @@
             <canvas id="cnv" width="100%" height="100%"></canvas>
         </div>
         <div id="canvas_explore">
-            <div class="grid animated" data-masonry='{ "itemSelector": ".grid-item", "columnWidth": 200 }'>
-                <div class="grid-item">
-                    <figure class="card">
-                        <div class="designCard__clickBarrier"></div>
-                        <div class="designCardThumbnailContainer">
-                            <a class="designCardThumbnail" href="" target="_blank" style="background-image: url('images/card-placeholder.png'); padding-bottom: 141.25%;" draggable="false"></a>
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-10 ">
+                        <div id="imaginary_container">
+                            <div class="input-group stylish-input-group">
+                                <input type="text" class="form-control transparent-input" placeholder="Search" >
+                                <span class="input-group-addon">
+                                    <button type="submit">
+                                        <span class="glyphicon glyphicon-search"></span>
+                                    </button>
+                                </span>
+                            </div>
                         </div>
-                        <figcaption class="designCard__titleSection">
-                            <div class="designCardTitle editable" title="Inception v4">Inception v4</div>
+                    </div>
+                </div>
+            </div>
+            <div class="grid animated">
+                <div class="grid-item grid-item--width2 animated">
+                    <figure class="card">
+                        <div class="card-barrier"></div>
+                        <div class="card-thumbnail-container">
+                            <a class="card-thumbnail" href="#" target="_blank" style="background-image: url('images/test.png');" draggable="false"></a>
+                        </div>
+                        <figcaption class="card-title-section">
+                            <div class="card-title editable" title="Inception v4">Inception v4</div>
+                            <div class="card-title-owner">Itai Caspi
+                                <div class="stars">
+                                    <span>
+                                    <i class="fa fa-star" aria-hidden="true"></i>
+                                    1000
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="card-tags">
+                                <mark data-entity="detection"></mark>
+                                <mark data-entity="classification"></mark>
+                            </div>
                         </figcaption>
                     </figure>
                 </div>
-                <div class="grid-item">
+                <div class="grid-item animated">
                     <figure class="card">
-                        <div class="designCard__clickBarrier"></div>
-                        <div class="designCardThumbnailContainer">
-                            <a class="designCardThumbnail" href="" target="_blank" style="background-image: url('images/card-placeholder.png'); padding-bottom: 141.25%;" draggable="false"></a>
+                        <div class="card-barrier"></div>
+                        <div class="card-thumbnail-container">
+                            <a class="card-thumbnail" href="#" target="_blank" style="background-image: url('images/card-test1.png');" draggable="false"></a>
                         </div>
-                        <figcaption class="designCard__titleSection">
-                            <div class="designCardTitle editable" title="ResNet">ResNet</div>
+                        <figcaption class="card-title-section">
+                            <div class="card-title editable" title="ResNet">ResNet</div>
+                            <div class="card-title-owner">Itai Caspi
+                                <div class="stars">
+                                    <span>
+                                    <i class="fa fa-star" aria-hidden="true"></i>
+                                    1000
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="card-tags">
+                                <mark data-entity="segmentation"></mark>
+                                <mark data-entity="other"></mark>
+                            </div>
                         </figcaption>
                     </figure>
                 </div>
+                <div class="grid-item grid-item--width2 animated">
+                    <figure class="card">
+                        <div class="card-barrier"></div>
+                        <div class="card-thumbnail-container">
+                            <a class="card-thumbnail" href="#" target="_blank" style="background-image: url('images/test.png');" draggable="false"></a>
+                        </div>
+                        <figcaption class="card-title-section">
+                            <div class="card-title editable" title="Faster-RCNN">Faster-RCNN</div>
+                            <div class="card-title-owner">Itai Caspi
+                                <div class="stars">
+                                    <span>
+                                    <i class="fa fa-star" aria-hidden="true"></i>
+                                    1000
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="card-tags">
+                                <mark data-entity="generative"></mark>
+                                <mark data-entity="nlp"></mark>
+                            </div>
+                        </figcaption>
+                    </figure>
+                </div>
+                <div class="grid-item grid-item--width2 animated">
+                    <figure class="card">
+                        <div class="card-barrier"></div>
+                        <div class="card-thumbnail-container">
+                            <a class="card-thumbnail" href="#" target="_blank" style="background-image: url('images/test.png');" draggable="false"></a>
+                        </div>
+                        <figcaption class="card-title-section">
+                            <div class="card-title editable" title="Faster-RCNN">Faster-RCNN</div>
+                            <div class="card-title-owner">Itai Caspi
+                                <div class="stars">
+                                    <span>
+                                    <i class="fa fa-star" aria-hidden="true"></i>
+                                    1000
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="card-tags">
+                                <mark data-entity="reinforcement learning"></mark>
+                            </div>
+                        </figcaption>
+                    </figure>
+                </div>
+                <div class="grid-item grid-item--width2 animated">
+                    <figure class="card">
+                        <div class="card-barrier"></div>
+                        <div class="card-thumbnail-container">
+                            <a class="card-thumbnail" href="#" target="_blank" style="background-image: url('images/test.png');" draggable="false"></a>
+                        </div>
+                        <figcaption class="card-title-section">
+                            <div class="card-title editable" title="Faster-RCNN">Faster-RCNN</div>
+                            <div class="card-title-owner">Itai Caspi
+                                <div class="stars">
+                                    <span>
+                                    <i class="fa fa-star" aria-hidden="true"></i>
+                                        1000
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="card-tags">
+                                <mark data-entity="generative"></mark>
+                            </div>
+                        </figcaption>
+                    </figure>
+                </div>
+                <div class="grid-item grid-item--width2 animated">
+                    <figure class="card">
+                        <div class="card-barrier"></div>
+                        <div class="card-thumbnail-container">
+                            <a class="card-thumbnail" href="#" target="_blank" style="background-image: url('images/test.png');" draggable="false"></a>
+                        </div>
+                        <figcaption class="card-title-section">
+                            <div class="card-title editable" title="Faster-RCNN">Faster-RCNN</div>
+                            <div class="card-title-owner">Itai Caspi
+                                <div class="stars">
+                                    <span>
+                                    <i class="fa fa-star" aria-hidden="true"></i>
+                                    1000
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="card-tags">
+                                <mark data-entity="generative"></mark>
+                                <mark data-entity="nlp"></mark>
+                            </div>
+                        </figcaption>
+                    </figure>
+                </div>
+
             </div>
         </div>
     </div>

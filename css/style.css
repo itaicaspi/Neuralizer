@@ -48,33 +48,50 @@ input {
     transition: height .5s ease,margin .5s ease,opacity .3s linear,transform .5s ease;
 }
 
-.designCardThumbnailContainer {
+.card-thumbnail-container {
     overflow: hidden;
     position: relative;
     border-radius: 4px 4px 0 0;
     margin-right: -1px;
     margin-bottom: -1px;
+    background-image: linear-gradient(to bottom, rgba(245,245,245,1),rgba(255,255,255,1) 100%);
 }
-.designCardThumbnail {
-    background: none no-repeat center / cover;
+.card-thumbnail {
+    background: none no-repeat center / contain;
     border-radius: 4px 4px 0 0;
     box-sizing: border-box;
     cursor: auto;
     display: block;
     transition: -webkit-filter .3s ease,filter .3s ease;
     min-height: 40px;
+    height: 160px;
+    padding-bottom: 160px
 }
-.designCard__titleSection {
+.card-title-section {
     border-top: 1px solid rgba(0,0,0,.1);
-    font-size: 13.5px;
-    line-height: 30px;
+    font-size: 14px;
+    line-height: 25px;
     margin: 0;
-    overflow: auto;
+    overflow: hidden;
     padding: 12px;
     position: relative;
     white-space: normal;
+    height: 85px;
 }
-.designCardTitle {
+
+.card-title-owner {
+    font-weight: normal;
+}
+
+.card-tags {
+    line-height: 1;
+    display: block;
+    float:right;
+
+}
+
+.card-title {
+    font-weight: bold;
     color: #505660;
     overflow: hidden;
     position: relative;
@@ -86,9 +103,12 @@ input {
     line-height: 20px;
     transition: color .2s ease,width 0s .2s,padding-right 0s .2s;
 }
+
+
 .grid-item {
-    width: 200px;
+    width: 300px;
     padding-right: 25px;
+    padding-bottom: 25px;
 }
 .grid-item--width2 { width: 400px; }
 
@@ -137,6 +157,11 @@ input {
     -webkit-user-select: none;
     -ms-user-select: none;
     user-select: none;
+    -webkit-transition: all 0.5s linear;
+    -moz-transition: all 0.5s linear;
+    -ms-transition: all 0.5s linear;
+    -o-transition: all 0.5s linear;
+    transition: all 0.5s linear;
 }
 
 #canvas_explore {
@@ -224,14 +249,6 @@ input {
     transition: all 0.5s linear;
 }
 
-.main {
-    /*-webkit-filter: blur(10px);*/
-    /*-moz-filter: blur(10px);*/
-    /*-o-filter: blur(10px);*/
-    /*-ms-filter: blur(10px);*/
-    /*filter: blur(10px);*/
-}
-
 
 .small-rect {
     min-width: 110px;
@@ -270,7 +287,13 @@ input {
 
 .purple {
     background-color: #fff;
-    color: rgb(140,57,146);
+    color: rgb(147,75,194);
+}
+
+
+.icoRss, .icoFacebook, .icoTwitter,
+.icoGoogle, .icoVimeo, .icoGitHub {
+    color:rgb(147,75,194);
 }
 
 .icons-side-bar {
@@ -471,6 +494,12 @@ a.thumbnail:hover, a.thumbnail:focus, a.thumbnail.active {
 .stars {
     display: block;
     float:right;
+    color: #9fa2a8;
+}
+
+.stars:hover {
+    color: rgb(153,196,50);
+    cursor: pointer;
 }
 
 .col-xs-1, .col-xs-2, .col-xs-3, .col-xs-8, .col-xs-9 {
@@ -478,4 +507,131 @@ a.thumbnail:hover, a.thumbnail:focus, a.thumbnail.active {
     -moz-transition: width 0.3s ease, margin 0.3s ease;
     -o-transition: width 0.3s ease, margin 0.3s ease;
     transition: width 0.3s ease, margin 0.3s ease;
+}
+
+.entities {
+    line-height: 2;
+}
+
+mark {
+    padding: 0;
+}
+
+[data-entity]::after {
+    box-sizing: border-box;
+    content: attr(data-entity);
+    font-size: 0.6em;
+    line-height: 1;
+    padding: 0.35em;
+    border-radius: 0.35em;
+    text-transform: uppercase;
+    display: inline-block;
+    vertical-align: middle;
+    /*margin: 0px 0px 0.1rem 0.5rem;*/
+}
+
+[data-entity][data-entity="generative"] {
+    background: rgba(166, 226, 45, 0.2);
+    border-color: rgb(166, 226, 45);
+}
+
+[data-entity][data-entity="generative"]::after {
+    background: rgb(166, 226, 45);
+}
+
+[data-entity][data-entity="reinforcement learning"] {
+    background: rgba(142, 125, 255, 0.2);
+    border-color: rgb(142, 125, 255);
+}
+
+[data-entity][data-entity="reinforcement learning"]::after {
+    background: rgb(142, 125, 255);
+}
+
+[data-entity][data-entity="nlp"] {
+    background: rgba(67, 198, 252, 0.2);
+    border-color: rgb(67, 198, 252);
+}
+
+[data-entity][data-entity="nlp"]::after {
+    background: rgb(67, 198, 252);
+}
+
+[data-entity][data-entity="classification"] {
+    background: rgba(67, 198, 252, 0.2);
+    border-color: rgb(67, 198, 252);
+}
+
+[data-entity][data-entity="classification"]::after {
+    background: rgb(67, 198, 252);
+}
+
+[data-entity][data-entity="segmentation"] {
+    background: rgba(67, 198, 252, 0.2);
+    border-color: rgb(67, 198, 252);
+}
+
+[data-entity][data-entity="segmentation"]::after {
+    background: rgb(67, 198, 252);
+}
+
+[data-entity][data-entity="other"] {
+    background: rgba(253, 151, 32, 0.2);
+    border-color: rgb(253, 151, 32);
+}
+
+[data-entity][data-entity="other"]::after {
+    background: rgb(253, 151, 32);
+}
+
+
+[data-entity][data-entity="unsupervised learning"] {
+    background: rgba(224, 0, 132, 0.2);
+    border-color: rgb(224, 0, 132);
+}
+
+[data-entity][data-entity="unsupervised learning"]::after {
+    background: rgb(224, 0, 132);
+}
+
+[data-entity][data-entity="language"] {
+    background: rgba(255, 204, 0, 0.2);
+    border-color: rgb(255, 204, 0);
+}
+
+[data-entity][data-entity="language"]::after {
+    background: rgb(255, 204, 0);
+}
+
+[data-entity][data-entity="detection"] {
+    background: rgba(47, 187, 171, 0.2);
+    border-color: rgb(47, 187, 171);
+}
+
+[data-entity][data-entity="detection"]::after {
+    background: rgb(47, 187, 171);
+}
+
+/* Search Box */
+#imaginary_container{
+    margin-bottom: 20px;
+}
+.transparent-input {
+    background-color: transparent;
+}
+.stylish-input-group .input-group-addon{
+    background: transparent !important;
+    border-radius: 0 15px 15px 0;
+}
+.stylish-input-group .form-control{
+    border-right:0;
+    box-shadow:0 0 0;
+    border-color:#ccc;
+    border-radius: 15px;
+    padding-left: 20px;
+    font-weight: bold;
+}
+.stylish-input-group button{
+    border:0;
+    background:transparent;
 }
