@@ -2,6 +2,7 @@
  * Created by Itai Caspi on 28/07/2016.
  */
 
+
 function object_to_shape(obj) {
     if (obj.type == "Rectangle") {
         return new Rectangle(obj);

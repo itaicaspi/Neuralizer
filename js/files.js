@@ -2,7 +2,6 @@
  * Created by icaspi on 1/24/2017.
  */
 
-
 function download_as_file(filename, data, type) {
     // Download the text as a file to the user's machine
     if (filename == "") {

@@ -1,4 +1,4 @@
-
+@import 'compass';
 
 /*=========================
   Icons
@@ -61,26 +61,6 @@ a.socialIcon:hover, .socialHoverClass {
     line-height:50px;
     text-align: center;
 }
-
-/*.social-circle li a:hover i, .triggeredHover {*/
-    /*-moz-transform: rotate(360deg);*/
-    /*-webkit-transform: rotate(360deg);*/
-    /*-ms--transform: rotate(360deg);*/
-    /*transform: rotate(360deg);*/
-    /*-webkit-transition: all 0.2s;*/
-    /*-moz-transition: all 0.2s;*/
-    /*-o-transition: all 0.2s;*/
-    /*-ms-transition: all 0.2s;*/
-    /*transition: all 0.2s;*/
-/*}*/
-/*.social-circle i {*/
-    /*color: #fff;*/
-    /*-webkit-transition: all 0.8s;*/
-    /*-moz-transition: all 0.8s;*/
-    /*-o-transition: all 0.8s;*/
-    /*-ms-transition: all 0.8s;*/
-    /*transition: all 0.8s;*/
-/*}*/
 
 a {
     background-color: #FFFFFF;

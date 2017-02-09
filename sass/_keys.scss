@@ -1,3 +1,20 @@
+@import 'compass';
+
+.key-wrap {
+  width: 120px;
+  display: inline-block;
+}
+
+.key-info {
+  display: inline-block;
+  margin-left: 10px;
+  margin-right: 10px;
+  vertical-align: middle;
+  height: 40px;
+  color: rgba(50,50,50,0.8);
+  font-weight: bold;
+}
+
 .keyboard-key {
   cursor: pointer;
   position: relative;
@@ -40,15 +57,7 @@
   height: 26px;
   width: 46px;
 }
-.centered {
-  position: absolute;
-  top: 50%;
-  margin-top: -0.5em;
-  left: 0;
-  right: 0;
-  margin-left: auto;
-  margin-right: auto;
-}
+
 .bottom-right {
   position: absolute;
   bottom: 5px;

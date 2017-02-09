@@ -2,6 +2,7 @@
  * Created by Itai Caspi on 26/07/2016.
  */
 
+
 // project point on 3d plane
 function project3D(P, planeN) {
     var dist = planeN.dot(P);

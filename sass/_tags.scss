@@ -1,0 +1,100 @@
+@import 'compass';
+
+mark {
+  padding: 0;
+}
+
+[data-entity]::after {
+  box-sizing: border-box;
+  content: attr(data-entity);
+  font-size: 0.6em;
+  line-height: 1;
+  padding: 0.35em;
+  border-radius: 0.35em;
+  text-transform: uppercase;
+  display: inline-block;
+  vertical-align: middle;
+  /*margin: 0px 0px 0.1rem 0.5rem;*/
+}
+
+[data-entity][data-entity="generative"] {
+  background: rgba(166, 226, 45, 0.2);
+  border-color: rgb(166, 226, 45);
+}
+
+[data-entity][data-entity="generative"]::after {
+  background: rgb(166, 226, 45);
+}
+
+[data-entity][data-entity="reinforcement learning"] {
+  background: rgba(142, 125, 255, 0.2);
+  border-color: rgb(142, 125, 255);
+}
+
+[data-entity][data-entity="reinforcement learning"]::after {
+  background: rgb(142, 125, 255);
+}
+
+[data-entity][data-entity="nlp"] {
+  background: rgba(67, 198, 252, 0.2);
+  border-color: rgb(67, 198, 252);
+}
+
+[data-entity][data-entity="nlp"]::after {
+  background: rgb(67, 198, 252);
+}
+
+[data-entity][data-entity="classification"] {
+  background: rgba(67, 198, 252, 0.2);
+  border-color: rgb(67, 198, 252);
+}
+
+[data-entity][data-entity="classification"]::after {
+  background: rgb(67, 198, 252);
+}
+
+[data-entity][data-entity="segmentation"] {
+  background: rgba(67, 198, 252, 0.2);
+  border-color: rgb(67, 198, 252);
+}
+
+[data-entity][data-entity="segmentation"]::after {
+  background: rgb(67, 198, 252);
+}
+
+[data-entity][data-entity="other"] {
+  background: rgba(253, 151, 32, 0.2);
+  border-color: rgb(253, 151, 32);
+}
+
+[data-entity][data-entity="other"]::after {
+  background: rgb(253, 151, 32);
+}
+
+
+[data-entity][data-entity="unsupervised learning"] {
+  background: rgba(224, 0, 132, 0.2);
+  border-color: rgb(224, 0, 132);
+}
+
+[data-entity][data-entity="unsupervised learning"]::after {
+  background: rgb(224, 0, 132);
+}
+
+[data-entity][data-entity="language"] {
+  background: rgba(255, 204, 0, 0.2);
+  border-color: rgb(255, 204, 0);
+}
+
+[data-entity][data-entity="language"]::after {
+  background: rgb(255, 204, 0);
+}
+
+[data-entity][data-entity="detection"] {
+  background: rgba(47, 187, 171, 0.2);
+  border-color: rgb(47, 187, 171);
+}
+
+[data-entity][data-entity="detection"]::after {
+  background: rgb(47, 187, 171);
+}

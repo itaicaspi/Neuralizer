@@ -2,6 +2,7 @@
  * Created by icaspi on 1/30/2017.
  */
 
+
 var CanvasManager = function(canvas) {
     this.canvas = canvas;
     this.fix_canvas_size(canvas);

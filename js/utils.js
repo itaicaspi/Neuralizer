@@ -2,6 +2,7 @@
  * Created by Itai Caspi on 26/07/2016.
  */
 
+
 function assign(object, source) {
     Object.keys(source).forEach(function(key) {
         object[key] = source[key];

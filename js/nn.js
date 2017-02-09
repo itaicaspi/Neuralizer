@@ -2,6 +2,7 @@
  * Created by Itai Caspi on 26/07/2016.
  */
 
+
 var inheritsFrom = function (child, parent) {
     child.prototype = Object.create(parent.prototype);
     child.prototype.constructor = child;

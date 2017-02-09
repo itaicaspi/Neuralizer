@@ -2,7 +2,6 @@
  * Created by icaspi on 1/30/2017.
  */
 
-
 var layer_types = {
     "DataPlaceholder": {
         "id": "#dataParams",

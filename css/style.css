@@ -1,637 +1,1746 @@
-element{
-    --dark-menu: rgb(39,44,51);
-    --logo-green: rgb(153,196,50);
+@charset "UTF-8";
+/*=========================
+  Icons
+ ================= */
+/* footer social icons */
+/* line 8, ../sass/_social.scss */
+ul.social-network {
+  list-style: none;
+  display: inline;
+  margin-left: 0 !important;
+  padding: 0;
 }
 
+/* line 14, ../sass/_social.scss */
+ul.social-network li {
+  display: inline;
+  margin: 0 3px;
+}
+
+/* footer social icons */
+/* line 21, ../sass/_social.scss */
+.social-network a.icoRss:hover {
+  background-color: #F56505;
+}
+
+/* line 24, ../sass/_social.scss */
+.social-network a.icoFacebook:hover {
+  background-color: #3B5998;
+}
+
+/* line 27, ../sass/_social.scss */
+.social-network a.icoTwitter:hover {
+  background-color: #33ccff;
+}
+
+/* line 30, ../sass/_social.scss */
+.social-network a.icoGoogle:hover {
+  background-color: #BD3518;
+}
+
+/* line 33, ../sass/_social.scss */
+.social-network a.icoVimeo:hover {
+  background-color: #0590B8;
+}
+
+/* line 36, ../sass/_social.scss */
+.social-network a.icoGitHub:hover {
+  background-color: #33b754;
+}
+
+/* line 39, ../sass/_social.scss */
+.social-network a.icoRss:hover i, .social-network a.icoFacebook:hover i, .social-network a.icoTwitter:hover i,
+.social-network a.icoGoogle:hover i, .social-network a.icoVimeo:hover i, .social-network a.icoGitHub:hover i {
+  color: #fff;
+}
+
+/* line 43, ../sass/_social.scss */
+a.socialIcon:hover, .socialHoverClass {
+  color: #44BCDD;
+}
+
+/* line 47, ../sass/_social.scss */
+.social-circle li a {
+  display: inline-block;
+  position: relative;
+  margin: 0 auto 0 auto;
+  -moz-border-radius: 50%;
+  -webkit-border-radius: 50%;
+  border-radius: 50%;
+  text-align: center;
+  width: 50px;
+  height: 50px;
+  font-size: 20px;
+}
+
+/* line 59, ../sass/_social.scss */
+.social-circle li i {
+  margin: 0;
+  line-height: 50px;
+  text-align: center;
+}
+
+/* line 65, ../sass/_social.scss */
+a {
+  background-color: #FFFFFF;
+}
+
+/* line 3, ../sass/_keys.scss */
+.key-wrap {
+  width: 120px;
+  display: inline-block;
+}
+
+/* line 8, ../sass/_keys.scss */
+.key-info {
+  display: inline-block;
+  margin-left: 10px;
+  margin-right: 10px;
+  vertical-align: middle;
+  height: 40px;
+  color: rgba(50, 50, 50, 0.8);
+  font-weight: bold;
+}
+
+/* line 18, ../sass/_keys.scss */
+.keyboard-key {
+  cursor: pointer;
+  position: relative;
+  display: inline-block;
+  color: #888;
+  font: bold 12px arial;
+  text-decoration: none;
+  text-align: center;
+  width: 44px;
+  height: 28px;
+  background: #eff0f2;
+  border-radius: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: inset 0 0 25px #e8e8e8, 0 1px 0 #c3c3c3, 0 2px 0 #c9c9c9, 0 2px 3px #333;
+  text-shadow: 0px 1px 0px rgba(255, 255, 255, 0.8);
+  margin: 0px;
+}
+
+/* line 35, ../sass/_keys.scss */
+.keyboard-key.dark {
+  color: #aaa;
+  background: #222;
+  box-shadow: inset 0 0 25px #333, 0 1px 0 #000, 0 2px 0 #222, 0 2px 3px #333;
+  text-shadow: 0px -1px 0px #000;
+}
+
+/* line 41, ../sass/_keys.scss */
+.keyboard-key:active,
+.keyboard-keydown {
+  color: #888;
+  background: #ebeced;
+  margin: 0px 0px -2px 0px;
+  box-shadow: inset 0 0 25px #ddd, 0 0 3px #333;
+  border-top: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+/* line 49, ../sass/_keys.scss */
+.keyboard-key.dark:active,
+.keyboard-keydown.dark {
+  color: #888;
+  background: #222;
+  box-shadow: inset 0 0 25px #333, 0 0 3px #333;
+}
+
+/* line 55, ../sass/_keys.scss */
+.short {
+  font-size: 8px;
+  height: 26px;
+  width: 46px;
+}
+
+/* line 61, ../sass/_keys.scss */
+.bottom-right {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+}
+
+/* line 66, ../sass/_keys.scss */
+.bottom-left {
+  position: absolute;
+  bottom: 5px;
+  left: 5px;
+}
+
+/* line 71, ../sass/_keys.scss */
+.bottom-center {
+  position: absolute;
+  bottom: 5px;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* functions */
+/* line 80, ../sass/_keys.scss */
+.keyboard-key.f1 {
+  font-size: 8px;
+  height: 26px;
+  width: 46px;
+}
+
+/* line 85, ../sass/_keys.scss */
+.keyboard-key.f1::before {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  content: "F1";
+}
+
+/* line 91, ../sass/_keys.scss */
+.keyboard-key.f2 {
+  font-size: 8px;
+  height: 26px;
+  width: 46px;
+}
+
+/* line 96, ../sass/_keys.scss */
+.keyboard-key.f2::before {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  content: "F2";
+}
+
+/* line 102, ../sass/_keys.scss */
+.keyboard-key.f3 {
+  font-size: 8px;
+  height: 26px;
+  width: 46px;
+}
+
+/* line 107, ../sass/_keys.scss */
+.keyboard-key.f3::before {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  content: "F3";
+}
+
+/* line 113, ../sass/_keys.scss */
+.keyboard-key.f4 {
+  font-size: 8px;
+  height: 26px;
+  width: 46px;
+}
+
+/* line 118, ../sass/_keys.scss */
+.keyboard-key.f4::before {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  content: "F4";
+}
+
+/* line 124, ../sass/_keys.scss */
+.keyboard-key.f5 {
+  font-size: 8px;
+  height: 26px;
+  width: 46px;
+}
+
+/* line 129, ../sass/_keys.scss */
+.keyboard-key.f5::before {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  content: "F5";
+}
+
+/* line 135, ../sass/_keys.scss */
+.keyboard-key.f6 {
+  font-size: 8px;
+  height: 26px;
+  width: 46px;
+}
+
+/* line 140, ../sass/_keys.scss */
+.keyboard-key.f6::before {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  content: "F6";
+}
+
+/* line 146, ../sass/_keys.scss */
+.keyboard-key.f7 {
+  font-size: 8px;
+  height: 26px;
+  width: 46px;
+}
+
+/* line 151, ../sass/_keys.scss */
+.keyboard-key.f7::before {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  content: "F7";
+}
+
+/* line 157, ../sass/_keys.scss */
+.keyboard-key.f8 {
+  font-size: 8px;
+  height: 26px;
+  width: 46px;
+}
+
+/* line 162, ../sass/_keys.scss */
+.keyboard-key.f8::before {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  content: "F8";
+}
+
+/* line 168, ../sass/_keys.scss */
+.keyboard-key.f9 {
+  font-size: 8px;
+  height: 26px;
+  width: 46px;
+}
+
+/* line 173, ../sass/_keys.scss */
+.keyboard-key.f9::before {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  content: "F9";
+}
+
+/* line 179, ../sass/_keys.scss */
+.keyboard-key.f10 {
+  font-size: 8px;
+  height: 26px;
+  width: 46px;
+}
+
+/* line 184, ../sass/_keys.scss */
+.keyboard-key.f10::before {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  content: "F10";
+}
+
+/* line 190, ../sass/_keys.scss */
+.keyboard-key.f11 {
+  font-size: 8px;
+  height: 26px;
+  width: 46px;
+}
+
+/* line 195, ../sass/_keys.scss */
+.keyboard-key.f11::before {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  content: "F11";
+}
+
+/* line 201, ../sass/_keys.scss */
+.keyboard-key.f12 {
+  font-size: 8px;
+  height: 26px;
+  width: 46px;
+}
+
+/* line 206, ../sass/_keys.scss */
+.keyboard-key.f12::before {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  content: "F12";
+}
+
+/* line 212, ../sass/_keys.scss */
+.keyboard-key.eject {
+  font-size: 8px;
+  height: 26px;
+  width: 46px;
+}
+
+/* line 217, ../sass/_keys.scss */
+.keyboard-key.eject::before {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  content: "EJECT";
+}
+
+/* line 223, ../sass/_keys.scss */
+.keyboard-key.backspace {
+  font-size: 8px;
+  height: 26px;
+  width: 56px;
+}
+
+/* line 228, ../sass/_keys.scss */
+.keyboard-key.backspace::before {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  content: "Backspace";
+}
+
+/* numbers */
+/* line 235, ../sass/_keys.scss */
+.keyboard-key.one::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  content: "1";
+}
+
+/* line 245, ../sass/_keys.scss */
+.keyboard-key.two::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  content: "2";
+}
+
+/* line 255, ../sass/_keys.scss */
+.keyboard-key.three::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  content: "3";
+}
+
+/* line 265, ../sass/_keys.scss */
+.keyboard-key.four::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  content: "4";
+}
+
+/* line 275, ../sass/_keys.scss */
+.keyboard-key.five::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  content: "5";
+}
+
+/* line 285, ../sass/_keys.scss */
+.keyboard-key.six::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  content: "6";
+}
+
+/* line 295, ../sass/_keys.scss */
+.keyboard-key.seven::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  content: "7";
+}
+
+/* line 305, ../sass/_keys.scss */
+.keyboard-key.eight::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  content: "8";
+}
+
+/* line 315, ../sass/_keys.scss */
+.keyboard-key.nine::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  content: "9";
+}
+
+/* line 325, ../sass/_keys.scss */
+.keyboard-key.zero::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  content: "0";
+}
+
+/* alphabet */
+/* line 336, ../sass/_keys.scss */
+.keyboard-key.q::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  content: "q";
+}
+
+/* line 346, ../sass/_keys.scss */
+.keyboard-key.w::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  content: "w";
+}
+
+/* line 356, ../sass/_keys.scss */
+.keyboard-key.e::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  content: "e";
+}
+
+/* line 366, ../sass/_keys.scss */
+.keyboard-key.r::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  content: "r";
+}
+
+/* line 376, ../sass/_keys.scss */
+.keyboard-key.t::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  content: "t";
+}
+
+/* line 386, ../sass/_keys.scss */
+.keyboard-key.y::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  content: "y";
+}
+
+/* line 396, ../sass/_keys.scss */
+.keyboard-key.u::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  content: "u";
+}
+
+/* line 406, ../sass/_keys.scss */
+.keyboard-key.i::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  content: "i";
+}
+
+/* line 416, ../sass/_keys.scss */
+.keyboard-key.o::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  content: "o";
+}
+
+/* line 426, ../sass/_keys.scss */
+.keyboard-key.p::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  content: "p";
+}
+
+/* line 436, ../sass/_keys.scss */
+.keyboard-key.a::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  content: "a";
+}
+
+/* line 446, ../sass/_keys.scss */
+.keyboard-key.s::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  content: "s";
+}
+
+/* line 456, ../sass/_keys.scss */
+.keyboard-key.d::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  content: "d";
+}
+
+/* line 466, ../sass/_keys.scss */
+.keyboard-key.f::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  content: "f";
+}
+
+/* line 476, ../sass/_keys.scss */
+.keyboard-key.g::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  content: "g";
+}
+
+/* line 486, ../sass/_keys.scss */
+.keyboard-key.h::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  content: "h";
+}
+
+/* line 496, ../sass/_keys.scss */
+.keyboard-key.j::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  content: "j";
+}
+
+/* line 506, ../sass/_keys.scss */
+.keyboard-key.k::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  content: "k";
+}
+
+/* line 516, ../sass/_keys.scss */
+.keyboard-key.l::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  content: "l";
+}
+
+/* line 526, ../sass/_keys.scss */
+.keyboard-key.z::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  content: "z";
+}
+
+/* line 536, ../sass/_keys.scss */
+.keyboard-key.x::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  content: "x";
+}
+
+/* line 546, ../sass/_keys.scss */
+.keyboard-key.c::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  content: "c";
+}
+
+/* line 556, ../sass/_keys.scss */
+.keyboard-key.v::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  content: "v";
+}
+
+/* line 566, ../sass/_keys.scss */
+.keyboard-key.b::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  content: "b";
+}
+
+/* line 576, ../sass/_keys.scss */
+.keyboard-key.n::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  content: "n";
+}
+
+/* line 586, ../sass/_keys.scss */
+.keyboard-key.m::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  content: "m";
+}
+
+/* utility */
+/* line 597, ../sass/_keys.scss */
+.keyboard-key.esc {
+  font-size: 8px;
+  height: 26px;
+  width: 46px;
+}
+
+/* line 602, ../sass/_keys.scss */
+.keyboard-key.esc::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 10px;
+  content: "esc";
+}
+
+/* line 613, ../sass/_keys.scss */
+.keyboard-key.alt::before {
+  position: absolute;
+  bottom: 5px;
+  left: 5px;
+  font-size: 10px;
+  content: "alt";
+}
+
+/* line 620, ../sass/_keys.scss */
+.keyboard-key.cmd {
+  width: 72px;
+}
+
+/* line 623, ../sass/_keys.scss */
+.keyboard-key.cmd::before {
+  position: absolute;
+  bottom: 5px;
+  left: 5px;
+  font-size: 10px;
+  content: "cmd";
+}
+
+/* line 630, ../sass/_keys.scss */
+.keyboard-key.ctrl::before {
+  position: absolute;
+  bottom: 5px;
+  left: 5px;
+  font-size: 10px;
+  content: "ctrl";
+}
+
+/* line 637, ../sass/_keys.scss */
+.keyboard-key.delete::before {
+  position: absolute;
+  bottom: 5px;
+  left: 5px;
+  font-size: 10px;
+  content: "delete";
+}
+
+/* line 644, ../sass/_keys.scss */
+.keyboard-key.option::before {
+  position: absolute;
+  bottom: 5px;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 10px;
+  content: "option";
+}
+
+/* line 654, ../sass/_keys.scss */
+.keyboard-key.return {
+  width: 72px;
+}
+
+/* line 657, ../sass/_keys.scss */
+.keyboard-key.return::before {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  font-size: 10px;
+  content: "return";
+}
+
+/* line 664, ../sass/_keys.scss */
+.keyboard-key.shift {
+  width: 72px;
+}
+
+/* line 667, ../sass/_keys.scss */
+.keyboard-key.shift::before {
+  position: absolute;
+  bottom: 5px;
+  left: 5px;
+  font-size: 10px;
+  content: "shift";
+}
+
+/* line 674, ../sass/_keys.scss */
+.keyboard-key.space {
+  width: 226px;
+}
+
+/* line 677, ../sass/_keys.scss */
+.keyboard-key.tab {
+  width: 72px;
+}
+
+/* line 680, ../sass/_keys.scss */
+.keyboard-key.tab::before {
+  position: absolute;
+  bottom: 5px;
+  left: 5px;
+  font-size: 10px;
+  content: "tab";
+}
+
+/* arrows */
+/* line 688, ../sass/_keys.scss */
+.keyboard-key.up {
+  font-size: 8px;
+  height: 26px;
+  width: 46px;
+}
+
+/* line 693, ../sass/_keys.scss */
+.keyboard-key.up::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 10px;
+  content: "Γצ▓";
+}
+
+/* line 704, ../sass/_keys.scss */
+.keyboard-key.down {
+  font-size: 8px;
+  height: 26px;
+  width: 46px;
+}
+
+/* line 709, ../sass/_keys.scss */
+.keyboard-key.down::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 10px;
+  content: "Γצ╝";
+}
+
+/* line 720, ../sass/_keys.scss */
+.keyboard-key.left {
+  font-size: 8px;
+  height: 26px;
+  width: 46px;
+}
+
+/* line 725, ../sass/_keys.scss */
+.keyboard-key.left::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 10px;
+  content: "Γקא";
+}
+
+/* line 736, ../sass/_keys.scss */
+.keyboard-key.right {
+  font-size: 8px;
+  height: 26px;
+  width: 46px;
+}
+
+/* line 741, ../sass/_keys.scss */
+.keyboard-key.right::before {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5em;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 10px;
+  content: "Γצ╢";
+}
+
+/* line 3, ../sass/_tags.scss */
+mark {
+  padding: 0;
+}
+
+/* line 7, ../sass/_tags.scss */
+[data-entity]::after {
+  box-sizing: border-box;
+  content: attr(data-entity);
+  font-size: 0.6em;
+  line-height: 1;
+  padding: 0.35em;
+  border-radius: 0.35em;
+  text-transform: uppercase;
+  display: inline-block;
+  vertical-align: middle;
+  /*margin: 0px 0px 0.1rem 0.5rem;*/
+}
+
+/* line 20, ../sass/_tags.scss */
+[data-entity][data-entity="generative"] {
+  background: rgba(166, 226, 45, 0.2);
+  border-color: #a6e22d;
+}
+
+/* line 25, ../sass/_tags.scss */
+[data-entity][data-entity="generative"]::after {
+  background: #a6e22d;
+}
+
+/* line 29, ../sass/_tags.scss */
+[data-entity][data-entity="reinforcement learning"] {
+  background: rgba(142, 125, 255, 0.2);
+  border-color: #8e7dff;
+}
+
+/* line 34, ../sass/_tags.scss */
+[data-entity][data-entity="reinforcement learning"]::after {
+  background: #8e7dff;
+}
+
+/* line 38, ../sass/_tags.scss */
+[data-entity][data-entity="nlp"] {
+  background: rgba(67, 198, 252, 0.2);
+  border-color: #43c6fc;
+}
+
+/* line 43, ../sass/_tags.scss */
+[data-entity][data-entity="nlp"]::after {
+  background: #43c6fc;
+}
+
+/* line 47, ../sass/_tags.scss */
+[data-entity][data-entity="classification"] {
+  background: rgba(67, 198, 252, 0.2);
+  border-color: #43c6fc;
+}
+
+/* line 52, ../sass/_tags.scss */
+[data-entity][data-entity="classification"]::after {
+  background: #43c6fc;
+}
+
+/* line 56, ../sass/_tags.scss */
+[data-entity][data-entity="segmentation"] {
+  background: rgba(67, 198, 252, 0.2);
+  border-color: #43c6fc;
+}
+
+/* line 61, ../sass/_tags.scss */
+[data-entity][data-entity="segmentation"]::after {
+  background: #43c6fc;
+}
+
+/* line 65, ../sass/_tags.scss */
+[data-entity][data-entity="other"] {
+  background: rgba(253, 151, 32, 0.2);
+  border-color: #fd9720;
+}
+
+/* line 70, ../sass/_tags.scss */
+[data-entity][data-entity="other"]::after {
+  background: #fd9720;
+}
+
+/* line 75, ../sass/_tags.scss */
+[data-entity][data-entity="unsupervised learning"] {
+  background: rgba(224, 0, 132, 0.2);
+  border-color: #e00084;
+}
+
+/* line 80, ../sass/_tags.scss */
+[data-entity][data-entity="unsupervised learning"]::after {
+  background: #e00084;
+}
+
+/* line 84, ../sass/_tags.scss */
+[data-entity][data-entity="language"] {
+  background: rgba(255, 204, 0, 0.2);
+  border-color: #ffcc00;
+}
+
+/* line 89, ../sass/_tags.scss */
+[data-entity][data-entity="language"]::after {
+  background: #ffcc00;
+}
+
+/* line 93, ../sass/_tags.scss */
+[data-entity][data-entity="detection"] {
+  background: rgba(47, 187, 171, 0.2);
+  border-color: #2fbbab;
+}
+
+/* line 98, ../sass/_tags.scss */
+[data-entity][data-entity="detection"]::after {
+  background: #2fbbab;
+}
+
+/* line 37, ../sass/style.scss */
 html, body, canvas {
-    margin: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(235 , 236, 237, 1);
-    color:rgb(110,116,125);
-    -webkit-font-smoothing: antialiased;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #ebeced;
+  color: #6e747d;
+  -webkit-font-smoothing: antialiased;
 }
 
+/* line 46, ../sass/style.scss */
 input {
-    -webkit-border-radius: 7px;
-    -moz-border-radius: 7px;
-    border-radius: 7px;
-    font-size: medium;
-    border: 0px solid transparent;
-    border-top: none;
-    border-bottom: 0px solid #DDD;
-    /*box-shadow: inset 0 1px 2px rgba(0, 0, 0, .39), 0 -1px 1px #FFF, 0 1px 0 #FFF;*/
-    outline-width: 0;
-    padding: 5px 5px 5px 10px;
+  -webkit-border-radius: 7px;
+  -moz-border-radius: 7px;
+  border-radius: 7px;
+  font-size: medium;
+  border: 0 solid transparent;
+  border-top: none;
+  border-bottom: 0 solid #DDD;
+  outline-width: 0;
+  padding: 5px 5px 5px 10px;
 }
 
-.no-js #loader { display: none;  }
-.js #loader { display: block; position: absolute; left: 100px; top: 0; }
-.se-pre-con {
-    position: fixed;
-    left: 0px;
-    top: 0px;
-    width: 100%;
-    height: 100%;
-    z-index: 9999;
-    background: url(../images/preloader.gif) center no-repeat #fff;
+/* line 58, ../sass/style.scss */
+label {
+  color: white;
 }
 
+/* line 62, ../sass/style.scss */
+.full-screen {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* line 70, ../sass/style.scss */
+.centered {
+  position: absolute;
+  -webkit-transform: translate(-50%, -50%);
+  /* Chrome, Safari 3.1+ */
+  -moz-transform: translate(-50%, -50%);
+  /* Firefox 3.5-15 */
+  -ms-transform: translate(-50%, -50%);
+  /* IE 9 */
+  -o-transform: translate(-50%, -50%);
+  /* Opera 10.50-12.00 */
+  transform: translate(-50%, -50%);
+  /* Firefox 16+, IE 10+, Opera 12.10+ */
+  text-align: center;
+  top: 50%;
+  left: 50%;
+}
+
+/* line 78, ../sass/style.scss */
+.stretched {
+  width: 100%;
+  height: 100%;
+}
+
+/* line 83, ../sass/style.scss */
+.preloader {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 9999;
+  background: url(../images/preloader.gif) center no-repeat #fff;
+}
 
 /* Explore Section Masonry*/
+/* line 92, ../sass/style.scss */
 .card {
-    background: #fff;
-    border-radius: 4px;
-    box-shadow: 0 2px 1px rgba(0,0,0,.08);
-    overflow: hidden;
-    position: relative;
-    transition: height .5s ease,margin .5s ease,opacity .3s linear,transform .5s ease;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 2px 1px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  position: relative;
+  -webkit-transition: height 0.5s ease, margin 0.5s ease, opacity 0.3s linear, transform 0.5s ease;
+  /* Chrome, Safari 3.1+ */
+  -moz-transition: height 0.5s ease, margin 0.5s ease, opacity 0.3s linear, transform 0.5s ease;
+  /* Firefox 3.5-15 */
+  -o-transition: height 0.5s ease, margin 0.5s ease, opacity 0.3s linear, transform 0.5s ease;
+  /* Opera 10.50-12.00 */
+  transition: height 0.5s ease, margin 0.5s ease, opacity 0.3s linear, transform 0.5s ease;
+  /* Firefox 16+, IE 10+, Opera 12.10+ */
 }
 
+/* line 101, ../sass/style.scss */
 .card-thumbnail-container {
-    overflow: hidden;
-    position: relative;
-    border-radius: 4px 4px 0 0;
-    margin-right: -1px;
-    margin-bottom: -1px;
-    background-image: linear-gradient(to bottom, rgba(245,245,245,1),rgba(255,255,255,1) 100%);
+  overflow: hidden;
+  position: relative;
+  border-radius: 4px 4px 0 0;
+  margin-right: -1px;
+  margin-bottom: -1px;
+  background-image: linear-gradient(to bottom, #f5f5f5, #ffffff 100%);
 }
+
+/* line 110, ../sass/style.scss */
 .card-thumbnail {
-    background: none no-repeat center / contain;
-    border-radius: 4px 4px 0 0;
-    box-sizing: border-box;
-    cursor: auto;
-    display: block;
-    transition: -webkit-filter .3s ease,filter .3s ease;
-    min-height: 40px;
-    height: 160px;
-    padding-bottom: 160px
+  background: none no-repeat center / contain;
+  border-radius: 4px 4px 0 0;
+  box-sizing: border-box;
+  cursor: auto;
+  display: block;
+  -webkit-transition: -webkit-filter 0.3s ease, filter 0.3s ease;
+  /* Chrome, Safari 3.1+ */
+  -moz-transition: -webkit-filter 0.3s ease, filter 0.3s ease;
+  /* Firefox 3.5-15 */
+  -o-transition: -webkit-filter 0.3s ease, filter 0.3s ease;
+  /* Opera 10.50-12.00 */
+  transition: -webkit-filter 0.3s ease, filter 0.3s ease;
+  /* Firefox 16+, IE 10+, Opera 12.10+ */
+  min-height: 40px;
+  height: 160px;
+  padding-bottom: 160px;
 }
+
+/* line 122, ../sass/style.scss */
 .card-title-section {
-    border-top: 1px solid rgba(0,0,0,.1);
-    font-size: 14px;
-    line-height: 25px;
-    margin: 0;
-    overflow: hidden;
-    padding: 12px;
-    position: relative;
-    white-space: normal;
-    height: 85px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  font-size: 14px;
+  line-height: 25px;
+  margin: 0;
+  overflow: hidden;
+  padding: 12px;
+  position: relative;
+  white-space: normal;
+  height: 85px;
 }
 
+/* line 134, ../sass/style.scss */
 .card-title-owner {
-    font-weight: normal;
+  font-weight: normal;
 }
 
+/* line 138, ../sass/style.scss */
 .card-tags {
-    line-height: 1;
-    display: block;
-    float:right;
-
+  line-height: 1;
+  display: block;
+  float: right;
 }
 
+/* line 145, ../sass/style.scss */
 .card-title {
-    font-weight: bold;
-    color: #505660;
-    overflow: hidden;
-    position: relative;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    word-wrap: break-word;
-    border-bottom: 1px dashed transparent;
-    margin-bottom: -1px;
-    line-height: 20px;
-    transition: color .2s ease,width 0s .2s,padding-right 0s .2s;
+  font-weight: bold;
+  color: #505660;
+  overflow: hidden;
+  position: relative;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-wrap: break-word;
+  border-bottom: 1px dashed transparent;
+  margin-bottom: -1px;
+  line-height: 20px;
+  -webkit-transition: color 0.2s ease, width 0s 0.2s, padding-right 0s 0.2s;
+  /* Chrome, Safari 3.1+ */
+  -moz-transition: color 0.2s ease, width 0s 0.2s, padding-right 0s 0.2s;
+  /* Firefox 3.5-15 */
+  -o-transition: color 0.2s ease, width 0s 0.2s, padding-right 0s 0.2s;
+  /* Opera 10.50-12.00 */
+  transition: color 0.2s ease, width 0s 0.2s, padding-right 0s 0.2s;
+  /* Firefox 16+, IE 10+, Opera 12.10+ */
 }
 
-
+/* line 159, ../sass/style.scss */
 .grid-item {
-    width: 300px;
-    padding-right: 25px;
-    padding-bottom: 25px;
+  width: 300px;
+  padding-right: 25px;
+  padding-bottom: 25px;
 }
-.grid-item--width2 { width: 400px; }
+
+/* line 165, ../sass/style.scss */
+.grid-item--width2 {
+  width: 400px;
+}
 
 /* SideBar Section */
+/* line 170, ../sass/style.scss */
 .no-left-padding {
-    padding-left: 0;
+  padding-left: 0;
 }
 
+/* line 174, ../sass/style.scss */
 .form-control {
-    padding-right: 3px;
-    padding-left: 10px;
+  padding-right: 3px;
+  padding-left: 10px;
 }
 
+/* line 179, ../sass/style.scss */
 .title {
-    font-size: 3.5vw;
-    /*margin: 1.5vw 0 1.5vw 0;*/
-    margin: 0;
-    text-shadow: -2px 1px rgba(0, 0, 0, 0.2), -4px 2px rgba(0, 0, 0, 0.1), -6px 3px rgba(0, 0, 0, 0.05), -8px 4px rgba(0, 0, 0, 0.025);
+  font-size: 3.5vw;
+  /*margin: 1.5vw 0 1.5vw 0;*/
+  margin: 0;
+  text-shadow: -2px 1px rgba(0, 0, 0, 0.2), -4px 2px rgba(0, 0, 0, 0.1), -6px 3px rgba(0, 0, 0, 0.05), -8px 4px rgba(0, 0, 0, 0.025);
 }
 
+/* line 186, ../sass/style.scss */
 .title-subscript {
-    font-size: 0.9vw;
-    text-align: center;
+  font-size: 0.9vw;
+  text-align: center;
 }
 
+/* line 191, ../sass/style.scss */
 .appName {
-    text-align: center;
-    font-family: 'Lato', sans-serif;
-    color: rgb(153,196,50);
+  text-align: center;
+  font-family: "Lato", sans-serif;
+  color: #99c432;
 }
 
+/* line 197, ../sass/style.scss */
 .non-selectable {
-    -moz-user-select: -moz-none;
-    -webkit-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
+  -moz-user-select: -moz-none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
+/* line 204, ../sass/style.scss */
 #canvas_keys {
-    padding: 20px;
-    background: transparent;
-    z-index: 100;
-    position: absolute;
-    bottom: 0;
-    -moz-user-select: -moz-none;
-    -webkit-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    -webkit-transition: all 0.5s linear;
-    -moz-transition: all 0.5s linear;
-    -ms-transition: all 0.5s linear;
-    -o-transition: all 0.5s linear;
-    transition: all 0.5s linear;
+  padding: 20px;
+  background: transparent;
+  z-index: 100;
+  position: absolute;
+  bottom: 0;
+  -moz-user-select: -moz-none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-transition: all 0.5s linear;
+  /* Chrome, Safari 3.1+ */
+  -moz-transition: all 0.5s linear;
+  /* Firefox 3.5-15 */
+  -o-transition: all 0.5s linear;
+  /* Opera 10.50-12.00 */
+  transition: all 0.5s linear;
+  /* Firefox 16+, IE 10+, Opera 12.10+ */
 }
 
+/* line 217, ../sass/style.scss */
 #canvas_explore {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    display: none;
-    padding: 25px;
+  display: none;
+  padding: 25px;
 }
 
+/* line 222, ../sass/style.scss */
 #canvas_overlay {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    display: none;
+  display: none;
 }
 
+/* line 226, ../sass/style.scss */
 #canvas_messages {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    margin-left: -320px;
-    margin-top: -80px;
-    color: black
+  color: black;
 }
 
-#welcome_screen_container {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-}
-
+/* line 230, ../sass/style.scss */
 #welcome_screen_frame {
-    background-image: url("../images/background.png");
-    border-radius: 15px;
-    /*border: 3px solid white;*/
-    box-shadow: rgba(0,0,0,0.2) 0px 20px 30px;
-    height:100%;
-    width: 100%;
+  background-image: url("../images/background.png");
+  border-radius: 15px;
+  box-shadow: rgba(0, 0, 0, 0.2) 0 20px 30px;
 }
 
+/* line 236, ../sass/style.scss */
 #welcome_screen_background {
-    background-image: linear-gradient(to bottom, rgba(33,40,52,1), rgba(63,70,82,0.8) 100%);
-    border-radius: 15px;
-    height:100%;
-    width: 100%;
+  background-image: linear-gradient(to bottom, #212834, rgba(63, 70, 82, 0.8) 100%);
+  border-radius: 15px;
 }
 
+/* line 242, ../sass/style.scss */
 #welcome_screen {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    text-align:center;
-    height: 50%;
-    width: 50%;
-    /*background: rgba(255,255,255,0.8);*/
-    color: white;
+  height: 50%;
+  width: 50%;
+  color: white;
 }
 
-
+/* line 248, ../sass/style.scss */
 #welcome_screen_content {
-    height: 53%;
+  height: 53%;
 }
 
+/* line 252, ../sass/style.scss */
 .blur {
-    -webkit-filter: blur(8px);
-    -moz-filter: blur(8px);
-    -o-filter: blur(8px);
-    -ms-filter: blur(8px);
-    filter: blur(8px);
+  -webkit-filter: blur(8px);
+  -moz-filter: blur(8px);
+  -o-filter: blur(8px);
+  -ms-filter: blur(8px);
+  filter: blur(8px);
 }
 
+/* line 260, ../sass/style.scss */
 .canvas {
-    -webkit-transition: all 0.5s linear;
-    -moz-transition: all 0.5s linear;
-    -ms-transition: all 0.5s linear;
-    -o-transition: all 0.5s linear;
-    transition: all 0.5s linear;
+  -webkit-transition: all 0.5s linear;
+  /* Chrome, Safari 3.1+ */
+  -moz-transition: all 0.5s linear;
+  /* Firefox 3.5-15 */
+  -o-transition: all 0.5s linear;
+  /* Opera 10.50-12.00 */
+  transition: all 0.5s linear;
+  /* Firefox 16+, IE 10+, Opera 12.10+ */
 }
 
-
+/* line 264, ../sass/style.scss */
 .small-rect {
-    min-width: 110px;
+  min-width: 110px;
 }
 
+/* line 268, ../sass/style.scss */
 .big-rect {
-    min-width: 140px;
+  min-width: 140px;
 }
 
+/* line 272, ../sass/style.scss */
 .rect-btn {
-    font-family: 'Lato', sans-serif;
-    font-weight: bold;
-    display: inline-block;
-    /*padding: 0 30px;*/
-    margin: 10px 10px;
-    font-size: 16px;
-    line-height: 28px;
-    /*min-width: 110px;*/
+  font-family: "Lato", sans-serif;
+  font-weight: bold;
+  display: inline-block;
+  margin: 10px 10px;
+  font-size: 16px;
+  line-height: 28px;
 }
 
-
+/* line 281, ../sass/style.scss */
 .green {
-    background-color: rgb(153,196,50);
-    color: #fff;
+  background-color: #99c432;
+  color: #fff;
 }
 
+/* line 286, ../sass/style.scss */
 .red {
-    background-color: #e14329;
-    color: #fff;
+  background-color: #e14329;
+  color: #fff;
 }
 
+/* line 291, ../sass/style.scss */
 .white {
-    background-color: #fff;
-    color: rgb(110,116,125);
+  background-color: #fff;
+  color: #6e747d;
 }
 
+/* line 296, ../sass/style.scss */
 .purple {
-    background-color: #fff;
-    color: rgb(147,75,194);
+  background-color: #fff;
+  color: #934bc2;
 }
 
-
+/* line 301, ../sass/style.scss */
 .icoRss, .icoFacebook, .icoTwitter,
 .icoGoogle, .icoVimeo, .icoGitHub {
-    color:rgb(147,75,194);
+  color: #934bc2;
 }
 
+/* line 306, ../sass/style.scss */
 .icons-side-bar {
-    width: 50px;
-    height: 100%;
-    background: rgb(39,44,51);
-    padding: 40px 0 0;
-    /*box-shadow: 0px 5px 20px 5px rgba(0, 0, 0, 0.1) inset;*/
+  width: 50px;
+  height: 100%;
+  background: #272c33;
+  padding: 40px 0 0;
 }
 
+/* line 313, ../sass/style.scss */
 .side-icon {
-    width: 100%;
-    height: 70px;
-    padding-top: 20px;
-    padding-left: 12px;
-    background: transparent;
+  width: 100%;
+  height: 70px;
+  padding-top: 20px;
+  padding-left: 12px;
+  background: transparent;
 }
 
+/* line 321, ../sass/style.scss */
 .side-icon:hover {
-    cursor: pointer;
+  cursor: pointer;
 }
 
+/* line 325, ../sass/style.scss */
 .wrapping-side-icon {
-    background: rgb(63,70,82);
+  background: #3f4652;
 }
 
+/* line 329, ../sass/style.scss */
 .before-side-icon {
-    background: rgb(39,44,51);
-    border-radius: 0 0 5px 0;
+  background: #272c33;
+  border-radius: 0 0 5px 0;
 }
 
+/* line 334, ../sass/style.scss */
 .after-side-icon {
-    background: rgb(39,44,51);
-    border-radius: 0 5px 0 0;
+  background: #272c33;
+  border-radius: 0 5px 0 0;
 }
 
+/* line 339, ../sass/style.scss */
 .selected-side-icon {
-    background: rgb(63,70,82);
-    color: white;
-    box-shadow: 0 5px 20px 5px rgba(0, 0, 0, 0.1);
+  background: #3f4652;
+  color: white;
+  box-shadow: 0 5px 20px 5px rgba(0, 0, 0, 0.1);
 }
 
+/* line 345, ../sass/style.scss */
 .selected-side-icon:hover {
-    cursor: default;
+  cursor: default;
 }
 
+/* line 349, ../sass/style.scss */
 .side-bar {
-    padding: 20px;
-    height: 100%;
-    background-color: rgb(63,70,82);
-    border: 3px none #FEFEFE;
-    border-right-style: solid;
-    overflow-y: auto;
-    overflow-x: hidden;
+  padding: 20px;
+  height: 100%;
+  background-color: #3f4652;
+  border: 3px none #FEFEFE;
+  border-right-style: solid;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
+/* line 359, ../sass/style.scss */
 .label {
-    width: 50px;
-    margin: 2px;
-    cursor: pointer;
+  width: 50px;
+  margin: 2px;
+  cursor: pointer;
 }
 
+/* line 365, ../sass/style.scss */
 .layer-color {
-    border: 2px none rgba(255, 255, 255, 0.3);
-    border-bottom-style: solid;
-    float: left;
-    width: calc(100% / 6);
-    height: 27px;
+  border: 2px none rgba(255, 255, 255, 0.3);
+  border-bottom-style: solid;
+  float: left;
+  width: calc(100% / 6);
+  height: 27px;
 }
 
+/* line 373, ../sass/style.scss */
 .btn-circle.btn-lg {
-    width: 40px;
-    height: 40px;
-    padding: 8px 11px;
-    font-size: 18px;
-    line-height: 1.33;
-    border-radius: 20px;
+  width: 40px;
+  height: 40px;
+  padding: 8px 11px;
+  font-size: 18px;
+  line-height: 1.33;
+  border-radius: 20px;
 }
 
+/* line 382, ../sass/style.scss */
 #addLayerIcon {
-    -webkit-transition: all 0.3s ease-in-out;
-    -moz-transition: all 0.3s ease-in-out;
-    -o-transition: all 0.3s ease-in-out;
-    transition: all 0.3s ease-in-out;
+  -webkit-transition: all 0.3s ease-in-out;
+  /* Chrome, Safari 3.1+ */
+  -moz-transition: all 0.3s ease-in-out;
+  /* Firefox 3.5-15 */
+  -o-transition: all 0.3s ease-in-out;
+  /* Opera 10.50-12.00 */
+  transition: all 0.3s ease-in-out;
+  /* Firefox 16+, IE 10+, Opera 12.10+ */
 }
 
+/* line 386, ../sass/style.scss */
 .rotated {
-    -webkit-transform: rotate(45deg); /* Chrome, Safari 3.1+ */
-    -moz-transform: rotate(45deg); /* Firefox 3.5-15 */
-    -ms-transform: rotate(45deg); /* IE 9 */
-    -o-transform: rotate(45deg); /* Opera 10.50-12.00 */
-    transform: rotate(45deg); /* Firefox 16+, IE 10+, Opera 12.10+ */
-    color: #e14329;
+  -webkit-transform: rotate(45deg);
+  /* Chrome, Safari 3.1+ */
+  -moz-transform: rotate(45deg);
+  /* Firefox 3.5-15 */
+  -ms-transform: rotate(45deg);
+  /* IE 9 */
+  -o-transform: rotate(45deg);
+  /* Opera 10.50-12.00 */
+  transform: rotate(45deg);
+  /* Firefox 16+, IE 10+, Opera 12.10+ */
+  color: #e14329;
 }
 
+/* line 391, ../sass/style.scss */
 .material-switch > input[type="checkbox"] {
-    display: none;
+  display: none;
 }
 
+/* line 395, ../sass/style.scss */
 .material-switch > label {
-    cursor: pointer;
-    height: 0px;
-    position: relative;
-    width: 40px;
+  cursor: pointer;
+  height: 0;
+  position: relative;
+  width: 40px;
 }
 
+/* line 402, ../sass/style.scss */
 .material-switch > label::before {
-    background: rgb(0, 0, 0);
-    box-shadow: inset 0px 0px 10px rgba(0, 0, 0, 0.5);
-    border-radius: 8px;
-    content: '';
-    height: 16px;
-    margin-top: -8px;
-    position: absolute;
-    opacity: 0.3;
-    transition: all 0.4s ease-in-out;
-    width: 40px;
+  background: black;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  content: '';
+  height: 16px;
+  margin-top: -8px;
+  position: absolute;
+  opacity: 0.3;
+  -webkit-transition: all 0.4s ease-in-out;
+  /* Chrome, Safari 3.1+ */
+  -moz-transition: all 0.4s ease-in-out;
+  /* Firefox 3.5-15 */
+  -o-transition: all 0.4s ease-in-out;
+  /* Opera 10.50-12.00 */
+  transition: all 0.4s ease-in-out;
+  /* Firefox 16+, IE 10+, Opera 12.10+ */
+  width: 40px;
 }
 
+/* line 415, ../sass/style.scss */
 .material-switch > label::after {
-    background: rgb(255, 255, 255);
-    border-radius: 16px;
-    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
-    content: '';
-    height: 24px;
-    left: -4px;
-    margin-top: -8px;
-    position: absolute;
-    top: -4px;
-    transition: all 0.3s ease-in-out;
-    width: 24px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+  content: '';
+  height: 24px;
+  left: -4px;
+  margin-top: -8px;
+  position: absolute;
+  top: -4px;
+  -webkit-transition: all 0.3s ease-in-out;
+  /* Chrome, Safari 3.1+ */
+  -moz-transition: all 0.3s ease-in-out;
+  /* Firefox 3.5-15 */
+  -o-transition: all 0.3s ease-in-out;
+  /* Opera 10.50-12.00 */
+  transition: all 0.3s ease-in-out;
+  /* Firefox 16+, IE 10+, Opera 12.10+ */
+  width: 24px;
 }
 
+/* line 429, ../sass/style.scss */
 .material-switch > input[type="checkbox"]:checked + label::before {
-    background: inherit;
-    opacity: 0.5;
+  background: inherit;
+  opacity: 0.5;
 }
 
+/* line 434, ../sass/style.scss */
 .material-switch > input[type="checkbox"]:checked + label::after {
-    background: inherit;
-    left: 20px;
+  background: inherit;
+  left: 20px;
 }
 
-
-#well2 {
-    height: 500px;
-    /*margin-bottom: 0;*/
-    margin-right: -5px;
-    overflow: auto;
-    overflow-x: hidden;
-    background: rgb(110,116,125);
-    border-color: transparent;
-}
-
-.ModelItem {
-    border-color: transparent;
-    background: rgb(102,78,151);
-    color: white;
-    /*border-radius: 2px;*/
-    /*box-shadow: 0 0px 10px rgba(0,0,0,0.2);*/
-}
-
-.ModelItem:hover {
-    text-decoration: none;
-    color: white;
-}
-
-.ModelItemContent {
-    height: 40px;
-    padding-left: 5px;
-}
-
-
-.ModelItemContent:hover {
-    height: 80px;
-    transition: all 0.1s ease-in-out;
-}
-
+/* line 439, ../sass/style.scss */
 a.thumbnail:hover, a.thumbnail:focus, a.thumbnail.active {
-    border-color: transparent;
+  border-color: transparent;
 }
 
-.key-wrap {
-    width: 120px;
-    display: inline-block;
-}
-
-.key-info {
-    display: inline-block;
-    margin-left: 10px;
-    margin-right: 10px;
-    vertical-align: middle;
-    height: 40px;
-    color: rgba(50,50,50,0.8);
-    font-weight: bold;
-}
-
+/* line 443, ../sass/style.scss */
 .stars {
-    display: block;
-    float:right;
-    color: #9fa2a8;
+  display: block;
+  float: right;
+  color: #9fa2a8;
 }
 
+/* line 449, ../sass/style.scss */
 .stars:hover {
-    color: rgb(153,196,50);
-    cursor: pointer;
+  color: #99c432;
+  cursor: pointer;
 }
 
+/* line 454, ../sass/style.scss */
 .col-xs-1, .col-xs-2, .col-xs-3, .col-xs-8, .col-xs-9 {
-    -webkit-transition: width 0.3s ease, margin 0.3s ease;
-    -moz-transition: width 0.3s ease, margin 0.3s ease;
-    -o-transition: width 0.3s ease, margin 0.3s ease;
-    transition: width 0.3s ease, margin 0.3s ease;
+  -webkit-transition: width 0.3s ease, margin 0.3s ease;
+  /* Chrome, Safari 3.1+ */
+  -moz-transition: width 0.3s ease, margin 0.3s ease;
+  /* Firefox 3.5-15 */
+  -o-transition: width 0.3s ease, margin 0.3s ease;
+  /* Opera 10.50-12.00 */
+  transition: width 0.3s ease, margin 0.3s ease;
+  /* Firefox 16+, IE 10+, Opera 12.10+ */
 }
 
+/* line 458, ../sass/style.scss */
 .entities {
-    line-height: 2;
-}
-
-mark {
-    padding: 0;
-}
-
-[data-entity]::after {
-    box-sizing: border-box;
-    content: attr(data-entity);
-    font-size: 0.6em;
-    line-height: 1;
-    padding: 0.35em;
-    border-radius: 0.35em;
-    text-transform: uppercase;
-    display: inline-block;
-    vertical-align: middle;
-    /*margin: 0px 0px 0.1rem 0.5rem;*/
-}
-
-[data-entity][data-entity="generative"] {
-    background: rgba(166, 226, 45, 0.2);
-    border-color: rgb(166, 226, 45);
-}
-
-[data-entity][data-entity="generative"]::after {
-    background: rgb(166, 226, 45);
-}
-
-[data-entity][data-entity="reinforcement learning"] {
-    background: rgba(142, 125, 255, 0.2);
-    border-color: rgb(142, 125, 255);
-}
-
-[data-entity][data-entity="reinforcement learning"]::after {
-    background: rgb(142, 125, 255);
-}
-
-[data-entity][data-entity="nlp"] {
-    background: rgba(67, 198, 252, 0.2);
-    border-color: rgb(67, 198, 252);
-}
-
-[data-entity][data-entity="nlp"]::after {
-    background: rgb(67, 198, 252);
-}
-
-[data-entity][data-entity="classification"] {
-    background: rgba(67, 198, 252, 0.2);
-    border-color: rgb(67, 198, 252);
-}
-
-[data-entity][data-entity="classification"]::after {
-    background: rgb(67, 198, 252);
-}
-
-[data-entity][data-entity="segmentation"] {
-    background: rgba(67, 198, 252, 0.2);
-    border-color: rgb(67, 198, 252);
-}
-
-[data-entity][data-entity="segmentation"]::after {
-    background: rgb(67, 198, 252);
-}
-
-[data-entity][data-entity="other"] {
-    background: rgba(253, 151, 32, 0.2);
-    border-color: rgb(253, 151, 32);
-}
-
-[data-entity][data-entity="other"]::after {
-    background: rgb(253, 151, 32);
-}
-
-
-[data-entity][data-entity="unsupervised learning"] {
-    background: rgba(224, 0, 132, 0.2);
-    border-color: rgb(224, 0, 132);
-}
-
-[data-entity][data-entity="unsupervised learning"]::after {
-    background: rgb(224, 0, 132);
-}
-
-[data-entity][data-entity="language"] {
-    background: rgba(255, 204, 0, 0.2);
-    border-color: rgb(255, 204, 0);
-}
-
-[data-entity][data-entity="language"]::after {
-    background: rgb(255, 204, 0);
-}
-
-[data-entity][data-entity="detection"] {
-    background: rgba(47, 187, 171, 0.2);
-    border-color: rgb(47, 187, 171);
-}
-
-[data-entity][data-entity="detection"]::after {
-    background: rgb(47, 187, 171);
+  line-height: 2;
 }
 
 /* Search Box */
-#imaginary_container{
-    margin-bottom: 20px;
+/* line 463, ../sass/style.scss */
+#imaginary_container {
+  margin-bottom: 20px;
 }
+
+/* line 467, ../sass/style.scss */
 .transparent-input {
-    background-color: transparent;
+  background-color: transparent;
 }
-.stylish-input-group .input-group-addon{
-    background: transparent !important;
-    border-radius: 0 15px 15px 0;
+
+/* line 471, ../sass/style.scss */
+.stylish-input-group .input-group-addon {
+  background: transparent !important;
+  border-radius: 0 15px 15px 0;
 }
-.stylish-input-group .form-control{
-    border-right:0;
-    box-shadow:0 0 0;
-    border-color:#ccc;
-    border-radius: 15px;
-    padding-left: 20px;
-    font-weight: bold;
+
+/* line 476, ../sass/style.scss */
+.stylish-input-group .form-control {
+  border-right: 0;
+  box-shadow: 0 0 0;
+  border-color: #ccc;
+  border-radius: 15px;
+  padding-left: 20px;
+  font-weight: bold;
 }
-.stylish-input-group button{
-    border:0;
-    background:transparent;
+
+/* line 485, ../sass/style.scss */
+.stylish-input-group button {
+  border: 0;
+  background: transparent;
 }
