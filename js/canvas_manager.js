@@ -345,10 +345,10 @@ CanvasManager.prototype.draw_curr_state = function() {
     this.clear_canvas();
 
     // draw everything
-    this.draw_array(this.shapes);
     this.draw_array(this.arrows);
     this.selection_box.draw(this.ctx);
     this.current_arrow.draw(this.ctx);
+    this.draw_array(this.shapes);
     this.update_key_info();
 
     // draw cursor markers

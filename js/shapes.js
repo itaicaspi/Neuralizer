@@ -204,6 +204,11 @@ Line.prototype.draw = function(ctx) {
 
     // draw border
     if (this.stroke > 0) {
+        // draw border to distinguish between intersecting lines
+        ctx.strokeStyle = "#EBECED";
+        ctx.lineWidth = this.stroke + 6;
+        ctx.stroke();
+        // draw line
         ctx.strokeStyle = this.border_color.to_string();
         ctx.lineWidth = this.stroke;
         ctx.stroke();
@@ -230,12 +235,12 @@ Line.prototype.draw = function(ctx) {
     ctx.fillStyle = this.border_color.to_string();
     ctx.fill();
 
-    // if (this.linkStart.shape.type == "Line") {
-    //     ctx.beginPath();
-    //     ctx.arc(this.vertices[0].x, this.vertices[0].y, 5, 0, 2 * Math.PI, false);
-    //     ctx.fillStyle = this.border_color.to_string();
-    //     ctx.fill();
-    // }
+    if (this.linkStart.shape.type == "Line") {
+        ctx.beginPath();
+        ctx.arc(this.vertices[0].x, this.vertices[0].y, 5, 0, 2 * Math.PI, false);
+        ctx.fillStyle = this.border_color.to_string();
+        ctx.fill();
+    }
 };
 
 Line.prototype.move = function(dx, dy) {
