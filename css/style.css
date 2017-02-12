@@ -1354,7 +1354,7 @@ label {
 /* line 195, ../sass/style.scss */
 .appName {
   text-align: center;
-  font-family: "Lato", sans-serif;
+  font-family: "Lato", helvetica, sans-serif;
   color: #99c432;
 }
 
@@ -1424,11 +1424,18 @@ label {
 }
 
 /* line 252, ../sass/style.scss */
+#welcome_screen_mobile {
+  height: 70%;
+  width: 90%;
+  color: white;
+}
+
+/* line 258, ../sass/style.scss */
 #welcome_screen_content {
   height: 53%;
 }
 
-/* line 256, ../sass/style.scss */
+/* line 262, ../sass/style.scss */
 .blur {
   -webkit-filter: blur(8px);
   -moz-filter: blur(8px);
@@ -1437,7 +1444,7 @@ label {
   filter: blur(8px);
 }
 
-/* line 264, ../sass/style.scss */
+/* line 270, ../sass/style.scss */
 .canvas {
   -webkit-transition: all 0.5s linear;
   /* Chrome, Safari 3.1+ */
@@ -1449,19 +1456,19 @@ label {
   /* Firefox 16+, IE 10+, Opera 12.10+ */
 }
 
-/* line 268, ../sass/style.scss */
+/* line 274, ../sass/style.scss */
 .small-rect {
   min-width: 110px;
 }
 
-/* line 272, ../sass/style.scss */
+/* line 278, ../sass/style.scss */
 .big-rect {
   min-width: 140px;
 }
 
-/* line 276, ../sass/style.scss */
+/* line 282, ../sass/style.scss */
 .rect-btn {
-  font-family: "Lato", sans-serif;
+  font-family: "Lato", helvetica, sans-serif;
   font-weight: bold;
   display: inline-block;
   margin: 10px 10px;
@@ -1469,37 +1476,37 @@ label {
   line-height: 28px;
 }
 
-/* line 285, ../sass/style.scss */
+/* line 291, ../sass/style.scss */
 .green {
   background-color: #99c432;
   color: #fff;
 }
 
-/* line 290, ../sass/style.scss */
+/* line 296, ../sass/style.scss */
 .red {
   background-color: #e14329;
   color: #fff;
 }
 
-/* line 295, ../sass/style.scss */
+/* line 301, ../sass/style.scss */
 .white {
   background-color: #fff;
   color: #6e747d;
 }
 
-/* line 300, ../sass/style.scss */
+/* line 306, ../sass/style.scss */
 .purple {
   background-color: #fff;
   color: #934bc2;
 }
 
-/* line 305, ../sass/style.scss */
+/* line 311, ../sass/style.scss */
 .icoRss, .icoFacebook, .icoTwitter,
 .icoGoogle, .icoVimeo, .icoGitHub {
   color: #934bc2;
 }
 
-/* line 310, ../sass/style.scss */
+/* line 316, ../sass/style.scss */
 .icons-side-bar {
   width: 50px;
   height: 100%;
@@ -1507,7 +1514,7 @@ label {
   padding: 40px 0 0;
 }
 
-/* line 317, ../sass/style.scss */
+/* line 323, ../sass/style.scss */
 .side-icon {
   width: 100%;
   height: 70px;
@@ -1516,41 +1523,41 @@ label {
   background: transparent;
 }
 
-/* line 325, ../sass/style.scss */
+/* line 331, ../sass/style.scss */
 .side-icon:hover {
   cursor: pointer;
 }
 
-/* line 329, ../sass/style.scss */
+/* line 335, ../sass/style.scss */
 .wrapping-side-icon {
   background: #3f4652;
 }
 
-/* line 333, ../sass/style.scss */
+/* line 339, ../sass/style.scss */
 .before-side-icon {
   background: #272c33;
   border-radius: 0 0 5px 0;
 }
 
-/* line 338, ../sass/style.scss */
+/* line 344, ../sass/style.scss */
 .after-side-icon {
   background: #272c33;
   border-radius: 0 5px 0 0;
 }
 
-/* line 343, ../sass/style.scss */
+/* line 349, ../sass/style.scss */
 .selected-side-icon {
   background: #3f4652;
   color: white;
   box-shadow: 0 5px 20px 5px rgba(0, 0, 0, 0.1);
 }
 
-/* line 349, ../sass/style.scss */
+/* line 355, ../sass/style.scss */
 .selected-side-icon:hover {
   cursor: default;
 }
 
-/* line 353, ../sass/style.scss */
+/* line 359, ../sass/style.scss */
 .side-bar {
   padding: 20px;
   height: 100%;
@@ -1561,14 +1568,14 @@ label {
   overflow-x: hidden;
 }
 
-/* line 363, ../sass/style.scss */
+/* line 369, ../sass/style.scss */
 .label {
   width: 50px;
   margin: 2px;
   cursor: pointer;
 }
 
-/* line 369, ../sass/style.scss */
+/* line 375, ../sass/style.scss */
 .layer-color {
   border: 2px none rgba(255, 255, 255, 0.3);
   border-bottom-style: solid;
@@ -1577,7 +1584,7 @@ label {
   height: 27px;
 }
 
-/* line 377, ../sass/style.scss */
+/* line 383, ../sass/style.scss */
 .btn-circle.btn-lg {
   width: 40px;
   height: 40px;
@@ -1587,7 +1594,7 @@ label {
   border-radius: 20px;
 }
 
-/* line 386, ../sass/style.scss */
+/* line 392, ../sass/style.scss */
 #addLayerIcon {
   -webkit-transition: all 0.3s ease-in-out;
   /* Chrome, Safari 3.1+ */
@@ -1599,7 +1606,7 @@ label {
   /* Firefox 16+, IE 10+, Opera 12.10+ */
 }
 
-/* line 390, ../sass/style.scss */
+/* line 396, ../sass/style.scss */
 .rotated {
   -webkit-transform: rotate(45deg);
   /* Chrome, Safari 3.1+ */
@@ -1614,12 +1621,12 @@ label {
   color: #e14329;
 }
 
-/* line 395, ../sass/style.scss */
+/* line 401, ../sass/style.scss */
 .material-switch > input[type="checkbox"] {
   display: none;
 }
 
-/* line 399, ../sass/style.scss */
+/* line 405, ../sass/style.scss */
 .material-switch > label {
   cursor: pointer;
   height: 0;
@@ -1627,7 +1634,7 @@ label {
   width: 40px;
 }
 
-/* line 406, ../sass/style.scss */
+/* line 412, ../sass/style.scss */
 .material-switch > label::before {
   background: black;
   box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
@@ -1648,7 +1655,7 @@ label {
   width: 40px;
 }
 
-/* line 419, ../sass/style.scss */
+/* line 425, ../sass/style.scss */
 .material-switch > label::after {
   background: white;
   border-radius: 16px;
@@ -1670,37 +1677,37 @@ label {
   width: 24px;
 }
 
-/* line 433, ../sass/style.scss */
+/* line 439, ../sass/style.scss */
 .material-switch > input[type="checkbox"]:checked + label::before {
   background: inherit;
   opacity: 0.5;
 }
 
-/* line 438, ../sass/style.scss */
+/* line 444, ../sass/style.scss */
 .material-switch > input[type="checkbox"]:checked + label::after {
   background: inherit;
   left: 20px;
 }
 
-/* line 443, ../sass/style.scss */
+/* line 449, ../sass/style.scss */
 a.thumbnail:hover, a.thumbnail:focus, a.thumbnail.active {
   border-color: transparent;
 }
 
-/* line 447, ../sass/style.scss */
+/* line 453, ../sass/style.scss */
 .stars {
   display: block;
   float: right;
   color: #9fa2a8;
 }
 
-/* line 453, ../sass/style.scss */
+/* line 459, ../sass/style.scss */
 .stars:hover {
   color: #99c432;
   cursor: pointer;
 }
 
-/* line 458, ../sass/style.scss */
+/* line 464, ../sass/style.scss */
 .col-xs-1, .col-xs-2, .col-xs-3, .col-xs-8, .col-xs-9 {
   -webkit-transition: width 0.3s ease, margin 0.3s ease;
   /* Chrome, Safari 3.1+ */
@@ -1712,29 +1719,29 @@ a.thumbnail:hover, a.thumbnail:focus, a.thumbnail.active {
   /* Firefox 16+, IE 10+, Opera 12.10+ */
 }
 
-/* line 462, ../sass/style.scss */
+/* line 468, ../sass/style.scss */
 .entities {
   line-height: 2;
 }
 
 /* Search Box */
-/* line 467, ../sass/style.scss */
+/* line 473, ../sass/style.scss */
 #imaginary_container {
   margin-bottom: 20px;
 }
 
-/* line 471, ../sass/style.scss */
+/* line 477, ../sass/style.scss */
 .transparent-input {
   background-color: transparent;
 }
 
-/* line 475, ../sass/style.scss */
+/* line 481, ../sass/style.scss */
 .stylish-input-group .input-group-addon {
   background: transparent !important;
   border-radius: 0 15px 15px 0;
 }
 
-/* line 480, ../sass/style.scss */
+/* line 486, ../sass/style.scss */
 .stylish-input-group .form-control {
   border-right: 0;
   box-shadow: 0 0 0;
@@ -1744,7 +1751,7 @@ a.thumbnail:hover, a.thumbnail:focus, a.thumbnail.active {
   font-weight: bold;
 }
 
-/* line 489, ../sass/style.scss */
+/* line 495, ../sass/style.scss */
 .stylish-input-group button {
   border: 0;
   background: transparent;

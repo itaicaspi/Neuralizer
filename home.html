@@ -1,15 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
     <title>Neuralizer</title>
 
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="
+        Neuralizer.ai - visual neural network designer.
+        Neuralizer makes building neural network topologies intuitive and accessible by using a flow-graph graphical user interface.
+        It allows building complex structures without writing any code, and then exporting them into multiple machine learning frameworks.
+        Neuralizer supports the following frameworks - TensorFlow, Keras, Caffe, Torch and PyTorch.
+        It also allows collaboration and sharing of models, which can be later used as sub-modules in more advanced structures.
+    ">
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
     <!-- bootstrap -->
-    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <!-- bootstrap select -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.2/css/bootstrap-select.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.2/css/bootstrap-select.min.css" media="none" onload="if(media!='all')media='all'">
     <!--Pulling Awesome Font -->
-    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" media="none" onload="if(media!='all')media='all'">
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css?family=Lato:100,700" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -19,20 +29,13 @@
     <!-- Animate -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
     <!--jQuery-->
-    <script src="js/jquery-3.1.1.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
 
     <!-- Masonry -->
-    <script src="https://unpkg.com/masonry-layout@4.1/dist/masonry.pkgd.min.js"></script>
+    <script src="https://unpkg.com/masonry-layout@4.1/dist/masonry.pkgd.min.js" async></script>
 
     <!-- Neuralizer Scripts -->
-    <script src="js/utils.min.js"></script>
-    <script src="js/shapes.min.js"></script>
-    <script src="js/objects.min.js"></script>
-    <script src="js/nn.min.js"></script>
-    <script src="js/transforms.min.js"></script>
-    <script src="js/files.min.js"></script>
-    <script src="js/canvas_manager.min.js"></script>
-    <script src="js/side_bar_manager.min.js"></script>
+    <script src="js/scripts.min.js"></script>
 
     <!-- favicon -->
     <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
@@ -40,17 +43,29 @@
     <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
 
     <!-- MathJax -->
-    <script type='text/javascript' src='http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG'></script>
-    <script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
-      displayAlign: "left",
-      displayIndent: "2em",
-      SVG: { scale: 120 }
-    });
-    </script>
+    <!--<script type='text/javascript' src='http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG'></script>-->
+    <!--<script type="text/x-mathjax-config">-->
+    <!--MathJax.Hub.Config({-->
+      <!--tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},-->
+      <!--displayAlign: "left",-->
+      <!--displayIndent: "2em",-->
+      <!--SVG: { scale: 120 }-->
+    <!--});-->
+    <!--</script>-->
 
     <!---->
+
+    <script type="text/javascript">
+        // redirect mobile devices to unsupported page
+        if (screen.width <= 699) {
+            document.location = "http://neuralizer.ai/unsupported.html";
+        }
+        if (
+            (navigator.userAgent.match(/iPhone/i)) || (navigator.userAgent.match(/iPod/i))) {
+            location.replace("http://neuralizer.ai/unsupported.html");
+        }
+    </script>
+
     <script type="text/javascript">
 
         var canvas_manager;
@@ -380,7 +395,7 @@
     <div class="col-xs-2 side-bar animated collapse" id="sidebar_container">
         <div class="appName animated fadeInUp">
             <!--<h1 class="title">neuralizer</h1>-->
-            <img src="images/neuralizer-logo-green-slim-big.png" class="logo" style="width: 90%;">
+            <img src="images/neuralizer-logo-green-slim.png" class="logo" style="width: 90%;">
             <b class="title-subscript">visual neural network designer</b>
         </div>
         <br>
@@ -634,13 +649,13 @@
                 <br>
                 <div class="row">
                     <div class="col-xs-3">
-                        <label for="alpha">$\alpha$</label>
+                        <label for="alpha">α</label>
                     </div>
                     <div class="col-xs-3 no-left-padding">
                         <input id="alpha" type="number" class="form-control" min="0" max="1" step="0.001" value="1">
                     </div>
                     <div class="col-xs-3">
-                        <label for="beta">$\beta$</label>
+                        <label for="beta">β</label>
                     </div>
                     <div class="col-xs-3 no-left-padding">
                         <input id="beta" type="number" class="form-control" min="0" max="1" step="0.001" value="1">
@@ -927,7 +942,7 @@
                     <figure class="card">
                         <div class="card-barrier"></div>
                         <div class="card-thumbnail-container">
-                            <a class="card-thumbnail" href="#" target="_blank" style="background-image: url('images/card-test1.png');" draggable="false"></a>
+                            <a class="card-thumbnail" href="#" target="_blank" style="background-image: url('images/test.png');" draggable="false"></a>
                         </div>
                         <figcaption class="card-title-section">
                             <div class="card-title editable" title="ResNet">ResNet</div>
@@ -1051,7 +1066,7 @@
                 <div class="appName" style="padding-top: 3%">
                     <!--<h1 class="title">neuralizer</h1>-->
                     <div class="logo" style="width: 300px; margin: auto">
-                        <img src="images/neuralizer-logo-green-slim-big.png" style="width: 100%; height: 100%">
+                        <img src="images/neuralizer-logo-green-slim.png" style="width: 100%; height: 100%">
                     </div>
                     <b class="title-subscript">visual neural network designer</b>
                 </div>
@@ -1089,8 +1104,8 @@
         </div>
     </div>
 </div>
-<script src="js/bootstrap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.2/js/bootstrap-select.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.2/js/bootstrap-select.min.js" async></script>
 
 <script>
     $(document).ready(function () {

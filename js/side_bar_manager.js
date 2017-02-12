@@ -243,4 +243,6 @@ SidebarManager.prototype.select_layer_type = function() {
 SidebarManager.prototype.change_selected_layer_type = function(layerType, layerSubtype) {
     $(this.layer_type).val(layerType);
     $(layer_types[layerType]["subtype_selector_id"]).val(layerSubtype);
-}
+};
+
+

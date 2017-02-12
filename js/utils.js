@@ -221,4 +221,3 @@ Matrix.prototype.normalize = function() {
     }
     this.normalizer = normalizer;
 };
-

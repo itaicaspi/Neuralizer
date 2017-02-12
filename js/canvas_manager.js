@@ -828,3 +828,4 @@ CanvasManager.prototype.to_graph = function() {
     }
     return graph;
 };
+

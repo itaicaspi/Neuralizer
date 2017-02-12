@@ -251,3 +251,4 @@ Tensor.prototype.clone = function () {
 Tensor.prototype.toBox = function(center, color) {
     return new Box(center, this.depth, this.width, this.height, color);
 };
+
