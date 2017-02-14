@@ -1354,7 +1354,7 @@ label {
 /* line 195, ../sass/style.scss */
 .appName {
   text-align: center;
-  font-family: "Lato", helvetica, sans-serif;
+  font-family: "Lato", sans-serif;
   color: #99c432;
 }
 
@@ -1468,7 +1468,7 @@ label {
 
 /* line 282, ../sass/style.scss */
 .rect-btn {
-  font-family: "Lato", helvetica, sans-serif;
+  font-family: "Lato", sans-serif;
   font-weight: bold;
   display: inline-block;
   margin: 10px 10px;
@@ -1755,4 +1755,33 @@ a.thumbnail:hover, a.thumbnail:focus, a.thumbnail.active {
 .stylish-input-group button {
   border: 0;
   background: transparent;
+}
+
+/* line 502, ../sass/style.scss */
+.carousel-fade .carousel-inner .item {
+  transition-property: opacity;
+}
+/* line 506, ../sass/style.scss */
+.carousel-fade .carousel-inner .item,
+.carousel-fade .carousel-inner .active.left,
+.carousel-fade .carousel-inner .active.right {
+  opacity: 0;
+}
+/* line 512, ../sass/style.scss */
+.carousel-fade .carousel-inner .active,
+.carousel-fade .carousel-inner .next.left,
+.carousel-fade .carousel-inner .prev.right {
+  opacity: 1;
+}
+/* line 518, ../sass/style.scss */
+.carousel-fade .carousel-inner .next,
+.carousel-fade .carousel-inner .prev,
+.carousel-fade .carousel-inner .active.left,
+.carousel-fade .carousel-inner .active.right {
+  left: 0;
+  transform: translate3d(0, 0, 0);
+}
+/* line 527, ../sass/style.scss */
+.carousel-fade .carousel-control {
+  z-index: 2;
 }

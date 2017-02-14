@@ -82,6 +82,7 @@ function load_state_from_file() {
 
         reader.onload = function(e) {
             var state = JSON.parse(reader.result);
+
             canvas_manager.load_state(state);
             sidebar_manager.switch_sidebar_mode('designer');
             $("#filename").val(name);

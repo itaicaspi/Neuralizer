@@ -126,7 +126,9 @@ Vertex.prototype.toMatrix = function() {
     return new Matrix([[this.x],[this.y],[this.z]]);
 };
 
-
+function unit_vector(p1, p2) {
+    return new Vertex(p2.x - p1.x, p2.y - p1.y, 0).normalize();
+}
 
 function point_is_on_line_between_two_points(p, v1, v2, allowed_error) {
     var x = p.x;

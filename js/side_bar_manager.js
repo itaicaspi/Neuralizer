@@ -195,7 +195,7 @@ SidebarManager.prototype.switch_sidebar_mode = function(mode) {
 
 
 SidebarManager.prototype.start = function() {
-    $("#welcome_screen_container").addClass("zoomOut");
+    $("#welcome_screen_container").addClass("fadeOut");
     $("#welcome_screen_container").fadeOut("slow");
     // $('.main').css({
     //     '-webkit-filter':'none',

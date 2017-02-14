@@ -4,14 +4,18 @@
 
 
 function object_to_shape(obj) {
-    if (obj.type == "Rectangle") {
-        return new Rectangle(obj);
-    } else if (obj.type == "Triangle") {
-        return new Triangle(obj);
-    } else if (obj.type == "Circle") {
-        return new Circle(obj);
-    } else if (obj.type == "Line") {
-        return new Line(obj);
+    var classes = {
+        "Rectangle": Rectangle,
+        "Triangle": Triangle,
+        "Diamond": Diamond,
+        "Circle": Circle,
+        "Hexagon": Hexagon,
+        "Line": Line
+    };
+    for (var key in classes) {
+        if (obj.type == key) {
+            return new classes[key](obj);
+        }
     }
 }
 
@@ -205,6 +209,7 @@ Line.prototype.draw = function(ctx) {
     // draw border
     if (this.stroke > 0) {
         // draw border to distinguish between intersecting lines
+        // TODO: disable this when saving images
         ctx.strokeStyle = "#EBECED";
         ctx.lineWidth = this.stroke + 6;
         ctx.stroke();
@@ -551,7 +556,7 @@ Line.prototype.get_vertex_by_key = function(key) {
 //////////////////////////////////
 //  Shape
 
-var Shape = function(x, y, width, height, radius, stroke, text, color, border_color, dashedBorder, key) {
+var Shape = function(x, y, width, height, radius, stroke, text, color, border_color, dashedBorder, key, offset) {
     if (typeof x == "object") {
         assign(this, x);
         this.default_color = new Color(this.default_color);
@@ -574,6 +579,7 @@ var Shape = function(x, y, width, height, radius, stroke, text, color, border_co
         this.border_color = new Color(border_color);
         this.vertices = [];
         this.dashedBorder = (typeof dashedBorder != 'undefined') ? dashedBorder : false;
+        this.offset = (typeof offset != 'undefined') ? offset : 0;
         this.update_text((typeof text != 'undefined') ? text : "");
 
         this.key = (typeof key != 'undefined') ? key : this.generate_new_key();
@@ -604,7 +610,11 @@ Shape.prototype.set_layer = function(layer) {
 
 
 Shape.prototype.clone = function() {
-
+    var shape = object_to_shape(this);
+    shape.key = shape.generate_new_key();
+    shape.vertices = [];
+    shape.update_vertices();
+    return shape;
 };
 
 Shape.prototype.has_border_line = function(line_points) {
@@ -740,13 +750,8 @@ Shape.prototype.darken = function() {
 Shape.prototype.full = function() {
     if (!this.full_details){
         this.full_details = true;
-        if (this.type == "Circle") {
-            this.radius += 20;
-        } else {
-            this.height += 10;
-            this.width += 50;
-            this.translate(-25, -5);
-        }
+        this.height += 10;
+        this.width += 50;
         this.update_vertices();
     }
 };
@@ -755,13 +760,8 @@ Shape.prototype.full = function() {
 Shape.prototype.partial = function() {
     if (this.full_details) {
         this.full_details = false;
-        if (this.type == "Circle") {
-            this.radius -= 20;
-        } else {
-            this.height -= 10;
-            this.width -= 50;
-            this.translate(25, 5);
-        }
+        this.height -= 10;
+        this.width -= 50;
         this.update_vertices();
     }
 };
@@ -786,10 +786,76 @@ Shape.prototype.get_center = function(shape) {
     return new Vertex(this.x + this.width/2, this.y + this.height/2,0);
 };
 
+Shape.prototype.draw_frame = function(ctx) {
+    ctx.beginPath();
+    for (var v = 1; v <= this.vertices.length; v++) {
+        var curr_point = this.vertices[v%this.vertices.length];
+        var prev_point = this.vertices[v-1];
+        var next_point = this.vertices[(v+1)%this.vertices.length];
+        var pre_line_direction = unit_vector(prev_point, curr_point);
+        var pre_point = curr_point.subtract(pre_line_direction.mul(this.radius));
+        var post_line_direction = unit_vector(curr_point, next_point);
+        var post_point = curr_point.add(post_line_direction.mul(this.radius));
+        if (v == 0) {
+            ctx.moveTo(pre_point.x, pre_point.y);
+        }
+        ctx.lineTo(pre_point.x, pre_point.y);
+        ctx.quadraticCurveTo(curr_point.x, curr_point.y, post_point.x, post_point.y);
+    }
+    ctx.closePath();
+};
+
+Shape.prototype.draw_fill = function(ctx) {
+    // draw fill
+    ctx.fillStyle = this.color.to_string();
+    ctx.fill();
+};
+
+Shape.prototype.draw_stroke = function(ctx) {
+    // draw border
+    if (this.stroke > 0) {
+        if (this.dashedBorder) {
+            ctx.setLineDash([2,3]);
+        }
+        ctx.strokeStyle = this.border_color.to_string();
+        ctx.lineWidth = this.stroke;
+        ctx.stroke();
+        ctx.setLineDash([0,0]);
+    }
+};
+
+Shape.prototype.draw_text = function(ctx) {
+    // draw text
+    if (!this.full_details || this.layer.description == "") {
+        ctx.font = "bold 14px Calibri";
+        ctx.textAlign = "center";
+        ctx.fillStyle = this.textColor;
+        ctx.fillText(this.text, this.x, this.y + 3);
+    } else {
+        ctx.font = "bold 14px Calibri";
+
+        ctx.textAlign = "center";
+        ctx.fillStyle = this.textColor;
+        ctx.fillText(this.text, this.x, this.y - 5);
+
+        ctx.font = "11px Calibri";
+        ctx.textAlign = "center";
+        ctx.fillStyle = this.textColor;
+        ctx.fillText(this.layer.description, this.x, this.y + 13);
+    }
+};
+
+Shape.prototype.draw = function(ctx) {
+    this.draw_frame(ctx);
+    this.draw_fill(ctx);
+    this.draw_stroke(ctx);
+    this.draw_text(ctx);
+};
+
 /////////////////////////////////////
 //  Rectangle
 
-var Rectangle = function(x, y, width, height, radius, offset, stroke, text, color, border_color, dashedBorder, key) {
+var Rectangle = function(x, y, width, height, radius, offset, stroke, text, color, border_color, dashedBorder, key, corner_anchor) {
     if (typeof x == "object") {
         // copy constructor
         var shape = x;
@@ -797,8 +863,9 @@ var Rectangle = function(x, y, width, height, radius, offset, stroke, text, colo
         this.clone_vertices(shape);
         this.offset = shape.offset;
     } else {
-        Shape.call(this, x, y, width, height, radius, stroke, text, color, border_color, dashedBorder, key);
+        Shape.call(this, x, y, width, height, radius, stroke, text, color, border_color, dashedBorder, key, offset);
         this.offset = (typeof offset != 'undefined') ? offset : 10;
+        this.corner_anchor = (typeof corner_anchor != 'undefined') ? corner_anchor : false;
     }
     this.update_vertices();
     this.type = "Rectangle";
@@ -806,73 +873,26 @@ var Rectangle = function(x, y, width, height, radius, offset, stroke, text, colo
 
 inheritsFrom(Rectangle, Shape);
 
-Rectangle.prototype.clone = function() {
-    var shape = new Rectangle(this);
-    shape.key = shape.generate_new_key();
-    shape.vertices = [];
-    shape.update_vertices();
-    return shape;
-};
-
-
 Rectangle.prototype.update_vertices = function() {
     var keys = [];
     for (var i = 0; i < this.vertices.length; i++) {
         keys.push(this.vertices[i].key);
     }
-    this.vertices = [
-        new Vertex(this.x, this.y, 0, keys[0]),
-        new Vertex(this.x + this.width, this.y, 0, keys[1]),
-        new Vertex(this.x + this.width - this.offset, this.y + this.height, 0, keys[2]),
-        new Vertex(this.x - this.offset, this.y + this.height, 0, keys[3])
-    ];
-};
-
-Rectangle.prototype.draw = function(ctx) {
-    ctx.beginPath();
-    ctx.moveTo(this.x + this.radius, this.y);
-    ctx.lineTo(this.x + this.width - this.radius, this.y);
-    ctx.quadraticCurveTo(this.x + this.width, this.y, this.x + this.width, this.y + this.radius);
-    ctx.lineTo(this.x + this.width - this.offset, this.y + this.height - this.radius);
-    ctx.quadraticCurveTo(this.x + this.width - this.offset, this.y + this.height, this.x + this.width - this.radius - this.offset, this.y + this.height);
-    ctx.lineTo(this.x + this.radius - this.offset, this.y + this.height);
-    ctx.quadraticCurveTo(this.x - this.offset, this.y + this.height, this.x - this.offset, this.y + this.height - this.radius);
-    ctx.lineTo(this.x, this.y + this.radius);
-    ctx.quadraticCurveTo(this.x, this.y, this.x + this.radius, this.y);
-    ctx.closePath();
-
-    // draw fill
-    ctx.fillStyle = this.color.to_string();
-    ctx.fill();
-    // draw border
-    if (this.stroke > 0) {
-		if (this.dashedBorder) {
-			ctx.setLineDash([2,3]);
-		}
-        ctx.strokeStyle = this.border_color.to_string();
-        ctx.lineWidth = this.stroke;
-        ctx.stroke();
-		ctx.setLineDash([0,0]);
-    }
-    // draw text
-    if (!this.full_details || this.layer.description == "") {
-        ctx.font = "bold 14px Calibri";
-        ctx.textAlign = "center";
-        ctx.fillStyle = this.textColor;
-        ctx.fillText(this.text, this.x + (this.width - this.offset) / 2, this.y + this.height / 2 + 3);
+    if (this.corner_anchor) {
+        this.vertices = [
+            new Vertex(this.x, this.y, 0, keys[0]),
+            new Vertex(this.x + this.width, this.y, 0, keys[1]),
+            new Vertex(this.x + this.width - this.offset, this.y + this.height, 0, keys[2]),
+            new Vertex(this.x - this.offset, this.y + this.height, 0, keys[3])
+        ];
     } else {
-        ctx.font = "bold 14px Calibri";
-
-        ctx.textAlign = "center";
-        ctx.fillStyle = this.textColor;
-        ctx.fillText(this.text, this.x + (this.width - this.offset) / 2, this.y + this.height / 2 - 5);
-
-        ctx.font = "11px Calibri";
-        ctx.textAlign = "center";
-        ctx.fillStyle = this.textColor;
-        ctx.fillText(this.layer.description, this.x + (this.width - this.offset) / 2, this.y + this.height / 2 + 13);
+        this.vertices = [
+            new Vertex(this.x - this.width/2 + this.offset/2, this.y - this.height/2, 0, keys[0]),
+            new Vertex(this.x + this.width/2 + this.offset/2, this.y - this.height/2, 0, keys[1]),
+            new Vertex(this.x + this.width/2 - this.offset/2, this.y + this.height/2, 0, keys[2]),
+            new Vertex(this.x - this.width/2 - this.offset/2, this.y + this.height/2, 0, keys[3])
+        ];
     }
-
 };
 
 /////////////////////////////////////
@@ -894,48 +914,84 @@ var Triangle = function(x, y, width, height, radius, stroke, color, border_color
 inheritsFrom(Triangle, Shape);
 
 
-Triangle.prototype.clone = function() {
-    var shape = new Triangle(this);
-    shape.key = shape.generate_new_key();
-    shape.vertices = [];
-    shape.update_vertices();
-    return shape;
-};
-
 Triangle.prototype.update_vertices = function() {
     var keys = [];
     for (var i = 0; i < this.vertices.length; i++) {
         keys.push(this.vertices[i].key);
     }
     this.vertices = [
-        new Vertex(this.x, this.y, 0, keys[0]),
-        new Vertex(this.x + this.width, this.y + this.height/2, 0, keys[1]),
-        new Vertex(this.x, this.y + this.height, 0, keys[2])
+        new Vertex(this.x - this.width/2, this.y - this.height/2, 0, keys[0]),
+        new Vertex(this.x + this.width/2, this.y, 0, keys[1]),
+        new Vertex(this.x - this.width/2, this.y + this.height/2, 0, keys[2])
     ];
 };
 
 
-Triangle.prototype.draw = function(ctx) {
-    ctx.beginPath();
-    ctx.moveTo(this.x + this.radius, this.y);
-    ctx.lineTo(this.x + this.width - this.radius, this.y + this.height/2 - this.radius);
-    ctx.quadraticCurveTo(this.x + this.width, this.y + this.height/2, this.x + this.width - this.radius, this.y + this.height/2 + this.radius);
-    ctx.lineTo(this.x + this.radius, this.y + this.height);
-    ctx.quadraticCurveTo(this.x, this.y + this.height, this.x, this.y + this.height - this.radius);
-    ctx.lineTo(this.x, this.y + this.radius);
-    ctx.quadraticCurveTo(this.x, this.y, this.x + this.radius, this.y);
-    ctx.closePath();
+/////////////////////////////////////
+//  Diamond
 
-    // draw fill
-    ctx.fillStyle = this.color.to_string();
-    ctx.fill();
-    // draw border
-    if (this.stroke > 0) {
-        ctx.strokeStyle = this.border_color.to_string();
-        ctx.lineWidth = this.stroke;
-        ctx.stroke();
+var Diamond = function(x, y, width, height, radius, stroke, color, border_color, key) {
+    if (typeof x == "object") {
+        // copy constructor
+        var shape = x;
+        Shape.call(this, shape);
+        this.clone_vertices(shape);
+    } else {
+        Shape.call(this, x, y, width, height, radius, stroke, "", color, border_color, key);
+        this.update_vertices();
     }
+    this.type = "Diamond";
 };
+
+inheritsFrom(Diamond, Shape);
+
+Diamond.prototype.update_vertices = function() {
+    var keys = [];
+    for (var i = 0; i < this.vertices.length; i++) {
+        keys.push(this.vertices[i].key);
+    }
+    this.vertices = [
+        new Vertex(this.x, this.y - this.height/2, 0, keys[0]),
+        new Vertex(this.x + this.width/2, this.y, 0, keys[1]),
+        new Vertex(this.x, this.y + this.height/2, 0, keys[2]),
+        new Vertex(this.x - this.width/2, this.y, 0, keys[3])
+    ];
+};
+
+/////////////////////////////////////
+//  Hexagon
+
+var Hexagon = function(x, y, width, height, radius, stroke, color, border_color, key) {
+    if (typeof x == "object") {
+        // copy constructor
+        var shape = x;
+        Shape.call(this, shape);
+        this.clone_vertices(shape);
+    } else {
+        Shape.call(this, x, y, width, height, radius, stroke, "", color, border_color, key);
+        this.update_vertices();
+    }
+    this.type = "Hexagon";
+};
+
+inheritsFrom(Hexagon, Shape);
+
+Hexagon.prototype.update_vertices = function() {
+    var keys = [];
+    for (var i = 0; i < this.vertices.length; i++) {
+        keys.push(this.vertices[i].key);
+    }
+    var side = this.width/2;
+    this.vertices = [
+        new Vertex(this.x - side/2, this.y - this.height/2, 0, keys[0]),
+        new Vertex(this.x + side/2, this.y - this.height/2, 0, keys[1]),
+        new Vertex(this.x + this.width/2, this.y, 0, keys[2]),
+        new Vertex(this.x + side/2, this.y + this.height/2, 0, keys[3]),
+        new Vertex(this.x - side/2, this.y + this.height/2, 0, keys[4]),
+        new Vertex(this.x - this.width/2, this.y, 0, keys[5])
+    ];
+};
+
 
 /////////////////////////////////////
 //  Circle
@@ -947,7 +1003,7 @@ var Circle = function(x, y, radius, stroke, text, color, border_color, key) {
         Shape.call(this, shape);
         this.clone_vertices(shape);
     } else {
-        Shape.call(this, x + radius, y + radius, radius, radius, radius, stroke, text, color, border_color, false, key);
+        Shape.call(this, x, y, 2*radius, 2*radius, 0, stroke, text, color, border_color, false, key);
         this.vertices = [];
         this.type = "Circle";
         this.update_vertices();
@@ -956,66 +1012,14 @@ var Circle = function(x, y, radius, stroke, text, color, border_color, key) {
 
 inheritsFrom(Circle, Shape);
 
-Circle.prototype.clone = function() {
-    var shape = new Circle(this);
-    shape.key = shape.generate_new_key();
-    shape.vertices = [];
-    shape.update_vertices();
-    return shape;
-};
-
 Circle.prototype.update_vertices = function() {
     var keys = [];
     for (var i = 0; i < this.vertices.length; i++) {
         keys.push(this.vertices[i].key);
     }
     this.vertices = [];
-    var num_vertices = 18;
+    var num_vertices = 36;
     for (var i = 0; i < num_vertices; i++) {
-        this.vertices.push(new Vertex(this.x + this.radius*Math.cos(i*2*Math.PI/num_vertices), this.y + this.radius*Math.sin(i*2*Math.PI/num_vertices), 0, keys[i]));
+        this.vertices.push(new Vertex(this.x + (this.width/2)*Math.cos(i*2*Math.PI/num_vertices), this.y + (this.width/2)*Math.sin(i*2*Math.PI/num_vertices), 0, keys[i]));
     }
 };
-
-Circle.prototype.draw = function(ctx) {
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI, false);
-    // draw fill
-    ctx.fillStyle = this.color.to_string();
-    ctx.fill();
-    // draw border
-    if (this.stroke > 0) {
-        ctx.strokeStyle = this.border_color.to_string();
-        ctx.lineWidth = this.stroke;
-        ctx.stroke();
-    }
-
-    // draw text
-    ctx.font="bold 14px Calibri";
-    ctx.textAlign="center";
-    ctx.fillStyle = this.textColor;
-    ctx.fillText(this.text,this.x, this.y + 3);
-};
-
-Circle.prototype.pointer_is_inside = function(xm, ym) {
-    return (Math.sqrt(Math.pow(xm-this.x, 2) + Math.pow(ym-this.y,2)) < this.radius);
-};
-
-Circle.prototype.pointer_is_on_the_border = function(xm, ym, ctx) {
-    var cursor = new Vertex(xm, ym, 0);
-    // check if the pointer position is relevant by comparing the color under the cursor with the color of the line
-    if (!color_under_cursor_matches_given_color(this.border_color, ctx, cursor,this.stroke)) return false;
-
-    return (Math.sqrt(Math.pow(xm-this.x, 2) + Math.pow(ym-this.y,2)) < this.radius + 3 &&
-            Math.sqrt(Math.pow(xm-this.x, 2) + Math.pow(ym-this.y,2)) > this.radius - 3);
-};
-
-Circle.prototype.update_text = function(text) {
-    var textWidth = text.length * 7;
-    this.text = text;
-    if (textWidth/2 > this.baseWidth) {
-        this.radius = textWidth/2;
-    } else {
-        this.radius = this.baseWidth;
-    }
-};
-

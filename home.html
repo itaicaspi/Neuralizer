@@ -24,7 +24,7 @@
     <link href="https://fonts.googleapis.com/css?family=Lato:100,700" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!-- Styles -->
-    <link href="css/style.min.css" rel="stylesheet">
+    <link href="css/style.min.css?random=@Environment.TickCount" rel="stylesheet">
     <!--<link rel="stylesheet" type="text/css" href="css/gitgraph.css" />-->
     <!-- Animate -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
@@ -35,7 +35,15 @@
     <script src="https://unpkg.com/masonry-layout@4.1/dist/masonry.pkgd.min.js" async></script>
 
     <!-- Neuralizer Scripts -->
-    <script src="js/scripts.min.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/shapes.js"></script>
+    <script src="js/objects.js"></script>
+    <script src="js/nn.js"></script>
+    <script src="js/transforms.js"></script>
+    <script src="js/files.js"></script>
+    <script src="js/canvas_manager.js"></script>
+    <script src="js/side_bar_manager.js"></script>
+    <!--<script src="js/scripts.min.js?random=@Environment.TickCount"></script>-->
 
     <!-- favicon -->
     <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
@@ -158,13 +166,17 @@
             var color = canvas_manager.selected_color_idx;
             var shape;
             if (layer_type == "DataPlaceholder") {
-                shape = new Rectangle(x - 40, y - 20, 80, 40, 3, 10, 3, layer_name, fill_colors[color], border_colors[color], false);
+                shape = new Rectangle(x, y, 80, 40, 3, 10, 3, layer_name, fill_colors[color], border_colors[color], false);
+            } else if (layer_type == "Activation") {
+                shape = new Diamond(x, y, 40, 40, 2, 3, fill_colors[color], border_colors[color]);
             } else if (layer_type == "DataManipulation") {
-                shape = new Triangle(x - 20, y - 20, 40, 40, 2, 3, fill_colors[color], border_colors[color]);
+                shape = new Triangle(x, y, 40, 40, 2, 3, fill_colors[color], border_colors[color]);
             } else if (layer_type == "ElementWise") {
-                shape = new Circle(x - 20, y - 20, 20, 3, layer_name, fill_colors[color], border_colors[color]);
+                shape = new Circle(x, y, 20, 3, layer_name, fill_colors[color], border_colors[color]);
+            } else if (layer_type == "Pooling") {
+                shape = new Hexagon(x, y, 80, 40, 2, 3, fill_colors[color], border_colors[color]);
             } else {
-                shape = new Rectangle(x - 40, y - 20, 80, 40, 10, 0, 3, layer_name, fill_colors[color], border_colors[color], false);
+                shape = new Rectangle(x, y, 80, 40, 10, 0, 3, layer_name, fill_colors[color], border_colors[color], false);
             }
             shape.set_layer(create_new_layer());
             canvas_manager.add_shape(shape);
@@ -1058,8 +1070,7 @@
 </span>
 
 <!-- Welcome Screen -->
-<div id="welcome_screen_container" class="full-screen animated">
-
+<div id="welcome_screen_container" class="full-screen animated centered stretched">
     <div id="welcome_screen" class="centered">
         <div id="welcome_screen_frame" class="stretched">
             <div id="welcome_screen_background" class="stretched">
@@ -1072,27 +1083,14 @@
                 </div>
 
                 <div id="welcome_screen_content" style="text-align: center; margin-top: 1%">
-                    <div id="carousel-example-generic" class="carousel slide" data-ride="carousel" style="height: 100%">
-                        <!-- Indicators -->
-                        <ol class="carousel-indicators">
-                            <li data-target="#carousel-example-generic" data-slide-to="0" class="active"></li>
-                            <li data-target="#carousel-example-generic" data-slide-to="1"></li>
-                            <li data-target="#carousel-example-generic" data-slide-to="2"></li>
-                        </ol>
-
+                    <div id="welcome-carousel" class="carousel slide carousel-fade" data-ride="carousel" style="height: 100%">
                         <!-- Wrapper for slides -->
-                        <div class="carousel-inner" role="listbox">
-                            <div class="item active">
-                                <img class="img-responsive center-block" src="images/test.png" alt="..." style="margin-top: 50px">
-                                <!--<div class="carousel-caption">-->
-                                    <!--Model Based Generative Imitation Leaning-->
-                                <!--</div>-->
+                        <div class="carousel-inner stretched" role="listbox">
+                            <div class="item stretched active">
+                                <img class="img-responsive center-block" src="images/welcome-example.png" alt="..." style="max-height: 100%;">
                             </div>
-                            <div class="item">
-                                <img class="img-responsive center-block" src="images/frameworks.png" alt="..." style="margin-top: 50px">
-                                <!--<div class="carousel-caption">-->
-                                <!--Model Based Generative Imitation Leaning-->
-                                <!--</div>-->
+                            <div class="item stretched">
+                                <img class="img-responsive center-block" src="images/welcome-frameworks.png" alt="..." style="max-height: 100%;">
                             </div>
                         </div>
 
@@ -1113,6 +1111,11 @@
         $('select.selectpicker').selectpicker();
         // Initiate tooltip
         $('[data-toggle="tooltip"]').tooltip();
+
+        $("#welcome-carousel").carousel({
+            interval : 4000,
+            pause: false
+        });
     });
 </script>
 <script>

@@ -15,7 +15,7 @@ var CanvasManager = function(canvas) {
     this.snap_threshold = 10;
 
     // canvas selection
-    this.selection_box = new Rectangle(0, 0, 0, 0, 2, 0, 2, "", new Color(0, 0, 0, 0), new Color(100, 100, 100, 1), true);
+    this.selection_box = new Rectangle(0, 0, 0, 0, 2, 0, 2, "", new Color(0, 0, 0, 0), new Color(100, 100, 100, 1), true, undefined, true);
     this.selected_shapes = [];
     this.selected_color_idx = 0;
 
@@ -306,6 +306,7 @@ CanvasManager.prototype.initialize_selection_box = function() {
 CanvasManager.prototype.set_selection_box = function() {
     this.selection_box.width = this.cursor_x - this.selection_box.x;
     this.selection_box.height = this.cursor_y - this.selection_box.y;
+    this.selection_box.update_vertices();
     this.selection_box.show();
     this.update_selected_shapes_from_selection_box();
     this.draw_required = true;
@@ -467,13 +468,7 @@ CanvasManager.prototype.json_to_curr_state = function(json_state) {
     // parse shapes
     for (var s = this.shapes.length-1; s >= 0; s--) {
         var shape = this.shapes[s];
-        if (shape.type == "Rectangle") {
-            this.shapes[s] = new Rectangle(shape);
-        } else if (shape.type == "Triangle") {
-            this.shapes[s] = new Triangle(shape);
-        } else if (shape.type == "Circle") {
-            this.shapes[s] = new Circle(shape);
-        }
+        this.shapes[s] = object_to_shape(shape);
         this.shapes[s].set_layer(shape.layer);
     }
 
