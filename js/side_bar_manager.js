@@ -89,10 +89,13 @@ var SidebarManager = function() {
     for (var key = 0; key < this.modes.length; key++) {
         this.mode_icons.push($("#" + this.modes[key] + "_icon"));
     }
+    this.current_mode = "designer";
     this.add_layer_icon = $("#addLayerIcon");
     this.layer_name = $("#layerName");
     this.full_details_switch = $("#fullDetails");
     this.layer_type = $("#layerType");
+    this.available_models = 0;
+    this.grid = false;
 };
 
 SidebarManager.prototype.change_selected_color = function(color_idx) {
@@ -143,8 +146,102 @@ SidebarManager.prototype.set_full_details_switch = function(value) {
 };
 
 
+SidebarManager.prototype.add_model_to_canvas_overlay = function(model) {
+    var object =
+        '<div class="grid-item grid-item--width2 animated"> ' +
+        '<figure class="card"> ' +
+        '<div class="card-barrier"></div> ' +
+        '<div class="card-thumbnail-container"> ' +
+        '<a class="card-thumbnail" href="#" target="_blank" style="background-image: url(\'models\/' + model.json_state + '.png\");" draggable="false"></a> ' +
+        '</div>' +
+        '<figcaption class="card-title-section"> ' +
+        '<div class="card-title editable" title="Inception v4">' + model.name + '</div> ' +
+        '<div class="card-title-owner">Itai Caspi ' +
+        '<div class="stars"> ' +
+        '<span><i class="fa fa-star" aria-hidden="true"></i>' + model.stars + '</span> ' +
+        '</div> ' +
+        '</div> ' +
+        '<div class="card-tags"> ' +
+        '<mark data-entity="detection"></mark> ' +
+        '<mark data-entity="classification"></mark> ' +
+        '</div> ' +
+        '</figcaption> ' +
+        '</figure> ' +
+        '</div>';
+
+    var models_container = $("#models_container");
+    $(models_container).prepend($(object));
+};
+
+SidebarManager.prototype.show_models_in_canvas_overlay = function(models) {
+
+    // add models to canvas overlay
+    $('.grid').empty();
+    if (this.grid) {
+        $(this.grid).masonry('destroy');
+    }
+    for (var i = 0; i < models.length; i++) {
+        this.add_model_to_canvas_overlay(models[i]);
+    }
+    $('.grid').imagesLoaded(function() {
+        $('.grid').masonry({
+            // options
+            itemSelector: '.grid-item',
+            columnWidth: 100
+        });
+    });
+
+    // show canvas overlay
+    if (this.available_models == 0 && models.length > 0 && this.current_mode == 'account') {
+        this.show_canvas_explore();
+    }
+
+    this.available_models = models.length;
+
+    console.log(models);
+};
+
+SidebarManager.prototype.save_model_to_server = function() {
+    upload_current_state_to_server();
+    update_user_models_from_server();
+};
+
+SidebarManager.prototype.show_canvas_explore = function() {
+    $("#canvas_explore").fadeIn();
+    if (!this.grid) {
+        this.grid = $('.grid');
+        $('.grid').masonry({
+            // options
+            itemSelector: '.grid-item',
+            columnWidth: 100
+        });
+    }
+    $(".grid").removeClass("fadeOutDown");
+    $(".grid").addClass("fadeInUp");
+    $('.grid-item').hover(
+        function(){ $(this).addClass('pulse') },
+        function(){ $(this).removeClass('pulse') }
+    )
+    $(".canvas").addClass("blur");
+    $("#canvas_keys").addClass("blur");
+    // $("#sidebar_container").removeClass("col-xs-2").addClass("col-xs-3", "slow");
+    // $("#canvas_container").removeClass("col-xs-9").addClass("col-xs-8", "slow");
+};
+
+SidebarManager.prototype.hide_canvas_explore = function() {
+    $(".canvas").removeClass("blur");
+    $("#canvas_keys").removeClass("blur");
+    $(".grid").removeClass("fadeInUp");
+    $(".grid").addClass("fadeOutDown");
+    $("#canvas_explore").fadeOut();
+    // $("#sidebar_container").removeClass("col-xs-3").addClass("col-xs-2", "slow");
+    // $("#canvas_container").removeClass("col-xs-8").addClass("col-xs-9", "slow");
+};
+
+
 SidebarManager.prototype.switch_sidebar_mode = function(mode) {
     //switch the sidebar mode
+    this.current_mode = mode;
     var key;
     for (key = 0; key < this.modes.length; key++) {
         $(this.mode_icons[key]).parent('div').removeClass("wrapping-side-icon");
@@ -164,31 +261,10 @@ SidebarManager.prototype.switch_sidebar_mode = function(mode) {
             $("#" + this.modes[key]).hide();
         }
     }
-    if (mode == "share_explore") {
-        $("#canvas_explore").fadeIn();
-        $('.grid').masonry({
-            // options
-            itemSelector: '.grid-item',
-            columnWidth: 100
-        });
-        $(".grid").removeClass("fadeOutDown");
-        $(".grid").addClass("fadeInUp");
-        $('.grid-item').hover(
-            function(){ $(this).addClass('pulse') },
-            function(){ $(this).removeClass('pulse') }
-        )
-        $(".canvas").addClass("blur");
-        $("#canvas_keys").addClass("blur");
-        // $("#sidebar_container").removeClass("col-xs-2").addClass("col-xs-3", "slow");
-        // $("#canvas_container").removeClass("col-xs-9").addClass("col-xs-8", "slow");
+    if (mode == "share_explore" || (mode == "account" && this.available_models > 0)) {
+        this.show_canvas_explore();
     } else {
-        $(".canvas").removeClass("blur");
-        $("#canvas_keys").removeClass("blur");
-        $(".grid").removeClass("fadeInUp");
-        $(".grid").addClass("fadeOutDown");
-        $("#canvas_explore").fadeOut();
-        // $("#sidebar_container").removeClass("col-xs-3").addClass("col-xs-2", "slow");
-        // $("#canvas_container").removeClass("col-xs-8").addClass("col-xs-9", "slow");
+        this.hide_canvas_explore();
     }
 
 };
@@ -245,14 +321,13 @@ SidebarManager.prototype.change_selected_layer_type = function(layerType, layerS
     $(layer_types[layerType]["subtype_selector_id"]).val(layerSubtype);
 };
 
-
-
 SidebarManager.prototype.logged_in_mode = function() {
     $("#UserAuthenticationForm").removeClass("fadeIn");
     $("#UserAuthenticationForm").hide();
     $("#user_greeting").text("Hi, " + $("#username").val());
     $("#UserDetails").show();
     $("#UserDetails").addClass("fadeInUp");
+    update_user_models_from_server();
 };
 
 SidebarManager.prototype.logged_out_mode = function() {
@@ -274,8 +349,6 @@ SidebarManager.prototype.logout = function() {
             success: function(){
                 sidebar_manager.logged_out_mode();
             }
-        }).fail(function () {
-            console.log("failed");
         });
         return false;
     });
@@ -294,8 +367,6 @@ SidebarManager.prototype.login = function() {
                 200: function() { sidebar_manager.logged_in_mode(); },
                 401: function() { console.log("error"); }
             }
-        }).fail(function () {
-            console.log("failed");
         });
         return false;
     });
@@ -313,8 +384,6 @@ SidebarManager.prototype.signup = function() {
             success: function(){
                 console.log('form submitted.');
             }
-        }).fail(function () {
-            console.log("failed");
         });
         return false;
     });

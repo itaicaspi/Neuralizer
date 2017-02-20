@@ -33,6 +33,7 @@
 
     <!-- Masonry -->
     <script src="https://unpkg.com/masonry-layout@4.1/dist/masonry.pkgd.min.js" async></script>
+    <script src="https://npmcdn.com/imagesloaded@4.1/imagesloaded.pkgd.min.js"></script>
 
     <!-- Neuralizer Scripts -->
     <script src="js/utils.js"></script>
@@ -41,6 +42,7 @@
     <script src="js/nn.js"></script>
     <script src="js/transforms.js"></script>
     <script src="js/files.js"></script>
+    <script src="js/server_communication.js"></script>
     <script src="js/canvas_manager.js"></script>
     <script src="js/side_bar_manager.js"></script>
     <!--<script src="js/scripts.min.js?random=@Environment.TickCount"></script>-->
@@ -374,6 +376,8 @@
                     sidebar_manager.logged_in_mode();
                 }
             });
+
+
         }
     </script>
 </head>
@@ -922,7 +926,7 @@
                     <label id="user_greeting" class="purple"></label>
                     <button type="submit" style="background: transparent; border: 0;" class="pull-right" onclick="sidebar_manager.logout()">Log out</button>
                 </div>
-                <button type="submit" class="btn rect-btn purple-bg small-rect" onclick="upload_current_state_to_server()">Save Model</button>
+                <button type="button" class="btn rect-btn purple-bg small-rect" onclick="sidebar_manager.save_model_to_server()">Save Model</button>
             </form>
         </div>
     </div>
@@ -958,143 +962,7 @@
                     </div>
                 </div>
             </div>
-            <div class="grid animated">
-                <div class="grid-item grid-item--width2 animated">
-                    <figure class="card">
-                        <div class="card-barrier"></div>
-                        <div class="card-thumbnail-container">
-                            <a class="card-thumbnail" href="#" target="_blank" style="background-image: url('images/test.png');" draggable="false"></a>
-                        </div>
-                        <figcaption class="card-title-section">
-                            <div class="card-title editable" title="Inception v4">Inception v4</div>
-                            <div class="card-title-owner">Itai Caspi
-                                <div class="stars">
-                                    <span>
-                                    <i class="fa fa-star" aria-hidden="true"></i>
-                                    1000
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="card-tags">
-                                <mark data-entity="detection"></mark>
-                                <mark data-entity="classification"></mark>
-                            </div>
-                        </figcaption>
-                    </figure>
-                </div>
-                <div class="grid-item animated">
-                    <figure class="card">
-                        <div class="card-barrier"></div>
-                        <div class="card-thumbnail-container">
-                            <a class="card-thumbnail" href="#" target="_blank" style="background-image: url('images/test.png');" draggable="false"></a>
-                        </div>
-                        <figcaption class="card-title-section">
-                            <div class="card-title editable" title="ResNet">ResNet</div>
-                            <div class="card-title-owner">Itai Caspi
-                                <div class="stars">
-                                    <span>
-                                    <i class="fa fa-star" aria-hidden="true"></i>
-                                    1000
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="card-tags">
-                                <mark data-entity="segmentation"></mark>
-                                <mark data-entity="other"></mark>
-                            </div>
-                        </figcaption>
-                    </figure>
-                </div>
-                <div class="grid-item grid-item--width2 animated">
-                    <figure class="card">
-                        <div class="card-barrier"></div>
-                        <div class="card-thumbnail-container">
-                            <a class="card-thumbnail" href="#" target="_blank" style="background-image: url('images/test.png');" draggable="false"></a>
-                        </div>
-                        <figcaption class="card-title-section">
-                            <div class="card-title editable" title="Faster-RCNN">Faster-RCNN</div>
-                            <div class="card-title-owner">Itai Caspi
-                                <div class="stars">
-                                    <span>
-                                    <i class="fa fa-star" aria-hidden="true"></i>
-                                    1000
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="card-tags">
-                                <mark data-entity="generative"></mark>
-                                <mark data-entity="nlp"></mark>
-                            </div>
-                        </figcaption>
-                    </figure>
-                </div>
-                <div class="grid-item grid-item--width2 animated">
-                    <figure class="card">
-                        <div class="card-barrier"></div>
-                        <div class="card-thumbnail-container">
-                            <a class="card-thumbnail" href="#" target="_blank" style="background-image: url('images/test.png');" draggable="false"></a>
-                        </div>
-                        <figcaption class="card-title-section">
-                            <div class="card-title editable" title="Faster-RCNN">Faster-RCNN</div>
-                            <div class="card-title-owner">Itai Caspi
-                                <div class="stars">
-                                    <span>
-                                    <i class="fa fa-star" aria-hidden="true"></i>
-                                    1000
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="card-tags">
-                                <mark data-entity="reinforcement learning"></mark>
-                            </div>
-                        </figcaption>
-                    </figure>
-                </div>
-                <div class="grid-item grid-item--width2 animated">
-                    <figure class="card">
-                        <div class="card-barrier"></div>
-                        <div class="card-thumbnail-container">
-                            <a class="card-thumbnail" href="#" target="_blank" style="background-image: url('images/test.png');" draggable="false"></a>
-                        </div>
-                        <figcaption class="card-title-section">
-                            <div class="card-title editable" title="Faster-RCNN">Faster-RCNN</div>
-                            <div class="card-title-owner">Itai Caspi
-                                <div class="stars">
-                                    <span>
-                                    <i class="fa fa-star" aria-hidden="true"></i>
-                                        1000
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="card-tags">
-                                <mark data-entity="generative"></mark>
-                            </div>
-                        </figcaption>
-                    </figure>
-                </div>
-                <div class="grid-item grid-item--width2 animated">
-                    <figure class="card">
-                        <div class="card-barrier"></div>
-                        <div class="card-thumbnail-container">
-                            <a class="card-thumbnail" href="#" target="_blank" style="background-image: url('images/test.png');" draggable="false"></a>
-                        </div>
-                        <figcaption class="card-title-section">
-                            <div class="card-title editable" title="Faster-RCNN">Faster-RCNN</div>
-                            <div class="card-title-owner">Itai Caspi
-                                <div class="stars">
-                                    <span>
-                                    <i class="fa fa-star" aria-hidden="true"></i>
-                                    1000
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="card-tags">
-                                <mark data-entity="generative"></mark>
-                                <mark data-entity="nlp"></mark>
-                            </div>
-                        </figcaption>
-                    </figure>
-                </div>
+            <div class="grid animated" id="models_container">
 
             </div>
         </div>

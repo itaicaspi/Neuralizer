@@ -28,9 +28,7 @@ function download_as_file(filename, data, type) {
     document.body.removeChild(link);
 }
 
-function save_current_state_as_image(filename) {
-    // download the current state to the user's machine as an image
-    canvas_manager.show_message("Downloading topology image", true);
+function get_current_state_image() {
 
     // get relevant area
     var bb = canvas_manager.get_bounding_box_over_all_shapes();
@@ -52,10 +50,17 @@ function save_current_state_as_image(filename) {
     tempCanvas.height = height;
     tCtx.drawImage(canvas_manager.canvas,-x,-y);
 
-    var image = tempCanvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
-    download_as_file($("#filename").val(), image, "image");
-
+    var image = tempCanvas.toDataURL("image/png");
     canvas_manager.add_all_arrows_separating_border();
+
+    return image;
+}
+
+function save_current_state_as_image(filename) {
+    // download the current state to the user's machine as an image
+    canvas_manager.show_message("Downloading topology image", true);
+    var image = get_current_state_image().replace("image/png", "image/octet-stream");
+    download_as_file($("#filename").val(), image, "image");
 }
 
 function save_current_state_to_file(framework) {
@@ -97,29 +102,7 @@ function load_state_from_file() {
     }
 }
 
-function upload_current_state_to_server() {
-    var name = $("#filename").val();
-    var text = {
-        model_name: name,
-        model_json: canvas_manager.stored_states[canvas_manager.current_timestep]
-    };
 
-    var form = $('#UserDetails');
-    $(form).attr('action', '/upload');
-    $(form).submit(function(){
-        jQuery.post({
-            url: "/upload",
-            type: "POST",
-            data : text,
-            success: function(){
-                console.log("uploaded successfully");
-            }
-        }).fail(function () {
-            console.log("failed");
-        });
-        return false;
-    });
-}
 //
 // function export_current_state_to_framework_file() {
 //     canvas_manager.show_message("Downloading topology", true);
