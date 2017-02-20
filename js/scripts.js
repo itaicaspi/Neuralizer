@@ -1007,8 +1007,8 @@ Shape.prototype.clone_vertices = function(shape){
     }
 };
 
-Shape.prototype.get_center = function(shape) {
-    return new Vertex(this.x + this.width/2, this.y + this.height/2,0);
+Shape.prototype.get_center = function() {
+    return new Vertex(this.x, this.y, 0);
 };
 
 Shape.prototype.draw_frame = function(ctx) {
@@ -1219,7 +1219,7 @@ Hexagon.prototype.update_vertices = function() {
 
 
 /////////////////////////////////////
-//  Circle
+//  Ellipse
 
 var Circle = function(x, y, radius, stroke, text, color, border_color, key) {
     if (typeof x == "object") {

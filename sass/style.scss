@@ -6,6 +6,7 @@
 $primary-fonts: 'Lato', sans-serif;
 $primary-color: rgb(153, 196, 50); // green
 $secondary-color: rgb(147, 75, 194); // purple
+$secondary-color-faded: rgb(230, 101, 109);
 $danger-color: rgb(225, 67, 41); // red
 $plain-background-color: rgb(235, 236, 237); // off white
 
@@ -78,6 +79,11 @@ label {
 .stretched {
   width: 100%;
   height: 100%;
+}
+
+.vertical-margin {
+  margin-top: 5px;
+  margin-bottom: 5px;
 }
 
 .preloader {
@@ -205,6 +211,20 @@ label {
   user-select: none;
 }
 
+
+#canvas_helpers {
+  padding: 20px;
+  background: transparent;
+  z-index: 101;
+  position: absolute;
+  top: 0;
+  -moz-user-select: -moz-none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  @include transition(all 0.5s linear);
+}
+
 #canvas_keys {
   padding: 20px;
   background: transparent;
@@ -277,6 +297,7 @@ label {
 
 .big-rect {
   min-width: 140px;
+  font-size: 16px;
 }
 
 .rect-btn {
@@ -284,8 +305,13 @@ label {
   font-weight: bold;
   display: inline-block;
   margin: 10px 10px;
-  font-size: 16px;
-  line-height: 28px;
+  //font-size: 16px;
+  line-height: 26px;
+  transition: box-shadow .4s ease;
+}
+
+.rect-btn:hover {
+  box-shadow: 0 0 3px rgba(255,255,255,0.35);
 }
 
 .green {
@@ -306,6 +332,13 @@ label {
 .purple {
   background-color: #fff;
   color: $secondary-color;
+}
+
+.purple-bg {
+  background-image: linear-gradient(to left, $secondary-color, $secondary-color-faded 150%);
+  border: 0px;
+  //background-color: $secondary-color;
+  color: #fff;
 }
 
 .icoRss, .icoFacebook, .icoTwitter,
@@ -396,6 +429,10 @@ label {
 .rotated {
   @include transform(rotate(45deg));
   color: $danger-color;
+}
+
+.rotated-90 {
+  @include transform(rotate(90deg));
 }
 
 .material-switch > input[type="checkbox"] {

@@ -2,13 +2,17 @@
  * Created by Itai Caspi on 28/07/2016.
  */
 
-
+/*
+ *  Shape Factory
+ */
 function object_to_shape(obj) {
     var classes = {
         "Rectangle": Rectangle,
+        "Trapezoid": Trapezoid,
         "Triangle": Triangle,
         "Diamond": Diamond,
-        "Circle": Circle,
+        "Ellipse": Ellipse,
+        "HalfCircle": HalfCircle,
         "Hexagon": Hexagon,
         "Line": Line
     };
@@ -19,11 +23,17 @@ function object_to_shape(obj) {
     }
 }
 
+/*
+ * Inheritance helper function
+ */
 var inheritsFrom = function (child, parent) {
     child.prototype = Object.create(parent.prototype);
     child.prototype.constructor = child;
 };
 
+/*
+ * Line
+ */
 var Line = function(vertices, radius, color, stroke, key) {
     if (stroke == undefined) {
         // copy constructor
@@ -56,6 +66,7 @@ var Line = function(vertices, radius, color, stroke, key) {
         this.endDir = [];
         this.broken_start = false;
         this.broken_end = false;
+        this.draw_separating_border = true;
         this.type = "Line";
 
         this.key = new Uint32Array(1);
@@ -64,11 +75,17 @@ var Line = function(vertices, radius, color, stroke, key) {
     }
 };
 
+
+/*
+ * Returns a new copy of the current line
+ */
 Line.prototype.clone = function() {
     return new Line(this, this.linkStart.shape, this.linkEnd.shape);
 };
 
-
+/*
+ * Check if the line given by two points is part of the multi segment line
+ */
 Line.prototype.has_border_line = function(line_points) {
     var i;
     for (i = 0; i < this.vertices.length; i++) {
@@ -81,6 +98,9 @@ Line.prototype.has_border_line = function(line_points) {
     return false;
 };
 
+/*
+ * Check if the line is connected to one of the given shapes and return the connected shapes
+ */
 Line.prototype.shapes_are_linked = function(shapes) {
 	var is_start = false;
 	var is_end = false;
@@ -95,14 +115,16 @@ Line.prototype.shapes_are_linked = function(shapes) {
 	return [is_start, is_end]
 };
 
-
+/*
+ * Update the line placement if one of the given shapes is connected to it
+ */
 Line.prototype.linked_shapes_moved = function(dx, dy, shapes) {
 	var results = this.shapes_are_linked(shapes);
 	var start_moved = results[0];
 	var end_moved = results[1];
 
     if (start_moved && end_moved) {//} && start_moved.type != "Line" && end_moved.type != "Line") {
-        this.move(dx,dy);
+        this.translate(dx,dy);
     }
     if (start_moved) {
         this.linkStart.p1 = start_moved.get_vertex_by_key(this.linkStart.p1.key);
@@ -120,6 +142,10 @@ Line.prototype.linked_shapes_moved = function(dx, dy, shapes) {
     this.sync_end();
 };
 
+
+/*
+ * Update the line color if the given shape is connected to the beginning of the line
+ */
 Line.prototype.linked_shape_color_change = function(shape, arrows) {
     if (shape.has_border_line(this.linkStart)) {
         this.color = shape.border_color;
@@ -131,6 +157,9 @@ Line.prototype.linked_shape_color_change = function(shape, arrows) {
     }
 };
 
+/*
+ * Initialize the line by connecting it to the given shape as a start point
+ */
 Line.prototype.start_line = function(start, color, linkStart) {
     // linkStart is an array of 2 points and a type
     this.points++;
@@ -142,6 +171,9 @@ Line.prototype.start_line = function(start, color, linkStart) {
 	this.sync_start();
 };
 
+/*
+ * Add a new point to the line
+ */
 Line.prototype.add_point = function(point) {
     var lastIdx = this.points-1;
     if (this.points == 1) {
@@ -159,6 +191,9 @@ Line.prototype.add_point = function(point) {
     }
 };
 
+/*
+ * Finalize the line by connecting it to the given shape
+ */
 Line.prototype.end_line = function(end, linkEnd) {
     var lastIdx = this.points-1;
     var error_allowed = 10;
@@ -181,9 +216,10 @@ Line.prototype.end_line = function(end, linkEnd) {
     this.sync_end();
 };
 
-
+/*
+ * Draw the line
+ */
 Line.prototype.draw = function(ctx) {
-
     if (this.vertices.length == 0) return;
     var horizontal, vertical, over, offset;
     ctx.beginPath();
@@ -210,9 +246,11 @@ Line.prototype.draw = function(ctx) {
     if (this.stroke > 0) {
         // draw border to distinguish between intersecting lines
         // TODO: disable this when saving images
-        ctx.strokeStyle = "#EBECED";
-        ctx.lineWidth = this.stroke + 6;
-        ctx.stroke();
+        if (this.draw_separating_border) {
+            ctx.strokeStyle = "#EBECED";
+            ctx.lineWidth = this.stroke + 6;
+            ctx.stroke();
+        }
         // draw line
         ctx.strokeStyle = this.border_color.to_string();
         ctx.lineWidth = this.stroke;
@@ -248,14 +286,14 @@ Line.prototype.draw = function(ctx) {
     }
 };
 
-Line.prototype.move = function(dx, dy) {
-	for (var v = 0; v < this.vertices.length; v++) {
-		this.vertices[v].translate(dx,dy,0);
-	}
-};
 
+/*
+ * Move the entire line
+ */
 Line.prototype.translate = function(dx,dy) {
-    this.move(dx,dy);
+    for (var v = 0; v < this.vertices.length; v++) {
+        this.vertices[v].translate(dx,dy,0);
+    }
 };
 
 Line.prototype.update_vertices = function(reverse) {
@@ -580,7 +618,10 @@ var Shape = function(x, y, width, height, radius, stroke, text, color, border_co
         this.vertices = [];
         this.dashedBorder = (typeof dashedBorder != 'undefined') ? dashedBorder : false;
         this.offset = (typeof offset != 'undefined') ? offset : 0;
+        this.fillPattern = "full";
         this.update_text((typeof text != 'undefined') ? text : "");
+
+        this.expand = false;
 
         this.key = (typeof key != 'undefined') ? key : this.generate_new_key();
 
@@ -782,8 +823,8 @@ Shape.prototype.clone_vertices = function(shape){
     }
 };
 
-Shape.prototype.get_center = function(shape) {
-    return new Vertex(this.x + this.width/2, this.y + this.height/2,0);
+Shape.prototype.get_center = function() {
+    return new Vertex(this.x, this.y, 0);
 };
 
 Shape.prototype.draw_frame = function(ctx) {
@@ -807,7 +848,23 @@ Shape.prototype.draw_frame = function(ctx) {
 
 Shape.prototype.draw_fill = function(ctx) {
     // draw fill
-    ctx.fillStyle = this.color.to_string();
+    if (this.fillPattern == "diagonal_lines") {
+        var canvasPattern = document.createElement("canvas");
+        canvasPattern.width = 10;
+        canvasPattern.height = 10;
+        var contextPattern = canvasPattern.getContext("2d");
+        contextPattern.lineWidth = 2;
+        contextPattern.strokeStyle = "#666";
+        contextPattern.beginPath();
+        contextPattern.moveTo(-1, -1);
+        contextPattern.lineTo(11, 11);
+        contextPattern.stroke();
+
+        var pattern = ctx.createPattern(canvasPattern,"repeat");
+        ctx.fillStyle = pattern;
+    } else {
+        ctx.fillStyle = this.color.to_string();
+    }
     ctx.fill();
 };
 
@@ -852,6 +909,23 @@ Shape.prototype.draw = function(ctx) {
     this.draw_text(ctx);
 };
 
+Shape.prototype.rotate = function() {
+    var delta = 15;
+    if (this.width > 0 && !this.expand) {
+        this.width -= delta;
+        this.expand = false;
+    } else if (this.width > this.baseWidth) {
+        this.width = this.baseWidth;
+        this.expand = false;
+        return true;
+    } else {
+        this.expand = true;
+        this.width += delta;
+    }
+    this.update_vertices();
+    return false;
+};
+
 /////////////////////////////////////
 //  Rectangle
 
@@ -894,6 +968,41 @@ Rectangle.prototype.update_vertices = function() {
         ];
     }
 };
+
+/////////////////////////////////////
+//  Trapezoid
+
+var Trapezoid = function(x, y, width, height, radius, offset, stroke, text, color, border_color, dashedBorder, key) {
+    if (typeof x == "object") {
+        // copy constructor
+        var shape = x;
+        Shape.call(this, shape);
+        this.clone_vertices(shape);
+        this.offset = shape.offset;
+    } else {
+        Shape.call(this, x, y, width, height, radius, stroke, text, color, border_color, dashedBorder, key, offset);
+        this.offset = (typeof offset != 'undefined') ? offset : 10;
+    }
+    this.update_vertices();
+    this.type = "Trapezoid";
+};
+
+inheritsFrom(Trapezoid, Shape);
+
+Trapezoid.prototype.update_vertices = function() {
+    var keys = [];
+    for (var i = 0; i < this.vertices.length; i++) {
+        keys.push(this.vertices[i].key);
+    }
+
+    this.vertices = [
+        new Vertex(this.x - this.width/2 + this.offset/2, this.y - this.height/2, 0, keys[0]),
+        new Vertex(this.x + this.width/2 - this.offset/2, this.y - this.height/2, 0, keys[1]),
+        new Vertex(this.x + this.width/2, this.y + this.height/2, 0, keys[2]),
+        new Vertex(this.x - this.width/2, this.y + this.height/2, 0, keys[3])
+    ];
+};
+
 
 /////////////////////////////////////
 //  Triangle
@@ -994,25 +1103,60 @@ Hexagon.prototype.update_vertices = function() {
 
 
 /////////////////////////////////////
-//  Circle
+//  Step
 
-var Circle = function(x, y, radius, stroke, text, color, border_color, key) {
+var Step = function(x, y, width, height, radius, offset, stroke, color, border_color, key) {
+    if (typeof x == "object") {
+        // copy constructor
+        var shape = x;
+        Shape.call(this, shape);
+        this.offset = shape.offset;
+        this.clone_vertices(shape);
+    } else {
+        Shape.call(this, x, y, width, height, radius, stroke, "", color, border_color, key);
+        this.offset = (typeof offset != 'undefined') ? offset : 10;
+        this.update_vertices();
+    }
+    this.type = "Step";
+};
+
+inheritsFrom(Step, Shape);
+
+Step.prototype.update_vertices = function() {
+    var keys = [];
+    for (var i = 0; i < this.vertices.length; i++) {
+        keys.push(this.vertices[i].key);
+    }
+    this.vertices = [
+        new Vertex(this.x - this.width/2, this.y - this.height/2, 0, keys[0]),
+        new Vertex(this.x + this.width/2 - this.offset, this.y - this.height/2, 0, keys[1]),
+        new Vertex(this.x + this.width/2, this.y, 0, keys[2]),
+        new Vertex(this.x + this.width/2 - this.offset, this.y + this.height/2, 0, keys[3]),
+        new Vertex(this.x - this.width/2, this.y + this.height/2, 0, keys[4]),
+        new Vertex(this.x - this.width/2 + this.offset, this.y, 0, keys[5])
+    ];
+};
+
+/////////////////////////////////////
+//  Ellipse
+
+var Ellipse = function(x, y, width, height, stroke, text, color, border_color, key) {
     if (typeof x == "object") {
         // copy constructor
         var shape = x;
         Shape.call(this, shape);
         this.clone_vertices(shape);
     } else {
-        Shape.call(this, x, y, 2*radius, 2*radius, 0, stroke, text, color, border_color, false, key);
+        Shape.call(this, x, y, width, height, 0, stroke, text, color, border_color, false, key);
         this.vertices = [];
-        this.type = "Circle";
+        this.type = "Ellipse";
         this.update_vertices();
     }
 };
 
-inheritsFrom(Circle, Shape);
+inheritsFrom(Ellipse, Shape);
 
-Circle.prototype.update_vertices = function() {
+Ellipse.prototype.update_vertices = function() {
     var keys = [];
     for (var i = 0; i < this.vertices.length; i++) {
         keys.push(this.vertices[i].key);
@@ -1020,6 +1164,39 @@ Circle.prototype.update_vertices = function() {
     this.vertices = [];
     var num_vertices = 36;
     for (var i = 0; i < num_vertices; i++) {
-        this.vertices.push(new Vertex(this.x + (this.width/2)*Math.cos(i*2*Math.PI/num_vertices), this.y + (this.width/2)*Math.sin(i*2*Math.PI/num_vertices), 0, keys[i]));
+        this.vertices.push(new Vertex(this.x + (this.width/2)*Math.cos(i*2*Math.PI/num_vertices),
+            this.y + (this.height/2)*Math.sin(i*2*Math.PI/num_vertices), 0, keys[i]));
+    }
+};
+
+/////////////////////////////////////
+//  HalfCircle
+
+var HalfCircle = function(x, y, width, height, stroke, text, color, border_color, key) {
+    if (typeof x == "object") {
+        // copy constructor
+        var shape = x;
+        Shape.call(this, shape);
+        this.clone_vertices(shape);
+    } else {
+        Shape.call(this, x, y, width, height, 0, stroke, text, color, border_color, false, key);
+        this.vertices = [];
+        this.type = "HalfCircle";
+        this.update_vertices();
+    }
+};
+
+inheritsFrom(HalfCircle, Shape);
+
+HalfCircle.prototype.update_vertices = function() {
+    var keys = [];
+    for (var i = 0; i < this.vertices.length; i++) {
+        keys.push(this.vertices[i].key);
+    }
+    this.vertices = [];
+    var num_vertices = 18;
+    for (var i = -num_vertices/4; i < num_vertices/4+1; i++) {
+        this.vertices.push(new Vertex(this.x + (this.width/2)*Math.cos(i*2*Math.PI/num_vertices),
+            this.y + (this.height/2)*Math.sin(i*2*Math.PI/num_vertices), 0, keys[i]));
     }
 };

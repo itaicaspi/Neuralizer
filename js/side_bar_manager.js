@@ -246,3 +246,76 @@ SidebarManager.prototype.change_selected_layer_type = function(layerType, layerS
 };
 
 
+
+SidebarManager.prototype.logged_in_mode = function() {
+    $("#UserAuthenticationForm").removeClass("fadeIn");
+    $("#UserAuthenticationForm").hide();
+    $("#user_greeting").text("Hi, " + $("#username").val());
+    $("#UserDetails").show();
+    $("#UserDetails").addClass("fadeInUp");
+};
+
+SidebarManager.prototype.logged_out_mode = function() {
+    $("#UserDetails").removeClass("fadeInUp");
+    $("#UserDetails").hide();
+    $("#UserAuthenticationForm").show();
+    $("#UserAuthenticationForm").addClass("fadeIn");
+};
+
+SidebarManager.prototype.logout = function() {
+    console.log("logging out");
+    var form = $('#UserDetails');
+    $(form).attr('action', '/logout');
+    $(form).submit(function(){
+        jQuery.post({
+            url: "/logout",
+            type: "POST",
+            data : $(form).serialize(),
+            success: function(){
+                sidebar_manager.logged_out_mode();
+            }
+        }).fail(function () {
+            console.log("failed");
+        });
+        return false;
+    });
+};
+
+SidebarManager.prototype.login = function() {
+    console.log("logging in");
+    var form = $('#UserAuthenticationForm');
+    $(form).attr('action', '/login');
+    $(form).submit(function(){
+        jQuery.post({
+            url: "/login",
+            type: "POST",
+            data : $(form).serialize(),
+            statusCode: {
+                200: function() { sidebar_manager.logged_in_mode(); },
+                401: function() { console.log("error"); }
+            }
+        }).fail(function () {
+            console.log("failed");
+        });
+        return false;
+    });
+};
+
+SidebarManager.prototype.signup = function() {
+    console.log("signing up");
+    var form = $('#UserAuthenticationForm');
+    $(form).attr('action', '/signup');
+    $(form).submit(function(){
+        jQuery.post({
+            url: "/signup",
+            type: "POST",
+            data : $(form).serialize(),
+            success: function(){
+                console.log('form submitted.');
+            }
+        }).fail(function () {
+            console.log("failed");
+        });
+        return false;
+    });
+};

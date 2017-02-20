@@ -41,6 +41,7 @@ function save_current_state_as_image(filename) {
     var y = bb.min_y-margin;
 
     canvas_manager.select_all_shapes();
+    canvas_manager.remove_all_arrows_separating_border();
     canvas_manager.draw_curr_state_if_necessary();
 
     // crop image to relevant area
@@ -53,19 +54,21 @@ function save_current_state_as_image(filename) {
 
     var image = tempCanvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
     download_as_file($("#filename").val(), image, "image");
+
+    canvas_manager.add_all_arrows_separating_border();
 }
 
 function save_current_state_to_file(framework) {
     // download the current state to the user's machine
     canvas_manager.show_message("Downloading topology", true);
+    var text;
     if (framework == "Neuralizer") {
-        var text = JSON.stringify(canvas_manager.stored_states[canvas_manager.current_timestep]);
-        download_as_file($("#filename").val(), text, "text");
+        text = JSON.stringify(canvas_manager.stored_states[canvas_manager.current_timestep]);
     } else {
         canvas_manager.show_message("Downloading topology", true);
-        var text = JSON.stringify(canvas_manager.to_graph(), null, "\t");
-        download_as_file($("#filename").val(), text, "text");
+        text = JSON.stringify(canvas_manager.to_graph(), null, "\t");
     }
+    download_as_file($("#filename").val(), text, "text");
 }
 
 function load_state_from_file() {
@@ -92,6 +95,30 @@ function load_state_from_file() {
     } else {
         canvas_manager.show_message("File not supported!");
     }
+}
+
+function upload_current_state_to_server() {
+    var name = $("#filename").val();
+    var text = {
+        model_name: name,
+        model_json: canvas_manager.stored_states[canvas_manager.current_timestep]
+    };
+
+    var form = $('#UserDetails');
+    $(form).attr('action', '/upload');
+    $(form).submit(function(){
+        jQuery.post({
+            url: "/upload",
+            type: "POST",
+            data : text,
+            success: function(){
+                console.log("uploaded successfully");
+            }
+        }).fail(function () {
+            console.log("failed");
+        });
+        return false;
+    });
 }
 //
 // function export_current_state_to_framework_file() {

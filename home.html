@@ -166,17 +166,23 @@
             var color = canvas_manager.selected_color_idx;
             var shape;
             if (layer_type == "DataPlaceholder") {
-                shape = new Rectangle(x, y, 80, 40, 3, 10, 3, layer_name, fill_colors[color], border_colors[color], false);
+                shape = new Rectangle(x, y, 80, 40, 6, 10, 3, layer_name, fill_colors[color], border_colors[color], false);
             } else if (layer_type == "Activation") {
                 shape = new Diamond(x, y, 40, 40, 2, 3, fill_colors[color], border_colors[color]);
             } else if (layer_type == "DataManipulation") {
-                shape = new Triangle(x, y, 40, 40, 2, 3, fill_colors[color], border_colors[color]);
+                shape = new Triangle(x, y, 40, 40, 5, 3, fill_colors[color], border_colors[color]);
             } else if (layer_type == "ElementWise") {
-                shape = new Circle(x, y, 20, 3, layer_name, fill_colors[color], border_colors[color]);
+                shape = new Ellipse(x, y, 40, 40, 3, layer_name, fill_colors[color], border_colors[color]);
             } else if (layer_type == "Pooling") {
                 shape = new Hexagon(x, y, 80, 40, 2, 3, fill_colors[color], border_colors[color]);
+            } else if (layer_type == "Augmentation") {
+                shape = new Step(x, y, 80, 40, 2, 10, 3, fill_colors[color], border_colors[color]);
+//            } else if (layer_type == "Normalization") {
+//                shape = new HalfCircle(x, y, 40, 40, 3, layer_name, fill_colors[color], border_colors[color]);
+            } else if (layer_type == "Convolution") {
+                shape = new Trapezoid(x, y, 80, 40, 6, 15, 3, layer_name, fill_colors[color], border_colors[color], false);
             } else {
-                shape = new Rectangle(x, y, 80, 40, 10, 0, 3, layer_name, fill_colors[color], border_colors[color], false);
+                shape = new Rectangle(x, y, 80, 40, 6, 0, 3, layer_name, fill_colors[color], border_colors[color], false);
             }
             shape.set_layer(create_new_layer());
             canvas_manager.add_shape(shape);
@@ -201,6 +207,11 @@
             canvas_manager = new CanvasManager(document.getElementById('cnv'));
             sidebar_manager = new SidebarManager();
 
+
+            function doubleClick(evt) {
+                var intervalId = setInterval(function() { canvas_manager.rotate_selected_shape() },30);
+                canvas_manager.animationIntervalId = intervalId;
+            }
 
             function mouseDown(evt) {
                 canvas_manager.hide_selection_box();
@@ -343,8 +354,10 @@
                 canvas_manager.draw_curr_state_if_necessary();
             }
 
+
             // event listeners
             canvas_manager.canvas.addEventListener('mousedown', mouseDown);
+            canvas_manager.canvas.addEventListener("dblclick", doubleClick);
             document.addEventListener('mousemove', mouseMove);
             document.addEventListener('mouseup', mouseUp);
             document.addEventListener('keydown', keyPress);
@@ -353,6 +366,14 @@
             fileInput.addEventListener('change', load_state_from_file);
 
             sidebar_manager.select_layer_type();
+
+            // check if there is already an open session
+            jQuery.get('/loggedin',{}, function(user){
+                if (user != '0') {
+                    $("#username").val(user.username);
+                    sidebar_manager.logged_in_mode();
+                }
+            });
         }
     </script>
 </head>
@@ -889,16 +910,27 @@
 
         </div>
         <div id="account" class="collapse">
-            <input type="text" name="username" class="form-control" placeholder="Email" required>
-            <input type="password" name="password" class="form-control" placeholder="Password" required>
-            <button class="btn rect-btn purple small-rect" type="submit">
-                Sign in
-            </button>
+            <label for="UserAuthenticationForm">Account</label>
+            <form method="POST" class="form-signin animated" id="UserAuthenticationForm" style="text-align: center">
+                <input type="email" id="username" name="username" placeholder="Email" required="required" autofocus="autofocus" class="form-control vertical-margin"/>
+                <input type="password" name="password" placeholder="Password" required="required" class="form-control vertical-margin"/>
+                <button type="submit" class="btn rect-btn purple small-rect" onclick="sidebar_manager.login()">Log in</button>
+                <button type="submit" class="btn rect-btn purple-bg small-rect" onclick="sidebar_manager.signup()">Sign up</button>
+            </form>
+            <form method="POST" class="form-signin collapse animated" id="UserDetails">
+                <div style="background: white; border-radius: 3px; color: #555; border-color: #222; padding: 15px;">
+                    <label id="user_greeting" class="purple"></label>
+                    <button type="submit" style="background: transparent; border: 0;" class="pull-right" onclick="sidebar_manager.logout()">Log out</button>
+                </div>
+                <button type="submit" class="btn rect-btn purple-bg small-rect" onclick="upload_current_state_to_server()">Save Model</button>
+            </form>
         </div>
     </div>
 
     <!-- Canvas -->
     <div class="col-xs-9" id="canvas_container" style="height:100%">
+        <div id="canvas_helpers">
+        </div>
         <div id="canvas_keys">
         </div>
         <div id="canvas_overlay" class="full-screen">

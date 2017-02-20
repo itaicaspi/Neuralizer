@@ -44,6 +44,7 @@ var CanvasManager = function(canvas) {
     this.current_timestep = 0;
 
     // draw
+    this.animationIntervalId = 0;
     this.draw_required = false;
 };
 
@@ -174,10 +175,10 @@ CanvasManager.prototype.update_selected_shapes_from_selection_box = function() {
     this.selected_shapes = [];
     for (var i = 0; i < this.shapes.length; i++) {
         var shape = this.shapes[i];
-        var left_check = shape.x > this.selection_box.x;
-        var top_check = shape.y > this.selection_box.y;
-        var right_check = shape.x + shape.width < this.selection_box.x + this.selection_box.width;
-        var bottom_check = shape.y + shape.height < this.selection_box.y + this.selection_box.height;
+        var left_check = (shape.x - shape.width/2) > this.selection_box.x;
+        var top_check = (shape.y - shape.height/2) > this.selection_box.y;
+        var right_check = (shape.x + shape.width/2) < this.selection_box.x + this.selection_box.width;
+        var bottom_check = (shape.y + shape.height/2) < this.selection_box.y + this.selection_box.height;
         if ((left_check == true && top_check == true && right_check == true && bottom_check == true) ||
             (left_check == false && top_check == false && right_check == false && bottom_check == false) ||
             (left_check == true && top_check == false && right_check == true && bottom_check == false) ||
@@ -266,6 +267,25 @@ CanvasManager.prototype.move_selected_shapes = function() {
     this.cursor_accum_y = (this.cursor_diff_y + this.cursor_accum_y - diff_used.y);
 };
 
+CanvasManager.prototype.align_selected_shapes = function(vertically, horizontally) {
+    var center = new Vertex(0,0,0);
+    for (var v = 0; v < this.selected_shapes.length; v++) {
+        center = center.add(this.selected_shapes[v].get_center());
+    }
+    center = center.mul(1.0/this.selected_shapes.length);
+    for (var v = 0; v < this.selected_shapes.length; v++) {
+        var diff = center.subtract(this.selected_shapes[v].get_center());
+        if (!vertically) {
+            diff.x = 0;
+        }
+        if (!horizontally) {
+            diff.y = 0;
+        }
+        this.move_shapes([this.selected_shapes[v]], diff.x, diff.y);
+    }
+};
+
+
 CanvasManager.prototype.shape_is_selected = function(shape) {
     // check if the given shape is currently selected
     var i;
@@ -351,6 +371,7 @@ CanvasManager.prototype.draw_curr_state = function() {
     this.current_arrow.draw(this.ctx);
     this.draw_array(this.shapes);
     this.update_key_info();
+    this.update_helpers();
 
     // draw cursor markers
     if (!this.mouse_is_pressed || this.selected_shapes.length == 0) {
@@ -398,6 +419,10 @@ CanvasManager.prototype.draw_circle = function(color, border_color, border_width
     this.ctx.stroke();
     this.ctx.fill();
 };
+
+
+////////////////////////////
+// Canvas overlay objects
 
 
 CanvasManager.prototype.get_key_object = function(key) {
@@ -450,6 +475,21 @@ CanvasManager.prototype.update_key_info = function() {
     }
 };
 
+CanvasManager.prototype.update_helpers = function() {
+    var helpers_container = $("#canvas_helpers");
+    //$(helpers_container).empty();
+
+    if (this.selected_shapes.length > 1) {
+        if ($("#alignShapesVertically").length == 0) {
+            $(helpers_container).append('<i class="material-icons" id="alignShapesVertically" style="margin: 10px">vertical_align_center</i>');
+            $("#alignShapesVertically").click(function() {canvas_manager.align_selected_shapes(false, true)});
+            $(helpers_container).append('<i class="material-icons rotated-90" id="alignShapesHorizontally" style="margin: 10px">vertical_align_center</i>');
+            $("#alignShapesHorizontally").click(function() {canvas_manager.align_selected_shapes(true, false)});
+        }
+    } else {
+        $(helpers_container).empty();
+    }
+};
 
 ///////////////////////////////////////
 // State Management
@@ -537,6 +577,20 @@ CanvasManager.prototype.redo = function () {
 
 //////////////////////////////////
 // Shape & arrow editing
+
+CanvasManager.prototype.remove_all_arrows_separating_border = function() {
+    var i;
+    for (i = 0; i < this.arrows.length; i++) {
+        this.arrows[i].draw_separating_border = false;
+    }
+};
+
+CanvasManager.prototype.add_all_arrows_separating_border = function() {
+    var i;
+    for (i = 0; i < this.arrows.length; i++) {
+        this.arrows[i].draw_separating_border = true;
+    }
+};
 
 CanvasManager.prototype.reset_current_arrow = function() {
     this.current_arrow = new Line([], 5, new Color(0, 0, 0, 1), 3);
@@ -824,3 +878,19 @@ CanvasManager.prototype.to_graph = function() {
     return graph;
 };
 
+
+
+///////////////////////////////
+// Experiments
+
+CanvasManager.prototype.rotate_selected_shape = function() {
+    var finished = false;
+    for (var s = this.selected_shapes.length - 1; s >= 0; s--) {
+        finished |= this.selected_shapes[s].rotate();
+    }
+    this.draw_required = true;
+    this.draw_curr_state_if_necessary();
+    if (finished) {
+        clearInterval(this.animationIntervalId);
+    }
+};
