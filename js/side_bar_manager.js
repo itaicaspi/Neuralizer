@@ -109,26 +109,21 @@ SidebarManager.prototype.change_selected_color = function(color_idx) {
     }
 };
 
-SidebarManager.prototype.toggle_add_or_remove_button = function() {
-    if ($(this.add_layer_icon).attr('data-original-title') == "Add") {
-        $(this.add_layer_icon).attr('data-original-title', "Remove");
-    } else {
-        $(this.add_layer_icon).attr('data-original-title', "Add");
-    }
-    $(this.add_layer_icon).toggleClass('rotated');
+
+SidebarManager.prototype.show_remove_layer_button = function() {
+    $("#removeLayerIcon").addClass('rotated');
+    $("#removeLayer").addClass('move-right');
+    $("#removeLayer").removeClass('invisible-btn');
+    $("#addLayerIcon").addClass('rotated-90');
+    $("#addLayer").addClass('move-left');
 };
 
-
-SidebarManager.prototype.set_add_or_remove_button_to_add = function() {
-    if ($(this.add_layer_icon).hasClass('rotated')) {
-        this.toggle_add_or_remove_button();
-    }
-};
-
-SidebarManager.prototype.set_add_or_remove_button_to_remove = function() {
-    if (!$(this.add_layer_icon).hasClass('rotated')) {
-        this.toggle_add_or_remove_button();
-    }
+SidebarManager.prototype.hide_remove_layer_button = function() {
+    $("#removeLayerIcon").removeClass('rotated');
+    $("#removeLayer").removeClass('move-right');
+    $("#removeLayer").addClass('invisible-btn');
+    $("#addLayerIcon").removeClass('rotated-90');
+    $("#addLayer").removeClass('move-left');
 };
 
 SidebarManager.prototype.set_layer_name = function(text) {
@@ -149,24 +144,24 @@ SidebarManager.prototype.set_full_details_switch = function(value) {
 SidebarManager.prototype.add_model_to_canvas_overlay = function(model) {
     var object =
         '<div class="grid-item grid-item--width2 animated"> ' +
-        '<figure class="card"> ' +
-        '<div class="card-barrier"></div> ' +
-        '<div class="card-thumbnail-container"> ' +
-        '<a class="card-thumbnail" href="#" target="_blank" style="background-image: url(\'models\/' + model.json_state + '.png\");" draggable="false"></a> ' +
-        '</div>' +
-        '<figcaption class="card-title-section"> ' +
-        '<div class="card-title editable" title="Inception v4">' + model.name + '</div> ' +
-        '<div class="card-title-owner">Itai Caspi ' +
-        '<div class="stars"> ' +
-        '<span><i class="fa fa-star" aria-hidden="true"></i>' + model.stars + '</span> ' +
-        '</div> ' +
-        '</div> ' +
-        '<div class="card-tags"> ' +
-        '<mark data-entity="detection"></mark> ' +
-        '<mark data-entity="classification"></mark> ' +
-        '</div> ' +
-        '</figcaption> ' +
-        '</figure> ' +
+            '<figure class="card"> ' +
+                '<div class="card-barrier"></div> ' +
+                '<div class="card-thumbnail-container"> ' +
+                    '<span class="remove-model" onclick="sidebar_manager.remove_model_from_server(' + model.id + ')"><i class="material-icons">delete</i></span>' +
+                    '<a class="card-thumbnail" onclick="sidebar_manager.load_model_from_server(\'' + model.json_state + '\')" ' +
+                        'style="background-image: url(\'models\/' + model.json_state + '.png\");" draggable="false"></a> ' +
+                '</div>' +
+                '<figcaption class="card-title-section"> ' +
+                    '<div class="card-title editable" title="Inception v4">' + model.name + '</div> ' +
+                    '<div class="card-title-owner">Itai Caspi ' +
+                        '<div class="stars"><span><i class="fa fa-star" aria-hidden="true"></i>' + model.stars + '</span></div> ' +
+                    '</div> ' +
+                    '<div class="card-tags"> ' +
+                        '<mark data-entity="detection"></mark> ' +
+                        '<mark data-entity="classification"></mark> ' +
+                    '</div> ' +
+                '</figcaption> ' +
+            '</figure> ' +
         '</div>';
 
     var models_container = $("#models_container");
@@ -174,17 +169,17 @@ SidebarManager.prototype.add_model_to_canvas_overlay = function(model) {
 };
 
 SidebarManager.prototype.show_models_in_canvas_overlay = function(models) {
-
+    var grid = $('.grid');
     // add models to canvas overlay
-    $('.grid').empty();
+    $(grid).empty();
     if (this.grid) {
         $(this.grid).masonry('destroy');
     }
     for (var i = 0; i < models.length; i++) {
         this.add_model_to_canvas_overlay(models[i]);
     }
-    $('.grid').imagesLoaded(function() {
-        $('.grid').masonry({
+    $(grid).imagesLoaded(function() {
+        $(grid).masonry({
             // options
             itemSelector: '.grid-item',
             columnWidth: 100
@@ -197,8 +192,18 @@ SidebarManager.prototype.show_models_in_canvas_overlay = function(models) {
     }
 
     this.available_models = models.length;
+};
 
-    console.log(models);
+SidebarManager.prototype.load_model_from_server = function(json_state) {
+    load_model_from_server(json_state);
+    this.hide_canvas_explore();
+    this.switch_sidebar_mode('designer');
+};
+
+
+SidebarManager.prototype.remove_model_from_server = function(model_id) {
+    remove_model_from_server(model_id);
+    update_user_models_from_server();
 };
 
 SidebarManager.prototype.save_model_to_server = function() {
@@ -210,18 +215,18 @@ SidebarManager.prototype.show_canvas_explore = function() {
     $("#canvas_explore").fadeIn();
     if (!this.grid) {
         this.grid = $('.grid');
-        $('.grid').masonry({
+        $(this.grid).masonry({
             // options
             itemSelector: '.grid-item',
             columnWidth: 100
         });
     }
-    $(".grid").removeClass("fadeOutDown");
-    $(".grid").addClass("fadeInUp");
+    $(this.grid).removeClass("fadeOutDown");
+    $(this.grid).addClass("fadeInUp");
     $('.grid-item').hover(
         function(){ $(this).addClass('pulse') },
         function(){ $(this).removeClass('pulse') }
-    )
+    );
     $(".canvas").addClass("blur");
     $("#canvas_keys").addClass("blur");
     // $("#sidebar_container").removeClass("col-xs-2").addClass("col-xs-3", "slow");
@@ -231,8 +236,8 @@ SidebarManager.prototype.show_canvas_explore = function() {
 SidebarManager.prototype.hide_canvas_explore = function() {
     $(".canvas").removeClass("blur");
     $("#canvas_keys").removeClass("blur");
-    $(".grid").removeClass("fadeInUp");
-    $(".grid").addClass("fadeOutDown");
+    $(this.grid).removeClass("fadeInUp");
+    $(this.grid).addClass("fadeOutDown");
     $("#canvas_explore").fadeOut();
     // $("#sidebar_container").removeClass("col-xs-3").addClass("col-xs-2", "slow");
     // $("#canvas_container").removeClass("col-xs-8").addClass("col-xs-9", "slow");
@@ -338,7 +343,6 @@ SidebarManager.prototype.logged_out_mode = function() {
 };
 
 SidebarManager.prototype.logout = function() {
-    console.log("logging out");
     var form = $('#UserDetails');
     $(form).attr('action', '/logout');
     $(form).submit(function(){
@@ -355,7 +359,6 @@ SidebarManager.prototype.logout = function() {
 };
 
 SidebarManager.prototype.login = function() {
-    console.log("logging in");
     var form = $('#UserAuthenticationForm');
     $(form).attr('action', '/login');
     $(form).submit(function(){
@@ -373,7 +376,6 @@ SidebarManager.prototype.login = function() {
 };
 
 SidebarManager.prototype.signup = function() {
-    console.log("signing up");
     var form = $('#UserAuthenticationForm');
     $(form).attr('action', '/signup');
     $(form).submit(function(){

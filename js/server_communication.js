@@ -22,12 +22,40 @@ function upload_current_state_to_server() {
 }
 
 function update_user_models_from_server() {
-    var models = [];
     jQuery.get({
         url: "/mymodels",
         data : {},
         success: function(res){
             sidebar_manager.show_models_in_canvas_overlay(res);
+        }
+    });
+}
+
+function remove_model_from_server(model_id) {
+    var data = {
+        model_id: model_id
+    };
+
+    jQuery.post({
+        url: "/remove_model",
+        type: "POST",
+        data : data,
+        success: function(res){
+        }
+    });
+}
+
+function load_model_from_server(json_state) {
+    var data = {
+        json_state: json_state
+    };
+
+    jQuery.post({
+        url: "/get_model",
+        type: "POST",
+        data : data,
+        success: function(res){
+            canvas_manager.load_state(res);
         }
     });
 }

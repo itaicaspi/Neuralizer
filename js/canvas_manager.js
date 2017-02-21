@@ -500,6 +500,7 @@ CanvasManager.prototype.curr_state_to_json = function() {
 
 CanvasManager.prototype.json_to_curr_state = function(json_state) {
     var state = JSON.parse(json_state);
+
     this.shapes = state["shapes"];
     this.arrows = state["arrows"];
 

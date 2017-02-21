@@ -117,12 +117,13 @@ label {
   background: none no-repeat center / contain;
   border-radius: 4px 4px 0 0;
   box-sizing: border-box;
-  cursor: auto;
+  cursor: pointer;
   display: block;
   @include transition(-webkit-filter .3s ease, filter .3s ease);
   min-height: 40px;
   height: 160px;
-  padding-bottom: 160px
+  padding-bottom: 160px;
+
 }
 
 .card-title-section {
@@ -420,10 +421,25 @@ label {
   font-size: 18px;
   line-height: 1.33;
   border-radius: 20px;
+  outline:none;
+  position: absolute;
+  margin-left: -20px;
 }
 
-#addLayerIcon {
-  @include transition(all 0.3s ease-in-out);
+.fast-transition {
+  @include transition(all 0.6s ease-in-out);
+}
+
+.move-right {
+  transform:translate3d(30px,0,0);
+}
+
+.move-left {
+  transform:translate3d(-30px,0,0);
+}
+
+.invisible-btn {
+  opacity: 0;
 }
 
 .rotated {
@@ -432,7 +448,14 @@ label {
 }
 
 .rotated-90 {
-  @include transform(rotate(90deg));
+  @include transform(rotate(-90deg));
+  //margin-left: 1px;
+  transform-origin: 56% 45%;
+}
+
+.plus-icon-shift-fix {
+  //margin-left: 1px;
+  transform-origin: 56% 45%;
 }
 
 .material-switch > input[type="checkbox"] {
@@ -495,6 +518,17 @@ a.thumbnail:hover, a.thumbnail:focus, a.thumbnail.active {
 
 .stars:hover {
   color: $primary-color;
+  cursor: pointer;
+}
+
+.remove-model {
+  display: block;
+  float: right;
+  margin: 15px;
+}
+
+.remove-model:hover {
+  color: $danger-color;
   cursor: pointer;
 }
 

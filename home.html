@@ -188,15 +188,14 @@
             }
             shape.set_layer(create_new_layer());
             canvas_manager.add_shape(shape);
+
+            sidebar_manager.show_remove_layer_button();
         }
 
-        function add_or_remove_layer() {
-            if ($("#addLayerIcon").hasClass('rotated')) {
-                canvas_manager.remove_selected_shapes();
-            } else {
-                add_layer();
-            }
-            sidebar_manager.toggle_add_or_remove_button();
+
+        function remove_layer() {
+            canvas_manager.remove_selected_shapes();
+            sidebar_manager.hide_remove_layer_button();
         }
 
 
@@ -238,9 +237,9 @@
                 // sidebar add/remove button toggle
                 if (canvas_manager.selected_shapes.length == 0) {
                     canvas_manager.initialize_selection_box();
-                    sidebar_manager.set_add_or_remove_button_to_add();
+                    sidebar_manager.hide_remove_layer_button();
                 } else {
-                    sidebar_manager.set_add_or_remove_button_to_remove();
+                    sidebar_manager.show_remove_layer_button();
                 }
 
                 // update side bar properties
@@ -267,7 +266,7 @@
                     if (!canvas_manager.get_primary_selected_shape() || canvas_manager.selection_box_is_active()) {
                         canvas_manager.set_selection_box();
                         if (canvas_manager.get_primary_selected_shape()) {
-                            sidebar_manager.set_add_or_remove_button_to_remove();
+                            sidebar_manager.show_remove_layer_button();
                         }
                     }
                 }
@@ -306,15 +305,15 @@
                 evt = evt || window.event;
                 if (evt.keyCode == 46) {
                     // Del ==> Remove selected layers
-                    if ($("#addLayerIcon").hasClass('rotated')) {
+                    if ($("#removeLayerIcon").hasClass('rotated')) {
                         canvas_manager.remove_selected_shapes();
-                        sidebar_manager.toggle_add_or_remove_button();
+                        sidebar_manager.hide_remove_layer_button();
                         canvas_manager.draw_required = true;
                     }
                 } else if (evt.ctrlKey && evt.keyCode == 65) {
                     // Ctrl + A ==> Select all
                     canvas_manager.select_all_shapes();
-                    sidebar_manager.set_add_or_remove_button_to_remove();
+                    sidebar_manager.show_remove_layer_button();
                     evt.preventDefault();
                     evt.stopPropagation();
                 } else if (evt.ctrlKey && evt.keyCode == 67) {
@@ -820,9 +819,12 @@
                     <label for="fullDetails" class="label-success"></label>
                 </div>
             </div>
-            <div class="form-group" style="text-align:center;">
-                <button type="button" id="addLayer" class="btn btn-default btn-circle btn-lg" onclick="add_or_remove_layer()" style="outline:none;">
-                    <i data-toggle="tooltip" data-placement="top" title="Add" id="addLayerIcon" class="fa fa-plus" aria-hidden="true"></i>
+            <div class="form-group" style="text-align:center; height: 40px">
+                <button type="button" id="addLayer" class="btn btn-default btn-circle btn-lg fast-transition" onclick="add_layer()" style="z-index: 100">
+                    <i data-toggle="tooltip" data-placement="top" title="Add" id="addLayerIcon" class="fa fa-plus plus-icon-shift-fix fast-transition" aria-hidden="true"></i>
+                </button>
+                <button type="button" id="removeLayer" class="btn invisible-btn btn-default btn-circle btn-lg fast-transition" onclick="remove_layer()" style="z-index: 0">
+                    <i data-toggle="tooltip" data-placement="top" title="Remove" id="removeLayerIcon" class="fa fa-plus plus-icon-shift-fix fast-transition" aria-hidden="true"></i>
                 </button>
             </div>
             <hr class="separator">
