@@ -95,12 +95,14 @@
         function create_new_layer() {
             var layerType = $("#layerType").val();
             var layer;
-            if (layerType == "Convolution") {
+            if (layerType == "DataPlaceholder") {
+                layer = new DataPlaceholder($("#dataWidth").val(), $("#dataHeight").val(), $("#dataDepth").val());
+            } else if (layerType == "Convolution") {
                 layer = new Convolution($("#numOfms").val(),$("#kernelWidth").val(),$("#kernelHeight").val(),$("#kernelStride").val(),$("#kernelStride").val(),0,0);
-            } else if (layerType == "InnerProduct") {
-                layer = new InnerProduct($("#innerProductNumOutputs").val());
             } else if (layerType == "Pooling") {
                 layer = new Pooling($("#windowWidth").val(),$("#windowHeight").val(),$("#windowStride").val(),$("#windowStride").val(),0,0,$("#poolingType").val());
+            } else if (layerType == "InnerProduct") {
+                layer = new InnerProduct($("#innerProductNumOutputs").val());
             } else if (layerType == "Deconvolution") {
                 layer = new Deconvolution($("#numOfms").val(),$("#kernelWidth").val(),$("#kernelHeight").val(),$("#kernelStride").val(),$("#kernelStride").val(),0,0);
             } else if (layerType == "Activation") {
@@ -116,14 +118,47 @@
                 } else if (activationType == "TanH") {
                     layer = new TanH();
                 }
+            } else if (layerType == "Regularization") {
+                var regularizationType = $("#regularizationType").val();
+                if (regularizationType == "Dropout") {
+                    layer = new Dropout($("#keepProbability").val());
+                } else if (regularizationType == "Maxout") {
+                    layer = new Maxout();
+                } else if (regularizationType == "DropConnect") {
+                    layer = new DropConnect();
+                } else if (regularizationType == "Zoneout") {
+                    layer = new Zoneout();
+                }
+            } else if (layerType == "DataManipulation") {
+                var reshapeType = $("#reshapeType").val();
+                if (reshapeType == "Concatenate") {
+                    layer = new Concatenate();
+                } else if (reshapeType == "Reshape") {
+                    layer = new Reshape();
+                } else if (reshapeType == "Flatten") {
+                    layer = new Flatten();
+                } else if (reshapeType == "Permute") {
+                    layer = new Permute();
+                } else if (reshapeType == "Repeat") {
+                    layer = new Repeat();
+                }
             } else if (layerType == "Normalization") {
                 var normalizationType = $("#normalizationType").val();
                 if (normalizationType == "LocalResponseNormalization") {
                     layer = new LRN($("#numberOfNeighbours").val(), $("#K").val(),$("#alpha").val(),$("#beta").val());
                 } else if (normalizationType == "BatchNormalization") {
                     layer = new BatchNormalization();
+                } else if (normalizationType == "L2Normalization") {
+                    layer = new L2Normalization();
                 }
-            } else if (layerType == "Noise") {
+            } else if (layerType == "ElementWise") {
+                var elementWiseOperator = $("#elementWiseOperator").val();
+                if (elementWiseOperator == "Add") {
+                    layer = new Add();
+                } else if (elementWiseOperator == "Multiply") {
+                    layer = new Multiply();
+                }
+            } else if (layerType == "Stochastic") {
 
             } else if (layerType == "Recurrent") {
 
@@ -210,8 +245,8 @@
 
 
             function doubleClick(evt) {
-                var intervalId = setInterval(function() { canvas_manager.rotate_selected_shape() },30);
-                canvas_manager.animationIntervalId = intervalId;
+//                var intervalId = setInterval(function() { canvas_manager.rotate_selected_shape() },30);
+//                canvas_manager.animationIntervalId = intervalId;
             }
 
             function mouseDown(evt) {
@@ -314,8 +349,12 @@
                     // Ctrl + A ==> Select all
                     canvas_manager.select_all_shapes();
                     sidebar_manager.show_remove_layer_button();
-                    evt.preventDefault();
-                    evt.stopPropagation();
+                    var selected_shape = canvas_manager.get_primary_selected_shape();
+                    if (selected_shape) {
+                        sidebar_manager.set_layer_name(selected_shape.text);
+                    }
+//                    evt.preventDefault();
+//                    evt.stopPropagation();
                 } else if (evt.ctrlKey && evt.keyCode == 67) {
                     // Ctrl + C ==> Copy
                     canvas_manager.show_message("Copied to clipboard");

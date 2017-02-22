@@ -132,7 +132,7 @@ SidebarManager.prototype.set_layer_name = function(text) {
 
 SidebarManager.prototype.focus_layer_name = function() {
     setTimeout(function () {
-        $(this.layer_name).focus();
+        $("#layerName").focus();
     }, 1);
 };
 

@@ -30,6 +30,25 @@ Layer.prototype.setInput = function(inputTensor) {
 };
 
 ////////////////////////////////////////
+//  DataPlaceholder
+
+var DataPlaceholder = function(width, height, depth) {
+    if (kernelWidth == undefined) {
+        // copy constructor
+        var layer = outputDepth;
+        assign(this, layer);
+        this.output = new Tensor(layer.output);
+    } else {
+        Layer.call(this);
+        this.output = new Tensor(width,height,depth);
+    }
+    this.type = "DataPlaceholder";
+    this.description = this.output.width + "x" + this.output.height + "x" + this.output.depth;
+};
+
+inheritsFrom(DataPlaceholder, Layer);
+
+////////////////////////////////////////
 //  Convolution
 
 var Convolution = function(outputDepth, kernelWidth, kernelHeight, strideX, strideY, padX, padY) {
@@ -140,16 +159,65 @@ Deconvolution.prototype.updateOutputSize = function() {
     this.output.height = (this.input.height - 1)*this.strideY - 2*this.padY + this.kernelHeight;
 };
 
+////////////////////////////////////////
+//  DataManipulation
+
+var DataManipulationLayer = function() {
+    Layer.call(this);
+    this.type = "DataManipulation";
+};
+
+inheritsFrom(DataManipulationLayer, Layer);
 
 ////////////////////////////////////////
 //  Concatenate
 
 var Concatenate = function() {
-    Layer.call(this);
+    DataManipulationLayer.call(this);
+    this.subtype = "Concatenate";
 };
 
-inheritsFrom(Concatenate, Layer);
+inheritsFrom(Concatenate, DataManipulationLayer);
 
+////////////////////////////////////////
+//  Reshape
+
+var Reshape = function() {
+    DataManipulationLayer.call(this);
+    this.subtype = "Reshape";
+};
+
+inheritsFrom(Reshape, DataManipulationLayer);
+
+////////////////////////////////////////
+//  Flatten
+
+var Flatten = function() {
+    DataManipulationLayer.call(this);
+    this.subtype = "Flatten";
+};
+
+inheritsFrom(Flatten, DataManipulationLayer);
+
+////////////////////////////////////////
+//  Permute
+
+var Permute = function() {
+    DataManipulationLayer.call(this);
+    this.subtype = "Permute";
+};
+
+inheritsFrom(Permute, DataManipulationLayer);
+
+////////////////////////////////////////
+//  Repeat
+
+var Repeat = function() {
+    DataManipulationLayer.call(this);
+    this.subtype = "Repeat";
+};
+
+inheritsFrom(Repeat, DataManipulationLayer);
 
 ////////////////////////////////////////
 //  Normalization Layer
@@ -191,6 +259,16 @@ var BatchNormalization = function() {
 };
 
 inheritsFrom(BatchNormalization, NormalizationLayer);
+
+////////////////////////////////////////
+//  L2 Normalization
+
+var L2Normalization = function() {
+    NormalizationLayer.call(this);
+    this.subtype = "L2Normalization";
+};
+
+inheritsFrom(L2Normalization, NormalizationLayer);
 
 
 ////////////////////////////////////////
@@ -310,7 +388,35 @@ var Zoneout = function() {
 inheritsFrom(Zoneout, RegularizationLayer);
 
 
+////////////////////////////////////////
+//  Element-Wise
 
+var ElementWiseLayer = function() {
+    Layer.call(this);
+    this.type = "ElementWise";
+};
+
+inheritsFrom(ElementWiseLayer, Layer);
+
+////////////////////////////////////////
+//  Add
+
+var Add = function() {
+    ElementWiseLayer.call(this);
+    this.subtype = "Add";
+};
+
+inheritsFrom(Add, ElementWiseLayer);
+
+////////////////////////////////////////
+//  Multiply
+
+var Multiply = function() {
+    ElementWiseLayer.call(this);
+    this.subtype = "Multiply";
+};
+
+inheritsFrom(Multiply, ElementWiseLayer);
 
 ///////////////////////////////////////
 // Sequential
