@@ -3,83 +3,243 @@
  */
 
 var layer_types = {
-    "DataPlaceholder": {
-        "id": "#dataParams",
-        "short_name": "data"
+    "Data": {
+        "Data Placeholder": {
+            "short_name": "data",
+            "properties": {
+                "Width": {"type": "number", "value": 1, "min": 1, "max": 10000},
+                "Height": {"type": "number", "value": 1, "min": 1, "max": 10000},
+                "Depth": {"type": "number", "value": 1, "min": 1, "max": 10000}
+            }
+        },
+        "Whitening": {}
     },
-    "Pooling": {
-        "id": "#poolingParams",
-        "short_name": "pool",
-        "subtype_selector_id": "#poolingType",
-        "subtypes": {"MaxPooling": {"id": "#maxPoolingParams"},
-            "AveragePooling": {"id": "#averagePoolingParams"},
-            "StochasticPooling": {"id": "#stochasticPoolingParams"}}},
-    "Convolution": {
-        "id": "#convolutionParams",
-        "short_name": "conv"},
-    "Deconvolution": {
-        "id": "#deconvolutionParams",
-        "short_name": "deconv"},
-    "Activation": {
-        "id": "#activationParams",
-        "short_name": "activation",
-        "subtype_selector_id": "#activationType",
-        "subtypes": {"ReLU": {"id": "#reluParams"},
-            "ReLU6": {"id": "#relu6Params"},
-            "LeakyReLU": {"id": "#leakyReluParams"},
-            "ParametericReLU": {"id": "#parametericReluParams"},
-            "ELU": {"id": "#eluParams"},
-            "Sigmoid": {"id": "#sigmoidParams",
-                "short_name": "σ"},
-            "HardSigmoid": {"id": "#hardSigmoidParams"},
-            "TanH": {"id": "#tanhParams",
-                "short_name": "tanh"},
-            "Softmax": {"id": "#softmaxParams"},
-            "Softsign": {"id": "#softsignParams"},
-            "Softplux": {"id": "#softplusParams"}}},
-    "Normalization": {
-        "id": "#normalizationParams",
-        "short_name": "norm",
-        "subtype_selector_id": "#normalizationType",
-        "subtypes": {"LocalResponseNormalization": {"id": "#localResponseNormalizationParams"},
-            "BatchNormalization": {"id": "#batchNormalizationParams"},
-            "L2Normalization": {"id": "#l2NormalizationParams"}}},
-    "Regularization": {
-        "id": "#regularizationParams",
-        "short_name": "regularize",
-        "subtype_selector_id": "#regularizationType",
-        "subtypes": {"Dropout": {"id": "#dropoutParams"},
-            "Maxout": {"id": "#maxoutParams"},
-            "Zoneout": {"id": "#zoneoutParams"},
-            "DropConnect": {"id": "#dropConnectParams"}}},
-    "DataManipulation": {
-        "id": "#dataManipulationParams",
-        "short_name": "manipulate",
-        "subtype_selector_id": "#dataManipulationType",
-        "subtype": {"Reshape": {"id": "#reshapeParams"},
-            "Concatenate": {"id": "#concatenateParams"},
-            "Flatten": {"id": "#flattenParams"},
-            "Permute": {"id": "#permuteParams"}}},
-    "ElementWise": {
-        "id": "#elementWiseParams",
-        "short_name": "+",
-        "subtype_selector_id": "#elementWiseType",
-        "subtype": {"Add": {"id": "#addParams"},
-            "Multiply": {"id": "#multiplyParams"}}},
-    "Stochastic": {
-        "id": "#stochasticParams",
-        "short_name": "stochastic",
-        "subtype": {"GaussianNoise": {"id": "#gaussianParams"},
-            "UniformNoise": {"id": "#uniformParams"},
-            "GumbleSoftmax": {"id": "#gumbleSoftmaxParams"}}},
-    "InnerProduct": {"id": "#innerProductParams", "short_name": "fc"},
-    "SpecialBlock": {"id": "#specialBlockParams", "short_name": "special"},
-    "Recurrent": {"id": "#recurrentParams", "short_name": "recurrent"},
-    "Advanced": {
-        "id": "#advancedParams",
-        "short_name": "advanced",
-        "subtype": {"Memory": {"id": "#memoryParams"},
-            "Attention": {"id": "#attentionParams"}}}
+    "Layers": {
+        "Pooling": {
+            "short_name": "pool",
+            "subtypes": {
+                "Max Pooling": {},
+                "Average Pooling": {},
+                "Stochastic Pooling": {}
+            },
+            "properties": {
+                "Window Properties": {
+                    "type": "group",
+                    "properties": {
+                        "Width": {"type": "number", "value": 1, "min": 1, "max": 10000},
+                        "Height": {"type": "number", "value": 1, "min": 1, "max": 10000},
+                        "Stride": {"type": "number", "value": 1, "min": 1, "max": 10000}
+                    }
+                }
+            }
+        },
+        "Convolution": {
+            "short_name": "conv",
+            "properties": {
+                "Kernel Properties": {
+                    "type": "group",
+                    "properties": {
+                        "Width": {"type": "number", "value": 1, "min": 1, "max": 10000},
+                        "Height": {"type": "number", "value": 1, "min": 1, "max": 10000},
+                        "Stride": {"type": "number", "value": 1, "min": 1, "max": 10000},
+                        "Dilation": {"type": "number", "value": 1, "min": 1, "max": 10000},
+                        "Padding": {"type": "number", "value": 0, "min": 0, "max": 10000}
+                    }
+                },
+                "Number of OFMs": {"type": "number", "value": 1, "min": 1, "max": 10000}
+            }
+        },
+        "Deconvolution": {
+            "short_name": "deconv",
+            "properties": {
+                "Kernel Properties": {
+                    "type": "group",
+                    "properties": {
+                        "Width": {"type": "number", "value": 1, "min": 1, "max": 10000},
+                        "Height": {"type": "number", "value": 1, "min": 1, "max": 10000},
+                        "Stride": {"type": "number", "value": 1, "min": 1, "max": 10000},
+                        "Dilation": {"type": "number", "value": 1, "min": 1, "max": 10000},
+                        "Padding": {"type": "number", "value": 0, "min": 0, "max": 10000}
+                    }
+                },
+                "Number of OFMs": {"type": "number", "value": 1, "min": 1, "max": 10000}
+            }
+        },
+        "Activation": {
+            "short_name": "activation",
+            "subtypes": {
+                "ReLU": {},
+                "ReLU6": {},
+                "Leaky ReLU": {},
+                "Parameteric ReLU": {},
+                "ELU": {},
+                "Sigmoid": {
+                    "short_name": "σ"
+                },
+                "Hard Sigmoid": {},
+                "TanH": {
+                    "short_name": "tanh"
+                },
+                "Softmax": {},
+                "Softsign": {},
+                "Softplux": {}
+            }
+        },
+        "Normalization": {
+            "short_name": "norm",
+            "subtypes": {
+                "Local Response Normalization": {
+                    "properties": {
+                        "Number of Neighbours": {"type": "number", "value": 1, "min": 1, "max": 10000},
+                        "Alpha": {"type": "number", "value": 1, "min": 0, "max": 1, "step": 0.001},
+                        "Beta": {"type": "number", "value": 1, "min": 0, "max": 1, "step": 0.001},
+                        "K": {"type": "number", "value": 1, "min": 1, "max": 10000}
+                    }
+                },
+                "Batch Normalization": {},
+                "L2 Normalization": {}
+            }
+        },
+        "Regularization": {
+            "short_name": "regularize",
+            "subtypes": {
+                "Dropout": {},
+                "Maxout": {},
+                "Zoneout": {},
+                "DropConnect": {}
+            },
+            "properties": {
+                "Keep Probability": {"type": "number", "value": 0.9, "min": 0, "max": 1}
+            }
+        },
+        "Data Manipulation": {
+            "short_name": "manipulate",
+            "subtypes": {
+                "Reshape": {},
+                "Concatenate": {},
+                "Flatten": {},
+                "Permute": {}
+            }
+        },
+        "Element Wise": {
+            "short_name": "elem",
+            "subtypes": {
+                "Add": {},
+                "Multiply": {}
+            }
+        },
+        "Stochastic": {
+            "short_name": "stochastic",
+            "subtypes": {
+                "Gaussian Noise": {},
+                "Uniform Noise": {},
+                "Gumble Softmax": {}
+            }
+        },
+        "Inner Product": {
+            "short_name": "fc",
+            "properties": {
+                "Output Size": {"type": "number", "value": 1, "min": 1, "max": 100000}
+            }
+        },
+        "Special Block": {
+            "short_name": "special",
+            "subtypes": {
+                "Inception": {},
+                "Residual Block": {},
+                "DenseNet Block": {},
+                "Dense Encoder": {},
+                "Dense Decoder": {},
+                "Convolutional Encoder": {},
+                "Convolutional Decoder": {}
+            }
+        },
+        "Recurrent": {
+            "short_name": "recurrent",
+            "subtypes": {
+                "RNN": {},
+                "LSTM": {},
+                "GRU": {}
+            }
+        },
+        "Advanced": {
+            "short_name": "advanced",
+            "subtypes": {
+                "Memory": {},
+                "Attention": {}
+            }
+        }
+    },
+    "Optimization": {
+        "Objective": {
+            "short_name": "loss",
+            "subtypes": {
+                "L1 Loss": {},
+                "L2 Loss": {},
+                "Hinge Loss": {},
+                "Binary Cross Entropy": {},
+                "Categorical Cross Entropy": {},
+                "KL Divergence": {},
+                "Poisson": {},
+                "Cosine Porximity": {}
+            }
+        },
+        "Optimizer": {
+            "short_name": "optimizer",
+            "subtypes": {
+                "SGD": {
+                    "properties": {
+                        "Momentum": {"type": "number", "value": 0.01, "min": 0, "max": 100, "step": 0.0000000001}
+                    }
+                },
+                "RMSprop": {
+                    "properties": {
+                        "Rho": {"type": "number", "value": 0.9, "min": 0, "max": 1000, "step": 0.00001},
+                        "Epsilon": {"type": "number", "value": 1e-8, "min": 0, "max": 1, "step": 0.00001}
+                    }
+                },
+                "Adagrad": {
+                    "properties": {
+                        "Epsilon": {"type": "number", "value": 1e-8, "min": 0, "max": 1, "step": 0.00001}
+                    }
+                },
+                "Adadelta": {
+                    "properties": {
+                        "Rho": {"type": "number", "value": 0.95, "min": 0, "max": 1000, "step": 0.00001},
+                        "Epsilon": {"type": "number", "value": 1e-8, "min": 0, "max": 1, "step": 0.00001}
+                    }
+                },
+                "Adam": {
+                    "properties": {
+                        "Beta1": {"type": "number", "value": 0.9, "min": 0, "max": 1, "step": 0.00001},
+                        "Beta2": {"type": "number", "value": 0.999, "min": 0, "max": 1, "step": 0.00001},
+                        "Epsilon": {"type": "number", "value": 1e-8, "min": 0, "max": 1, "step": 0.00001}
+                    }
+                },
+                "Adamax": {
+                    "properties": {
+                        "Beta1": {"type": "number", "value": 0.9, "min": 0, "max": 1, "step": 0.00001},
+                        "Beta2": {"type": "number", "value": 0.999, "min": 0, "max": 1, "step": 0.00001},
+                        "Epsilon": {"type": "number", "value": 1e-8, "min": 0, "max": 1, "step": 0.00001}
+                    }
+                },
+                "Nadam": {
+                    "properties": {
+                        "Beta1": {"type": "number", "value": 0.9, "min": 0, "max": 1, "step": 0.00001},
+                        "Beta2": {"type": "number", "value": 0.999, "min": 0, "max": 1, "step": 0.00001},
+                        "Epsilon": {"type": "number", "value": 1e-8, "min": 0, "max": 1, "step": 0.00001}
+                    }
+                },
+                "FTRL": {}
+            },
+            "properties": {
+                "Learning Rate": {"type": "number", "value": 0.01, "min": 0, "max": 100, "step": 0.0000000001},
+                "Decay": {"type": "number", "value": 0.01, "min": 0, "max": 100, "step": 0.0000000001}
+            }
+        }
+    }
+
+
 };
 
 
@@ -296,27 +456,37 @@ SidebarManager.prototype.start = function() {
 SidebarManager.prototype.switch_layer_type = function(layerType, layerSubtype) {
     var key;
     // close all other than the given type
-    for (key in layer_types) {
-        if (layerType == key) {
-            $(layer_types[key]["id"]).show("fast");
-        } else {
-            $(layer_types[key]["id"]).hide("fast");
-        }
-        // choose subtype
-        for (var subtype_key in layer_types[key]["subtypes"]) {
-            if (layerSubtype == subtype_key) {
-                $(layer_types[key]["subtypes"][subtype_key]["id"]).show("fast");
+    for (var layer_type_group in layer_types) {
+        var group = layer_types[layer_type_group];
+        for (key in group) {
+            key_fixed = key.replace(/ /g,'');
+            if (layerType == key_fixed) {
+                $("#" + key_fixed + "Params").show("fast");
             } else {
-                $(layer_types[key]["subtypes"][subtype_key]["id"]).hide("fast");
+                $("#" + key_fixed + "Params").hide("fast");
+            }
+            // choose subtype
+            for (var subtype_key in group[key]["subtypes"]) {
+                subtype_key_fixed = subtype_key.replace(/ /g,'');
+                if (layerSubtype == subtype_key_fixed) {
+                    $("#" + key_fixed + subtype_key_fixed + "Params").show("fast");
+                } else {
+                    $("#" + key_fixed + subtype_key_fixed + "Params").hide("fast");
+                }
             }
         }
     }
+
 };
 
 SidebarManager.prototype.select_layer_type = function() {
     // open the parameters section for the selected layer type only
     var layerType = $(this.layer_type).val();
-    var layerSubtype = $(layer_types[layerType]["subtype_selector_id"]).val();
+    var layerSubtypeSelector = $('#' + layerType + 'Type');
+    var layerSubtype = "";
+    if (layerSubtypeSelector.get(0)) {
+        layerSubtype = layerSubtypeSelector.val();
+    }
     this.switch_layer_type(layerType, layerSubtype);
 };
 
@@ -389,4 +559,79 @@ SidebarManager.prototype.signup = function() {
         });
         return false;
     });
+};
+
+SidebarManager.prototype.create_properties = function(container, properties, prefix) {
+    for (var property in properties) {
+        var property_type = properties[property]['type'];
+        if (property_type == "group") {
+            var group_label = $('<label style="color:white; margin-top: 10px">' + property + '</label>');
+            var group_container = $('<div style="margin: 20px"></div>');
+            $(container).append($(group_label));
+            $(container).append($(group_container));
+            this.create_properties(group_container, properties[property]['properties'], prefix + property.replace(/ /g,''));
+        } else if (property_type == "number") {
+            var row = $('<div class="row" style="margin-top: 10px"></div>');
+            $(container).append($(row));
+            var input_label = $('<div class="col-xs-6"><label for="' + prefix + property + '">' + property + '</label></div>');
+            var input_col = $('<div class="col-xs-6"></div>');
+            var input = $('<input type="number" id="' + prefix + property + '" class="form-control">');
+            for (var attribute in properties[property]) {
+                $(input).attr(attribute, properties[property][attribute]);
+            }
+            $(row).append(input_label).append(input_col);
+            $(input_col).append(input);
+        }
+    }
+};
+
+SidebarManager.prototype.create_layers_factory = function(container) {
+    for (var layer_types_group in layer_types) {
+        var group = layer_types[layer_types_group];
+        for (var layer_type in group) {
+            var layer_params = $('<div class="form-group collapse" id="' + layer_type.replace(/ /g,'') + 'Params"></div>');
+            $(container).append($(layer_params));
+            // subtype selection
+            if ('subtypes' in group[layer_type] && Object.keys(group[layer_type]['subtypes']).length > 0) {
+                var subtype_selector_id = (layer_type + 'Type').replace(/ /g,'');
+                var subtype_selector_label = $('<label for="' + subtype_selector_id + '">' + layer_type + ' Type</label>');
+                var subtype_selector = $('<select id="' + subtype_selector_id + '" class="form-control selectpicker" onchange="sidebar_manager.select_layer_type()">');
+                $(layer_params).append($(subtype_selector_label));
+                $(layer_params).append($(subtype_selector));
+                for (var subtype in group[layer_type]['subtypes']) {
+                    var subtype_selector_option = $('<option value="' + subtype.replace(/ /g,'') + '">' + subtype + '</option>');
+                    $(subtype_selector).append($(subtype_selector_option));
+
+                    // subtype properties
+                    var subtype_params = group[layer_type]['subtypes'][subtype];
+                    if ('properties' in subtype_params && Object.keys(subtype_params['properties']).length > 0) {
+                        var subtype_prefix = (layer_type + subtype).replace(/ /g,'');
+                        var subtype_container = $('<div id="' + subtype_prefix + 'Params"></div>');
+                        $(layer_params).append($(subtype_container));
+                        this.create_properties(subtype_container, subtype_params['properties'], subtype_prefix);
+                    }
+                }
+            }
+            // properties
+            if ('properties' in group[layer_type] && Object.keys(group[layer_type]['properties']).length > 0) {
+                this.create_properties(layer_params, group[layer_type]['properties'], layer_type.replace(/ /g,''));
+            }
+        }
+    }
+
+};
+
+SidebarManager.prototype.create_layers_selector = function(container) {
+    $(container).append('<label for="layerType" style="color:white">Layer Type</label>');
+    var selector = $('<select id="layerType" class="form-control selectpicker" onchange="sidebar_manager.select_layer_type()"></select>');
+    $(container).append($(selector));
+    for (var layer_types_group in layer_types) {
+        var optgroup = $('<optgroup label="' + layer_types_group + '"></optgroup>');
+        $(selector).append($(optgroup));
+        var group = layer_types[layer_types_group];
+        for (var layer_type in group) {
+            $(optgroup).append('<option value="' + layer_type.replace(/ /g,'') + '">' + layer_type + '</option>');
+        }
+    }
+    this.layer_type = $("#layerType");
 };

@@ -33,9 +33,10 @@ Layer.prototype.setInput = function(inputTensor) {
 //  DataPlaceholder
 
 var DataPlaceholder = function(width, height, depth) {
-    if (kernelWidth == undefined) {
+    console.log(width, height, depth);
+    if (height == undefined) {
         // copy constructor
-        var layer = outputDepth;
+        var layer = width;
         assign(this, layer);
         this.output = new Tensor(layer.output);
     } else {
