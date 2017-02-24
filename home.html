@@ -87,6 +87,11 @@
             window.open('mailto:'  + '?subject=' +subject + '&body=' + body);
         }
 
+        function post_to_twitter() {
+            var link="http://neuralizer.ai";
+            window.open('https://twitter.com/intent/tweet?text=See my latest model at Neuralizer.ai: ' + link);
+        }
+
         function change_color(color_idx) {
             canvas_manager.change_selected_shapes_color(color_idx);
             sidebar_manager.change_selected_color(color_idx);
@@ -110,14 +115,37 @@
                     $("#ConvolutionKernelPropertiesPadding").val(),
                     $("#ConvolutionKernelPropertiesPadding").val());
             } else if (layerType == "Pooling") {
-                layer = new Pooling(
-                    $("#PoolingWindowPropertiesWidth").val(),
-                    $("#PoolingWindowPropertiesHeight").val(),
-                    $("#PoolingWindowPropertiesStride").val(),
-                    $("#PoolingWindowPropertiesStride").val(),
-                    $("#PoolingWindowPropertiesPadding").val(),
-                    $("#PoolingWindowPropertiesPadding").val(),
-                    $("#PoolingType").val());
+
+                var poolingType = $("#PoolingType").val();
+                if (poolingType == "MaxPooling") {
+                    layer = new MaxPooling(
+                        $("#PoolingWindowPropertiesWidth").val(),
+                        $("#PoolingWindowPropertiesHeight").val(),
+                        $("#PoolingWindowPropertiesStride").val(),
+                        $("#PoolingWindowPropertiesStride").val(),
+                        $("#PoolingWindowPropertiesPadding").val(),
+                        $("#PoolingWindowPropertiesPadding").val(),
+                        $("#PoolingType").val());
+                } else if (poolingType == "AveragePooling") {
+                    layer = new AveragePooling(
+                        $("#PoolingWindowPropertiesWidth").val(),
+                        $("#PoolingWindowPropertiesHeight").val(),
+                        $("#PoolingWindowPropertiesStride").val(),
+                        $("#PoolingWindowPropertiesStride").val(),
+                        $("#PoolingWindowPropertiesPadding").val(),
+                        $("#PoolingWindowPropertiesPadding").val(),
+                        $("#PoolingType").val());
+                } else if (poolingType == "StochasticPooling") {
+                    layer = new StochasticPooling(
+                        $("#PoolingWindowPropertiesWidth").val(),
+                        $("#PoolingWindowPropertiesHeight").val(),
+                        $("#PoolingWindowPropertiesStride").val(),
+                        $("#PoolingWindowPropertiesStride").val(),
+                        $("#PoolingWindowPropertiesPadding").val(),
+                        $("#PoolingWindowPropertiesPadding").val(),
+                        $("#PoolingType").val());
+                }
+
             } else if (layerType == "InnerProduct") {
                 layer = new InnerProduct(
                     $("#InnerProductOutputSize").val());
@@ -199,11 +227,14 @@
 
         function get_short_name(layer_type) {
             // get a short default name for a layer
-            if (layer_types[layer_type] != undefined) {
-                if (layer_types[layer_type]["subtype"] != undefined) {
-
+            for (var layer_type_group in layer_types) {
+                var group = layer_types[layer_type_group];
+                for (key in group) {
+                    key_fixed = key.replace(/ /g, '');
+                    if (layer_type == key_fixed) {
+                        return group[key]["short_name"];
+                    }
                 }
-                return layer_types[layer_type]["short_name"];
             }
             return "";
         }
@@ -234,15 +265,15 @@
             if (layer_type == "DataPlaceholder") {
                 shape = new Rectangle(x, y, 80, 40, 6, 10, 3, layer_name, fill_colors[color], border_colors[color], false);
             } else if (layer_type == "Activation") {
-                shape = new Diamond(x, y, 40, 40, 2, 3, fill_colors[color], border_colors[color]);
+                shape = new Diamond(x, y, 40, 40, 2, 3, layer_name, fill_colors[color], border_colors[color]);
             } else if (layer_type == "DataManipulation") {
-                shape = new Triangle(x, y, 40, 40, 5, 3, fill_colors[color], border_colors[color]);
+                shape = new Triangle(x, y, 40, 40, 5, 3, layer_name, fill_colors[color], border_colors[color]);
             } else if (layer_type == "ElementWise") {
                 shape = new Ellipse(x, y, 40, 40, 3, layer_name, fill_colors[color], border_colors[color]);
             } else if (layer_type == "Pooling") {
-                shape = new Hexagon(x, y, 80, 40, 2, 3, fill_colors[color], border_colors[color]);
+                shape = new Hexagon(x, y, 80, 40, 2, 3, layer_name, fill_colors[color], border_colors[color]);
             } else if (layer_type == "Augmentation") {
-                shape = new Step(x, y, 80, 40, 2, 10, 3, fill_colors[color], border_colors[color]);
+                shape = new Step(x, y, 80, 40, 2, 10, 3, layer_name, fill_colors[color], border_colors[color]);
 //            } else if (layer_type == "Normalization") {
 //                shape = new HalfCircle(x, y, 40, 40, 3, layer_name, fill_colors[color], border_colors[color]);
             } else if (layer_type == "Convolution") {
@@ -310,6 +341,7 @@
                 var selected_shape = canvas_manager.get_primary_selected_shape();
                 if (selected_shape) {
                     sidebar_manager.set_layer_name(selected_shape.text);
+                    sidebar_manager.set_layer_params(selected_shape.layer);
                     sidebar_manager.change_selected_color(canvas_manager.get_shape_color_idx(selected_shape));
                     sidebar_manager.set_full_details_switch(selected_shape.full_details);
                 } else {
@@ -345,6 +377,8 @@
 
                 if (canvas_manager.mouse_is_pressed && canvas_manager.pressed_mouse_button == "left" && !canvas_manager.selection_box_is_active()) {
                     canvas_manager.move_selected_shapes();
+                } else if (canvas_manager.pressed_mouse_button == "middle") {
+                    canvas_manager.translate_canvas(canvas_manager.cursor_diff_x, canvas_manager.cursor_diff_y);
                 }
 
                 if (canvas_manager.current_arrow.vertices.length > 0) {
@@ -363,6 +397,17 @@
                 canvas_manager.move_shapes(canvas_manager.shapes, 0, 0);
 
                 canvas_manager.save_state();
+            }
+
+            function mouseWheel(evt) {
+                canvas_manager.update_cursor_state(evt.clientX, evt.clientY, evt.button, false);
+                var change = 0.1;
+                var delta = 1+Math.max(-1, Math.min(1, (evt.wheelDelta || -evt.detail)))*change;
+
+                canvas_manager.zoom_canvas(delta);
+
+                canvas_manager.draw_required = true;
+                canvas_manager.draw_curr_state_if_necessary();
             }
 
             function keyPress(evt) {
@@ -429,6 +474,7 @@
             canvas_manager.canvas.addEventListener("dblclick", doubleClick);
             document.addEventListener('mousemove', mouseMove);
             document.addEventListener('mouseup', mouseUp);
+            document.addEventListener('mousewheel', mouseWheel);
             document.addEventListener('keydown', keyPress);
             window.addEventListener('resize', function() { canvas_manager.fix_canvas_size(document.getElementById('cnv')) });
             var fileInput = document.getElementById('fileInput');
@@ -470,18 +516,6 @@
                 <i data-toggle="tooltip" data-placement="top" title="Designer" class="material-icons">color_lens</i>
             </div>
         </div>
-        <!-- Import / Export -->
-        <!--<div class="wrapping-side-icon">-->
-            <!--<div id="import_export_icon" class="side-icon after-side-icon" onclick="sidebar_manager.switch_sidebar_mode('import_export')">-->
-                <!--<i data-toggle="tooltip" data-placement="top" title="Import/Export" class="material-icons">file_download</i>-->
-            <!--</div>-->
-        <!--</div>-->
-        <!-- Share -->
-        <!--<div>-->
-            <!--<div id="share_icon" class="side-icon" onclick="sidebar_manager.switch_sidebar_mode('share')">-->
-                <!--<i data-toggle="tooltip" data-placement="top" title="Share" class="material-icons">share</i>-->
-            <!--</div>-->
-        <!--</div>-->
         <!-- Share / Explore -->
         <div class="wrapping-side-icon">
             <div id="share_explore_icon" class="side-icon after-side-icon" onclick="sidebar_manager.switch_sidebar_mode('share_explore')">
@@ -508,6 +542,11 @@
         <br>
         <div id="designer">
             <div class="form-group">
+                <label for="filename">Topology Name</label>
+                <input type="text" id="filename" class="form-control" placeholder="Topology Name">
+            </div>
+            <hr class="separator">
+            <div class="form-group">
                 <label for="layerName" style="color:white">Layer Name</label>
                 <input type="text" id="layerName" class="form-control" placeholder="Layer name" onkeyup="update_shape_name()">
             </div>
@@ -533,7 +572,6 @@
                     </div>
                     <div class="layer-color" id="color4" onclick="change_color(4)"
                          style="background-color: rgb(230, 126, 34);">
-
                     </div>
                     <div class="layer-color" id="color5" onclick="change_color(5)"
                          style="background-color: rgb(231, 76, 60);border-top-right-radius: 3px;border-bottom-right-radius: 3px; border-style: none solid solid none;">
@@ -563,10 +601,6 @@
 
         <!--</div>-->
         <div id="share_explore" class="collapse">
-            <div class="form-group">
-                <label for="filename">Topology Name</label>
-                <input type="text" id="filename" class="form-control" placeholder="Topology Name">
-            </div>
 
             <div class="form-group">
                 <label>Sharing Options</label>
@@ -575,12 +609,12 @@
                 <div class="col-lg-12" style="text-align: center">
                     <ul class="social-network social-circle">
                         <li>
-                            <a href="#" class="icoFacebook" title="Facebook">
-                                <i data-toggle="tooltip" data-placement="top" title="Share on Neuralizer" class="fa fa-facebook"></i>
+                            <a href="#" class="icoFacebook" title="Link">
+                                <i data-toggle="tooltip" data-placement="top" title="Get a sharable link" class="fa fa-link"></i>
                             </a>
                         </li>
                         <li>
-                            <a href="#" class="icoTwitter" title="Twitter">
+                            <a href="#" class="icoTwitter" title="Twitter" onclick="post_to_twitter()">
                                 <i data-toggle="tooltip" data-placement="top" title="Share on Twitter" class="fa fa-twitter"></i>
                             </a>
                         </li>
@@ -597,12 +631,29 @@
                     </ul>
                 </div>
             </div>
+
+        </div>
+        <div id="account" class="collapse">
+            <label for="UserAuthenticationForm">Account</label>
+            <form method="POST" class="form-signin animated" id="UserAuthenticationForm" style="text-align: center">
+                <input type="email" id="username" name="username" placeholder="Email" required="required" autofocus="autofocus" class="form-control vertical-margin"/>
+                <input type="password" name="password" placeholder="Password" required="required" class="form-control vertical-margin"/>
+                <button type="submit" class="btn rect-btn purple small-rect" onclick="sidebar_manager.login()">Log in</button>
+                <button type="submit" class="btn rect-btn purple-bg small-rect" onclick="sidebar_manager.signup()">Sign up</button>
+            </form>
+            <form method="POST" class="form-signin collapse animated" id="UserDetails">
+                <div style="background: white; border-radius: 3px; color: #555; border-color: #222; padding: 15px;">
+                    <label id="user_greeting" class="purple"></label>
+                    <button type="submit" style="background: transparent; border: 0;" class="pull-right" onclick="sidebar_manager.logout()">Log out</button>
+                </div>
+                <div class="form-group" style="text-align: center; margin-top: 10px">
+                    <button type="button" class="btn rect-btn purple-bg small-rect" onclick="sidebar_manager.save_model_to_server()">Save Model</button>
+                </div>
+            </form>
+
             <div class="form-group">
-                <label for="framework">Save Topology to Framework</label>
+                <label for="framework">Export Topology to Framework</label>
                 <select id="framework" class="form-control selectpicker">
-                    <option data-content="<img src='images/icon-neuralizer-new.png' style='margin-right:10px'>Neuralizer"
-                            value="Neuralizer">Neuralizer
-                    </option>
                     <option data-content="<img src='images/icon-tensorflow.png' style='margin-right:10px'>TensorFlow"
                             value="TensorFlow">TensorFlow
                     </option>
@@ -621,16 +672,19 @@
                     <option data-content="<img src='images/icon-pytorch.png' style='margin-right:10px'> PyTorch"
                             value="Keras">PyTorch
                     </option>
+                    <option data-content="<img src='images/icon-neuralizer-new.png' style='margin-right:10px'>Neuralizer"
+                            value="Neuralizer">Neuralizer
+                    </option>
                 </select>
             </div>
             <!-- Save Topology to File -->
             <div class="form-group">
                 <div style="text-align: center; width: 100%">
                     <a class="btn rect-btn purple small-rect" id="saveTopology" onclick="save_current_state_to_file($('#framework').val())">
-                        <i class="fa fa-download" aria-hidden="true"></i> Save
+                        <i class="fa fa-download" aria-hidden="true"></i> Export
                     </a>
                     <a class="btn rect-btn purple small-rect" id="loadTopology" onclick="document.getElementById('fileInput').click()">
-                        <i class="fa fa-upload" aria-hidden="true"></i> Load
+                        <i class="fa fa-upload" aria-hidden="true"></i> Import
                     </a>
                     <input type="file" id="fileInput" class="hidden">
                 </div>
@@ -643,22 +697,6 @@
                 </div>
             </div>
 
-        </div>
-        <div id="account" class="collapse">
-            <label for="UserAuthenticationForm">Account</label>
-            <form method="POST" class="form-signin animated" id="UserAuthenticationForm" style="text-align: center">
-                <input type="email" id="username" name="username" placeholder="Email" required="required" autofocus="autofocus" class="form-control vertical-margin"/>
-                <input type="password" name="password" placeholder="Password" required="required" class="form-control vertical-margin"/>
-                <button type="submit" class="btn rect-btn purple small-rect" onclick="sidebar_manager.login()">Log in</button>
-                <button type="submit" class="btn rect-btn purple-bg small-rect" onclick="sidebar_manager.signup()">Sign up</button>
-            </form>
-            <form method="POST" class="form-signin collapse animated" id="UserDetails">
-                <div style="background: white; border-radius: 3px; color: #555; border-color: #222; padding: 15px;">
-                    <label id="user_greeting" class="purple"></label>
-                    <button type="submit" style="background: transparent; border: 0;" class="pull-right" onclick="sidebar_manager.logout()">Log out</button>
-                </div>
-                <button type="button" class="btn rect-btn purple-bg small-rect" onclick="sidebar_manager.save_model_to_server()">Save Model</button>
-            </form>
         </div>
     </div>
 

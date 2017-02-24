@@ -2,6 +2,16 @@
  * Created by Itai Caspi on 26/07/2016.
  */
 
+function object_to_layer(obj) {
+    var layer;
+    if (obj.subtype != "") {
+        layer = new window[obj.subtype](obj);
+    } else {
+        layer = new window[obj.type](obj);
+    }
+    return layer;
+}
+
 
 var inheritsFrom = function (child, parent) {
     child.prototype = Object.create(parent.prototype);
@@ -11,7 +21,7 @@ var inheritsFrom = function (child, parent) {
 var Layer = function() {
     this.output =  new Tensor(1,1,1);
     this.weight = new Tensor();
-    this.type = "";
+    this.type = "Layer";
     this.subtype = "";
     this.description = "";
 };
@@ -33,7 +43,6 @@ Layer.prototype.setInput = function(inputTensor) {
 //  DataPlaceholder
 
 var DataPlaceholder = function(width, height, depth) {
-    console.log(width, height, depth);
     if (height == undefined) {
         // copy constructor
         var layer = width;
@@ -108,7 +117,7 @@ inheritsFrom(InnerProduct, Layer);
 ////////////////////////////////////////
 //  Pooling
 
-var Pooling = function(kernelWidth, kernelHeight, strideX, strideY, padX, padY, poolingType) {
+var Pooling = function(kernelWidth, kernelHeight, strideX, strideY, padX, padY) {
     if (typeof kernelWidth == "object") {
         // copy constructor
         assign(this, kernelWidth);
@@ -120,7 +129,6 @@ var Pooling = function(kernelWidth, kernelHeight, strideX, strideY, padX, padY, 
         this.strideY = strideY;
         this.padX = padX;
         this.padY = padY;
-        this.poolingType = poolingType;
         this.type = "Pooling";
         this.description = "Kernel " + this.kernelHeight + "x" + this.kernelWidth + " Stride " + this.strideX;
     }
@@ -132,6 +140,36 @@ Pooling.prototype.updateOutputSize = function() {
     this.output.width = Math.floor((this.input.width + 2*this.padX - this.kernelWidth) / this.strideX + 1);
     this.output.height = Math.floor((this.input.height + 2*this.padY - this.kernelHeight) / this.strideY + 1);
 };
+
+////////////////////////////////////////
+//  Max Pooling
+
+var MaxPooling = function() {
+    Pooling.call(this);
+    this.subtype = "MaxPooling";
+};
+
+inheritsFrom(MaxPooling, Pooling);
+
+////////////////////////////////////////
+//  Average Pooling
+
+var AveragePooling = function() {
+    Pooling.call(this);
+    this.subtype = "AveragePooling";
+};
+
+inheritsFrom(AveragePooling, Pooling);
+
+////////////////////////////////////////
+//  Stochastic Pooling
+
+var StochasticPooling = function() {
+    Pooling.call(this);
+    this.subtype = "StochasticPooling";
+};
+
+inheritsFrom(StochasticPooling, Pooling);
 
 ////////////////////////////////////////
 //  Deconvolution
@@ -243,7 +281,7 @@ var LRN = function(numNeighbours, k, alpha, beta) {
         this.k = k;
         this.alpha = alpha;
         this.beta = beta;
-        this.subtype = "LocalResponseNormalization";
+        this.subtype = "LRN";
         this.description = "α " + this.alpha + " β " + this.beta + " K " + this.k;
     }
 };

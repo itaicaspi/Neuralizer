@@ -6,22 +6,9 @@
  *  Shape Factory
  */
 function object_to_shape(obj) {
-    var classes = {
-        "Rectangle": Rectangle,
-        "Trapezoid": Trapezoid,
-        "Triangle": Triangle,
-        "Diamond": Diamond,
-        "Ellipse": Ellipse,
-        "HalfCircle": HalfCircle,
-        "Hexagon": Hexagon,
-        "Line": Line
-    };
-    for (var key in classes) {
-        if (obj.type == key) {
-            return new classes[key](obj);
-        }
-    }
+    return new window[obj.type](obj);
 }
+
 
 /*
  * Inheritance helper function
@@ -545,7 +532,7 @@ Line.prototype.sync_end = function() {
 Line.prototype.pointer_is_on_the_border = function(xm, ym, ctx) {
     var cursor = new Vertex(xm, ym, 0);
     // check if the pointer position is relevant by comparing the color under the cursor with the color of the line
-    if (!color_under_cursor_matches_given_color(this.border_color, ctx, cursor,this.stroke)) return false;
+    // if (!color_under_cursor_matches_given_color(this.border_color, ctx, cursor,this.stroke)) return false;
 
     // go over all parts of the line and check if the pointer is on them
     for (var i = 0; i < this.vertices.length; i++) {
@@ -561,7 +548,7 @@ Line.prototype.pointer_is_on_the_border = function(xm, ym, ctx) {
 Line.prototype.pointer_is_on_the_border_line = function(xm, ym, ctx) {
     var cursor = new Vertex(xm, ym, 0);
     // check if the pointer position is relevant by comparing the color under the cursor with the color of the line
-    if (!color_under_cursor_matches_given_color(this.border_color, ctx, cursor,this.stroke)) return false;
+    // if (!color_under_cursor_matches_given_color(this.border_color, ctx, cursor,this.stroke)) return false;
 
     // go over all lines of the border and check if the pointer is on them
     for (var i = 0; i < this.vertices.length; i++) {
@@ -638,15 +625,7 @@ Shape.prototype.generate_new_key = function() {
 };
 
 Shape.prototype.set_layer = function(layer) {
-    if (layer.type == "Convolution") {
-        this.layer = new Convolution(layer);
-    } else if (layer.type == "InnerProduct") {
-        this.layer = new InnerProduct(layer);
-    } else if (layer.subtype == "LocalResponseNormalization") {
-        this.layer = new LRN(layer);
-    } else {
-        this.layer = layer;
-    }
+    this.layer = object_to_layer(layer);
 };
 
 
@@ -692,7 +671,7 @@ Shape.prototype.pointer_is_inside = function(xm, ym) {
 Shape.prototype.pointer_is_on_the_border = function(xm, ym, ctx) {
     var cursor = new Vertex(xm, ym, 0);
     // check if the pointer position is relevant by comparing the color under the cursor with the color of the line
-    if (!color_under_cursor_matches_given_color(this.border_color, ctx, cursor,this.stroke)) return false;
+    //if (!color_under_cursor_matches_given_color(this.border_color, ctx, cursor,this.stroke)) return false;
 
     // go over all lines of the border and check if the pointer is on them
     for (var i = 0; i < this.vertices.length; i++) {
@@ -709,7 +688,7 @@ Shape.prototype.pointer_is_on_the_border = function(xm, ym, ctx) {
 Shape.prototype.pointer_is_on_the_border_line = function(xm, ym, ctx) {
     var cursor = new Vertex(xm, ym, 0);
     // check if the pointer position is relevant by comparing the color under the cursor with the color of the line
-    if (!color_under_cursor_matches_given_color(this.border_color, ctx, cursor,this.stroke)) return false;
+    //if (!color_under_cursor_matches_given_color(this.border_color, ctx, cursor,this.stroke)) return false;
 
     // go over all lines of the border and check if the pointer is on them
     for (var i = 0; i < this.vertices.length; i++) {
@@ -1007,14 +986,14 @@ Trapezoid.prototype.update_vertices = function() {
 /////////////////////////////////////
 //  Triangle
 
-var Triangle = function(x, y, width, height, radius, stroke, color, border_color, key) {
+var Triangle = function(x, y, width, height, radius, stroke, text, color, border_color, key) {
     if (typeof x == "object") {
         // copy constructor
         var shape = x;
         Shape.call(this, shape);
         this.clone_vertices(shape);
     } else {
-        Shape.call(this, x, y, width, height, radius, stroke, "", color, border_color, key);
+        Shape.call(this, x, y, width, height, radius, stroke, text, color, border_color, key);
         this.update_vertices();
     }
     this.type = "Triangle";
@@ -1039,14 +1018,14 @@ Triangle.prototype.update_vertices = function() {
 /////////////////////////////////////
 //  Diamond
 
-var Diamond = function(x, y, width, height, radius, stroke, color, border_color, key) {
+var Diamond = function(x, y, width, height, radius, stroke, text, color, border_color, key) {
     if (typeof x == "object") {
         // copy constructor
         var shape = x;
         Shape.call(this, shape);
         this.clone_vertices(shape);
     } else {
-        Shape.call(this, x, y, width, height, radius, stroke, "", color, border_color, key);
+        Shape.call(this, x, y, width, height, radius, stroke, text, color, border_color, key);
         this.update_vertices();
     }
     this.type = "Diamond";
@@ -1070,14 +1049,14 @@ Diamond.prototype.update_vertices = function() {
 /////////////////////////////////////
 //  Hexagon
 
-var Hexagon = function(x, y, width, height, radius, stroke, color, border_color, key) {
+var Hexagon = function(x, y, width, height, radius, stroke, text, color, border_color, key) {
     if (typeof x == "object") {
         // copy constructor
         var shape = x;
         Shape.call(this, shape);
         this.clone_vertices(shape);
     } else {
-        Shape.call(this, x, y, width, height, radius, stroke, "", color, border_color, key);
+        Shape.call(this, x, y, width, height, radius, stroke, text, color, border_color, key);
         this.update_vertices();
     }
     this.type = "Hexagon";
@@ -1105,7 +1084,7 @@ Hexagon.prototype.update_vertices = function() {
 /////////////////////////////////////
 //  Step
 
-var Step = function(x, y, width, height, radius, offset, stroke, color, border_color, key) {
+var Step = function(x, y, width, height, radius, offset, stroke, text, color, border_color, key) {
     if (typeof x == "object") {
         // copy constructor
         var shape = x;
@@ -1113,7 +1092,7 @@ var Step = function(x, y, width, height, radius, offset, stroke, color, border_c
         this.offset = shape.offset;
         this.clone_vertices(shape);
     } else {
-        Shape.call(this, x, y, width, height, radius, stroke, "", color, border_color, key);
+        Shape.call(this, x, y, width, height, radius, stroke, text, color, border_color, key);
         this.offset = (typeof offset != 'undefined') ? offset : 10;
         this.update_vertices();
     }

@@ -4,6 +4,10 @@
 
 
 var CanvasManager = function(canvas) {
+    this.zoom = 1;
+    this.offset_x = 0;
+    this.offset_y = 0;
+
     this.canvas = canvas;
     this.fix_canvas_size(canvas);
     this.ctx = this.canvas.getContext('2d');
@@ -46,12 +50,32 @@ var CanvasManager = function(canvas) {
     // draw
     this.animationIntervalId = 0;
     this.draw_required = false;
+
 };
 
 CanvasManager.prototype.fix_canvas_size = function(canvas) {
-    this.canvas = canvas;
+    if (canvas != undefined) {
+      this.canvas = canvas;
+    }
     this.canvas.width = this.canvas.offsetWidth;
     this.canvas.height = this.canvas.offsetHeight;
+};
+
+CanvasManager.prototype.zoom_canvas = function(delta) {
+    this.translate_canvas(-this.cursor_x + this.offset_x, -this.cursor_y + this.offset_y);
+    this.zoom *= delta;
+    this.ctx.translate(this.offset_x, this.offset_y);
+    this.ctx.scale(delta, delta);
+    this.ctx.translate(-this.offset_x, -this.offset_y);
+    this.translate_canvas((this.cursor_x - this.offset_x)/delta, (this.cursor_y - this.offset_y)/delta);
+};
+
+CanvasManager.prototype.translate_canvas = function(dx, dy) {
+    this.offset_x -= dx;
+    this.offset_y -= dy;
+    this.cursor_x -= dx;
+    this.cursor_y -= dy;
+    this.ctx.translate(dx, dy);
 };
 
 //////////////////////////////
@@ -126,10 +150,10 @@ CanvasManager.prototype.get_primary_selected_shape = function() {
 
 
 CanvasManager.prototype.update_cursor_state = function(x, y, pressed_button, is_pressed) {
-    this.cursor_diff_x = x - this.canvas.getBoundingClientRect().left - this.cursor_x;
-    this.cursor_diff_y = y - this.canvas.getBoundingClientRect().top - this.cursor_y;
-    this.cursor_x = x - this.canvas.getBoundingClientRect().left;
-    this.cursor_y = y - this.canvas.getBoundingClientRect().top;
+    this.cursor_diff_x = x/this.zoom - this.canvas.getBoundingClientRect().left/this.zoom - this.cursor_x + this.offset_x;
+    this.cursor_diff_y = y/this.zoom - this.canvas.getBoundingClientRect().top/this.zoom - this.cursor_y + this.offset_y;
+    this.cursor_x = (x - this.canvas.getBoundingClientRect().left)/this.zoom + this.offset_x;
+    this.cursor_y = (y - this.canvas.getBoundingClientRect().top)/this.zoom + this.offset_y;
     this.mouse_is_pressed = (typeof is_pressed != 'undefined') ? is_pressed : this.mouse_is_pressed;
     if (pressed_button < this.available_mouse_buttons.length) {
         this.pressed_mouse_button = this.available_mouse_buttons[pressed_button];
@@ -389,7 +413,7 @@ CanvasManager.prototype.draw_curr_state = function() {
 };
 
 CanvasManager.prototype.clear_canvas = function() {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.clearRect(this.offset_x, this.offset_y, this.canvas.width/this.zoom, this.canvas.height/this.zoom);
 };
 
 CanvasManager.prototype.draw_array = function(array) {
@@ -399,7 +423,7 @@ CanvasManager.prototype.draw_array = function(array) {
 };
 
 CanvasManager.prototype.draw_text = function(text, x, y, size) {
-    this.ctx.font = size + "px Calibri";
+    this.ctx.font = size*this.zoom + "px Calibri";
     this.ctx.textAlign = "center";
     this.ctx.fillStyle = "black";
     this.ctx.shadowColor = "white";

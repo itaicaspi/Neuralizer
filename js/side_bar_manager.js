@@ -290,6 +290,15 @@ SidebarManager.prototype.set_layer_name = function(text) {
     $(this.layer_name).val(text);
 };
 
+SidebarManager.prototype.set_layer_params = function(layer) {
+    var layerType = layer.type.replace(/ /g,'');
+    var layerSubtype = layer.subtype.replace(/ /g,'');
+    var layerSubtypeSelector = $('#' + layerType + 'Type');
+    $(this.layer_type).val(layerType).change();
+    $(layerSubtypeSelector).val(layerSubtype).change();
+    this.select_layer_type();
+};
+
 SidebarManager.prototype.focus_layer_name = function() {
     setTimeout(function () {
         $("#layerName").focus();

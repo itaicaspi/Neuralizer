@@ -1608,14 +1608,14 @@ label {
   overflow-x: hidden;
 }
 
-/* line 403, ../sass/style.scss */
+/* line 404, ../sass/style.scss */
 .label {
   width: 50px;
   margin: 2px;
   cursor: pointer;
 }
 
-/* line 409, ../sass/style.scss */
+/* line 410, ../sass/style.scss */
 .layer-color {
   border: 2px none rgba(255, 255, 255, 0.3);
   border-bottom-style: solid;
@@ -1624,7 +1624,7 @@ label {
   height: 27px;
 }
 
-/* line 417, ../sass/style.scss */
+/* line 418, ../sass/style.scss */
 .btn-circle.btn-lg {
   width: 40px;
   height: 40px;
@@ -1637,7 +1637,7 @@ label {
   margin-left: -20px;
 }
 
-/* line 429, ../sass/style.scss */
+/* line 430, ../sass/style.scss */
 .fast-transition {
   -webkit-transition: all 0.6s ease-in-out;
   /* Chrome, Safari 3.1+ */
@@ -1649,22 +1649,22 @@ label {
   /* Firefox 16+, IE 10+, Opera 12.10+ */
 }
 
-/* line 433, ../sass/style.scss */
+/* line 434, ../sass/style.scss */
 .move-right {
   transform: translate3d(30px, 0, 0);
 }
 
-/* line 437, ../sass/style.scss */
+/* line 438, ../sass/style.scss */
 .move-left {
   transform: translate3d(-30px, 0, 0);
 }
 
-/* line 441, ../sass/style.scss */
+/* line 442, ../sass/style.scss */
 .invisible-btn {
   opacity: 0;
 }
 
-/* line 445, ../sass/style.scss */
+/* line 446, ../sass/style.scss */
 .rotated {
   -webkit-transform: rotate(45deg);
   /* Chrome, Safari 3.1+ */
@@ -1679,7 +1679,7 @@ label {
   color: #e14329;
 }
 
-/* line 450, ../sass/style.scss */
+/* line 451, ../sass/style.scss */
 .rotated-90 {
   -webkit-transform: rotate(-90deg);
   /* Chrome, Safari 3.1+ */
@@ -1694,17 +1694,17 @@ label {
   transform-origin: 56% 45%;
 }
 
-/* line 456, ../sass/style.scss */
+/* line 457, ../sass/style.scss */
 .plus-icon-shift-fix {
   transform-origin: 56% 45%;
 }
 
-/* line 461, ../sass/style.scss */
+/* line 462, ../sass/style.scss */
 .material-switch > input[type="checkbox"] {
   display: none;
 }
 
-/* line 465, ../sass/style.scss */
+/* line 466, ../sass/style.scss */
 .material-switch > label {
   cursor: pointer;
   height: 0;
@@ -1712,7 +1712,7 @@ label {
   width: 40px;
 }
 
-/* line 472, ../sass/style.scss */
+/* line 473, ../sass/style.scss */
 .material-switch > label::before {
   background: black;
   box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
@@ -1733,7 +1733,7 @@ label {
   width: 40px;
 }
 
-/* line 485, ../sass/style.scss */
+/* line 486, ../sass/style.scss */
 .material-switch > label::after {
   background: white;
   border-radius: 16px;
@@ -1755,50 +1755,50 @@ label {
   width: 24px;
 }
 
-/* line 499, ../sass/style.scss */
+/* line 500, ../sass/style.scss */
 .material-switch > input[type="checkbox"]:checked + label::before {
   background: inherit;
   opacity: 0.5;
 }
 
-/* line 504, ../sass/style.scss */
+/* line 505, ../sass/style.scss */
 .material-switch > input[type="checkbox"]:checked + label::after {
   background: inherit;
   left: 20px;
 }
 
-/* line 509, ../sass/style.scss */
+/* line 510, ../sass/style.scss */
 a.thumbnail:hover, a.thumbnail:focus, a.thumbnail.active {
   border-color: transparent;
 }
 
-/* line 513, ../sass/style.scss */
+/* line 514, ../sass/style.scss */
 .stars {
   display: block;
   float: right;
   color: #9fa2a8;
 }
 
-/* line 519, ../sass/style.scss */
+/* line 520, ../sass/style.scss */
 .stars:hover {
   color: #99c432;
   cursor: pointer;
 }
 
-/* line 524, ../sass/style.scss */
+/* line 525, ../sass/style.scss */
 .remove-model {
   display: block;
   float: right;
   margin: 15px;
 }
 
-/* line 530, ../sass/style.scss */
+/* line 531, ../sass/style.scss */
 .remove-model:hover {
   color: #e14329;
   cursor: pointer;
 }
 
-/* line 535, ../sass/style.scss */
+/* line 536, ../sass/style.scss */
 .col-xs-1, .col-xs-2, .col-xs-3, .col-xs-8, .col-xs-9 {
   -webkit-transition: width 0.3s ease, margin 0.3s ease;
   /* Chrome, Safari 3.1+ */
@@ -1810,29 +1810,29 @@ a.thumbnail:hover, a.thumbnail:focus, a.thumbnail.active {
   /* Firefox 16+, IE 10+, Opera 12.10+ */
 }
 
-/* line 539, ../sass/style.scss */
+/* line 540, ../sass/style.scss */
 .entities {
   line-height: 2;
 }
 
 /* Search Box */
-/* line 544, ../sass/style.scss */
+/* line 545, ../sass/style.scss */
 #imaginary_container {
   margin-bottom: 20px;
 }
 
-/* line 548, ../sass/style.scss */
+/* line 549, ../sass/style.scss */
 .transparent-input {
   background-color: transparent;
 }
 
-/* line 552, ../sass/style.scss */
+/* line 553, ../sass/style.scss */
 .stylish-input-group .input-group-addon {
   background: transparent !important;
   border-radius: 0 15px 15px 0;
 }
 
-/* line 557, ../sass/style.scss */
+/* line 558, ../sass/style.scss */
 .stylish-input-group .form-control {
   border-right: 0;
   box-shadow: 0 0 0;
@@ -1842,29 +1842,29 @@ a.thumbnail:hover, a.thumbnail:focus, a.thumbnail.active {
   font-weight: bold;
 }
 
-/* line 566, ../sass/style.scss */
+/* line 567, ../sass/style.scss */
 .stylish-input-group button {
   border: 0;
   background: transparent;
 }
 
-/* line 573, ../sass/style.scss */
+/* line 574, ../sass/style.scss */
 .carousel-fade .carousel-inner .item {
   transition-property: opacity;
 }
-/* line 577, ../sass/style.scss */
+/* line 578, ../sass/style.scss */
 .carousel-fade .carousel-inner .item,
 .carousel-fade .carousel-inner .active.left,
 .carousel-fade .carousel-inner .active.right {
   opacity: 0;
 }
-/* line 583, ../sass/style.scss */
+/* line 584, ../sass/style.scss */
 .carousel-fade .carousel-inner .active,
 .carousel-fade .carousel-inner .next.left,
 .carousel-fade .carousel-inner .prev.right {
   opacity: 1;
 }
-/* line 589, ../sass/style.scss */
+/* line 590, ../sass/style.scss */
 .carousel-fade .carousel-inner .next,
 .carousel-fade .carousel-inner .prev,
 .carousel-fade .carousel-inner .active.left,
@@ -1872,7 +1872,7 @@ a.thumbnail:hover, a.thumbnail:focus, a.thumbnail.active {
   left: 0;
   transform: translate3d(0, 0, 0);
 }
-/* line 598, ../sass/style.scss */
+/* line 599, ../sass/style.scss */
 .carousel-fade .carousel-control {
   z-index: 2;
 }
