@@ -19,7 +19,7 @@ var CanvasManager = function(canvas) {
     this.snap_threshold = 10;
 
     // canvas selection
-    this.selection_box = new Rectangle(0, 0, 0, 0, 2, 0, 2, "", new Color(0, 0, 0, 0), new Color(100, 100, 100, 1), true, undefined, true);
+    this.selection_box = new Rectangle(0, 0, 0, 0, 10, 0, 2, "", new Color(0, 0, 0, 0), new Color(100, 100, 100, 1), true, undefined, true);
     this.selected_shapes = [];
     this.selected_color_idx = 0;
 
@@ -61,13 +61,21 @@ CanvasManager.prototype.fix_canvas_size = function(canvas) {
     this.canvas.height = this.canvas.offsetHeight;
 };
 
-CanvasManager.prototype.zoom_canvas = function(delta) {
-    this.translate_canvas(-this.cursor_x + this.offset_x, -this.cursor_y + this.offset_y);
+CanvasManager.prototype.zoom_canvas = function(delta, center_zoom) {
+    delta = 1 + delta/this.zoom;
+    if (center_zoom == undefined) {
+        this.translate_canvas(-this.cursor_x + this.offset_x, -this.cursor_y + this.offset_y);
+    }
     this.zoom *= delta;
     this.ctx.translate(this.offset_x, this.offset_y);
     this.ctx.scale(delta, delta);
     this.ctx.translate(-this.offset_x, -this.offset_y);
-    this.translate_canvas((this.cursor_x - this.offset_x)/delta, (this.cursor_y - this.offset_y)/delta);
+    if (center_zoom == undefined) {
+        this.translate_canvas((this.cursor_x - this.offset_x)/delta, (this.cursor_y - this.offset_y)/delta);
+    }
+    $("#zoom_value").html(Math.round(100*this.zoom) + "%");
+    this.draw_required = true;
+    this.draw_curr_state_if_necessary();
 };
 
 CanvasManager.prototype.translate_canvas = function(dx, dy) {
@@ -343,6 +351,8 @@ CanvasManager.prototype.hide_selection_box = function() {
 CanvasManager.prototype.initialize_selection_box = function() {
     this.selection_box.x = this.cursor_x;
     this.selection_box.y = this.cursor_y;
+    this.selection_box.stroke = 2/this.zoom;
+    this.selection_box.border = 10/this.zoom;
     this.reset_selected_shapes();
     this.draw_required = true;
 };

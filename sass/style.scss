@@ -212,6 +212,14 @@ label {
   user-select: none;
 }
 
+#canvas_zoom {
+  padding: 20px;
+  background: transparent;
+  z-index: 101;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+}
 
 #canvas_helpers {
   padding: 20px;
@@ -219,10 +227,6 @@ label {
   z-index: 101;
   position: absolute;
   top: 0;
-  -moz-user-select: -moz-none;
-  -webkit-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
   @include transition(all 0.5s linear);
 }
 
@@ -232,10 +236,6 @@ label {
   z-index: 100;
   position: absolute;
   bottom: 0;
-  -moz-user-select: -moz-none;
-  -webkit-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
   @include transition(all 0.5s linear);
 }
 
@@ -301,6 +301,22 @@ label {
   font-size: 16px;
 }
 
+.zoom-btn {
+  margin: 3px;
+  background: transparent;
+  border: transparent;
+  border-radius: 10px;
+  width: 20px;
+  height: 20px;
+  color: white;
+  outline: none;
+  font-weight: bold;
+}
+
+.zoom-btn:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
 .rect-btn {
   font-family: $primary-fonts;
   font-weight: bold;
@@ -312,7 +328,7 @@ label {
 }
 
 .rect-btn:hover {
-  box-shadow: 0 0 3px rgba(255,255,255,0.35);
+  box-shadow: 0 0 3px rgba(255, 255, 255, 0.35);
 }
 
 .green {
@@ -400,7 +416,6 @@ label {
   overflow-x: hidden;
 }
 
-
 .label {
   width: 50px;
   margin: 2px;
@@ -422,7 +437,7 @@ label {
   font-size: 18px;
   line-height: 1.33;
   border-radius: 20px;
-  outline:none;
+  outline: none;
   position: absolute;
   margin-left: -20px;
 }
@@ -432,11 +447,11 @@ label {
 }
 
 .move-right {
-  transform:translate3d(30px,0,0);
+  transform: translate3d(30px, 0, 0);
 }
 
 .move-left {
-  transform:translate3d(-30px,0,0);
+  transform: translate3d(-30px, 0, 0);
 }
 
 .invisible-btn {

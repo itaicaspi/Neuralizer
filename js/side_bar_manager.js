@@ -458,6 +458,7 @@ SidebarManager.prototype.start = function() {
     // $("#sidebar_icons_container").addClass("fadeInLeft");
     $("#sidebar_container").fadeIn("slow");
     $("#sidebar_container").addClass("fadeInLeft");
+    $("#canvas_zoom").show();
 };
 
 

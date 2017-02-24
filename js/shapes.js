@@ -222,7 +222,7 @@ Line.prototype.draw = function(ctx) {
         }
         if (horizontal) {
             if (v > 1) ctx.quadraticCurveTo(this.vertices[v-1].x, this.vertices[v-1].y, this.vertices[v-1].x - offset, this.vertices[v-1].y);
-            ctx.lineTo(this.vertices[v].x + (last ? 0 : offset), this.vertices[v].y);
+            ctx.lineTo(this.vertices[v].x + (last ? offset : offset), this.vertices[v].y);
         } else if (vertical) {
             if (v > 1) ctx.quadraticCurveTo(this.vertices[v-1].x, this.vertices[v-1].y, this.vertices[v-1].x, this.vertices[v-1].y - offset);
             ctx.lineTo(this.vertices[v].x, this.vertices[v].y + (last ? offset : offset));
@@ -252,6 +252,7 @@ Line.prototype.draw = function(ctx) {
     //     ctx.fill();
     // }
 
+    // draw arrow head
     ctx.beginPath();
     ctx.moveTo(this.vertices[this.vertices.length-1].x, this.vertices[this.vertices.length-1].y);
     if (horizontal) {
@@ -851,7 +852,7 @@ Shape.prototype.draw_stroke = function(ctx) {
     // draw border
     if (this.stroke > 0) {
         if (this.dashedBorder) {
-            ctx.setLineDash([2,3]);
+            ctx.setLineDash([6,9]);
         }
         ctx.strokeStyle = this.border_color.to_string();
         ctx.lineWidth = this.stroke;

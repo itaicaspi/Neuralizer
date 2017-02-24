@@ -402,12 +402,9 @@
             function mouseWheel(evt) {
                 canvas_manager.update_cursor_state(evt.clientX, evt.clientY, evt.button, false);
                 var change = 0.1;
-                var delta = 1+Math.max(-1, Math.min(1, (evt.wheelDelta || -evt.detail)))*change;
+                var delta = Math.max(-1, Math.min(1, (evt.wheelDelta || -evt.detail)))*change;
 
                 canvas_manager.zoom_canvas(delta);
-
-                canvas_manager.draw_required = true;
-                canvas_manager.draw_curr_state_if_necessary();
             }
 
             function keyPress(evt) {
@@ -702,9 +699,16 @@
 
     <!-- Canvas -->
     <div class="col-xs-9" id="canvas_container" style="height:100%">
-        <div id="canvas_helpers">
+        <div id="canvas_helpers" class="non-selectable">
         </div>
-        <div id="canvas_keys">
+        <div id="canvas_keys" class="non-selectable">
+        </div>
+        <div id="canvas_zoom" class="non-selectable collapse">
+            <div style="background: #3f4652; border-radius: 15px; height:30px; width: auto;">
+                <button class="zoom-btn" onclick="canvas_manager.zoom_canvas(-0.1, true);">-</button>
+                <label style="margin: 5px;" id="zoom_value">100%</label>
+                <button class="zoom-btn" onclick="canvas_manager.zoom_canvas(0.1, true);">+</button>
+            </div>
         </div>
         <div id="canvas_overlay" class="full-screen">
             <div id="canvas_messages" class="centered">
