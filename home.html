@@ -98,6 +98,11 @@
             sidebar_manager.change_selected_color(color_idx);
         }
 
+        function filter_search() {
+            var text = $("#model_search").val();
+            sidebar_manager.show_filtered_models_in_canvas_overlay(text);
+        }
+
         function create_new_layer() {
             var layerType = $("#layerType").val();
             var layer;
@@ -114,7 +119,10 @@
                     $("#ConvolutionKernelPropertiesStride").val(),
                     $("#ConvolutionKernelPropertiesStride").val(),
                     $("#ConvolutionKernelPropertiesPadding").val(),
-                    $("#ConvolutionKernelPropertiesPadding").val());
+                    $("#ConvolutionKernelPropertiesPadding").val(),
+                    $("#ConvolutionKernelPropertiesDilation").val(),
+                    $("#ConvolutionKernelPropertiesDilation").val());
+
             } else if (layerType == "Pooling") {
 
                 var poolingType = $("#PoolingType").val();
@@ -148,8 +156,7 @@
                 }
 
             } else if (layerType == "InnerProduct") {
-                layer = new InnerProduct(
-                    $("#InnerProductOutputSize").val());
+                layer = new InnerProduct($("#InnerProductOutputSize").val());
             } else if (layerType == "Deconvolution") {
                 layer = new Deconvolution(
                     $("#DeconvolutionNumberOfOFMs").val(),
@@ -242,22 +249,33 @@
 
 
         function update_shape_name() {
-            canvas_manager.get_primary_selected_shape().update_text($("#layerName").val());
-            canvas_manager.draw_required = true;
-            canvas_manager.draw_curr_state_if_necessary();
+            sidebar_manager.layer_name_changed_manually = true;
+            var selected_shape = canvas_manager.get_primary_selected_shape();
+            if (selected_shape) {
+                selected_shape.update_text($("#layerName").val());
+                canvas_manager.draw_required = true;
+                canvas_manager.draw_curr_state_if_necessary();
+            }
         }
 
 
         function add_layer() {
+
+            var layer = create_new_layer();
+            var layer_type = $("#layerType").val();
+//            var layer_subtype = layer.subtype;
+            var layer_name = $("#layerName").val();
+            if (layer_name == "" || !sidebar_manager.layer_name_changed_manually) {
+                layer_name = get_short_name(layer_type);
+            }
+            if (canvas_manager.layer_name_is_in_use(layer_name)) {
+                layer_name = canvas_manager.add_layer_counter(layer_name);
+                sidebar_manager.layer_name_changed_manually = false;
+            }
+            $("#layerName").val(layer_name);
+
             canvas_manager.reset_selected_shapes();
             canvas_manager.mouse_is_pressed = true;
-
-            var layer_type = $("#layerType").val();
-            var layer_name = $("#layerName").val();
-            if (layer_name == "") {
-                layer_name = get_short_name(layer_type);
-                $("#layerName").val(layer_name);
-            }
 
             var x = canvas_manager.cursor_x;
             var y = canvas_manager.cursor_y;
@@ -273,7 +291,7 @@
                 shape = new Ellipse(x, y, 40, 40, 3, layer_name, fill_colors[color], border_colors[color]);
             } else if (layer_type == "Pooling") {
                 shape = new Hexagon(x, y, 80, 40, 2, 3, layer_name, fill_colors[color], border_colors[color]);
-            } else if (layer_type == "Augmentation") {
+            } else if (layer_type == "Optimizer") {
                 shape = new Step(x, y, 80, 40, 2, 10, 3, layer_name, fill_colors[color], border_colors[color]);
 //            } else if (layer_type == "Normalization") {
 //                shape = new HalfCircle(x, y, 40, 40, 3, layer_name, fill_colors[color], border_colors[color]);
@@ -282,22 +300,20 @@
             } else {
                 shape = new Rectangle(x, y, 80, 40, 6, 0, 3, layer_name, fill_colors[color], border_colors[color], false);
             }
-            shape.set_layer(create_new_layer());
+            shape.set_layer(layer);
             canvas_manager.add_shape(shape);
 
             sidebar_manager.show_remove_layer_button();
 
             if (!drop_here_message_worked) {
-                canvas_manager.show_message("Drop here", true);
+                canvas_manager.show_message("Drop here", false);
             }
         }
-
 
         function remove_layer() {
             canvas_manager.remove_selected_shapes();
             sidebar_manager.hide_remove_layer_button();
         }
-
 
 
         function run() {
@@ -329,7 +345,7 @@
                     canvas_manager.reset_selected_shapes();
                 }
 
-                if (evt.button == 2) {
+                if (canvas_manager.pressed_mouse_button == "right") {
                     canvas_manager.copy_from_clipboard();
                     canvas_manager.paste_from_clipboard();
                 }
@@ -364,7 +380,7 @@
                 $('body').css('cursor', 'default');
                 canvas_manager.update_cursor_state(evt.clientX, evt.clientY, evt.button);
 
-                if (canvas_manager.mouse_is_pressed && canvas_manager.current_arrow.points == 0) {
+                if (canvas_manager.mouse_is_pressed && canvas_manager.current_arrow.points == 0 && canvas_manager.pressed_mouse_button == "left") {
                     if (!canvas_manager.get_primary_selected_shape() || canvas_manager.selection_box_is_active()) {
                         canvas_manager.set_selection_box();
                         if (canvas_manager.get_primary_selected_shape()) {
@@ -476,8 +492,8 @@
             canvas_manager.canvas.addEventListener('mousedown', mouseDown);
             canvas_manager.canvas.addEventListener("dblclick", doubleClick);
             document.addEventListener('mousemove', mouseMove);
-            document.addEventListener('mouseup', mouseUp);
-            document.addEventListener('mousewheel', mouseWheel);
+            canvas_manager.canvas.addEventListener('mouseup', mouseUp);
+            canvas_manager.canvas.addEventListener('mousewheel', mouseWheel);
             document.addEventListener('keydown', keyPress);
             window.addEventListener('resize', function() { canvas_manager.fix_canvas_size(document.getElementById('cnv')) });
             var fileInput = document.getElementById('fileInput');
@@ -493,6 +509,7 @@
                 if (user != '0') {
                     $("#username").val(user.username);
                     sidebar_manager.logged_in_mode();
+                    //sidebar_manager.start();
                 }
             });
 
@@ -552,6 +569,7 @@
             <div class="form-group">
                 <label for="layerName" style="color:white">Layer Name</label>
                 <input type="text" id="layerName" class="form-control" placeholder="Layer name" onkeyup="update_shape_name()">
+                <span id="layerNameError" class='error-label collapse'>Layer name is already in use</span>
             </div>
             <div class="form-group" id="LayersSelector"></div>
             <hr class="separator">
@@ -600,9 +618,6 @@
             <hr class="separator">
         </div>
 
-        <!--<div id="import_export" style="display: none">-->
-
-        <!--</div>-->
         <div id="share_explore" class="collapse">
 
             <div class="form-group">
@@ -730,7 +745,7 @@
                     <div class="col-sm-10 ">
                         <div id="imaginary_container">
                             <div class="input-group stylish-input-group">
-                                <input type="text" class="form-control transparent-input" placeholder="Search" >
+                                <input type="text" id="model_search" class="form-control transparent-input search-bar" placeholder="Search" onkeyup="filter_search()">
                                 <span class="input-group-addon">
                                     <button type="submit">
                                         <span class="glyphicon glyphicon-search"></span>

@@ -164,7 +164,7 @@ Line.prototype.start_line = function(start, color, linkStart) {
 Line.prototype.add_point = function(point) {
     var lastIdx = this.points-1;
     if (this.points == 1) {
-        if (this.startDir == "horizontal" || (this.startDir == true && Math.abs(point.x - this.vertices[lastIdx].x) < Math.abs(point.y - this.vertices[lastIdx].y))) {
+        if (this.startDir == "horizontal" || (this.startDir == "diagonal" && Math.abs(point.x - this.vertices[lastIdx].x) < Math.abs(point.y - this.vertices[lastIdx].y))) {
             this.vertices[this.points] = new Vertex(this.vertices[lastIdx].x, point.y, 0);
         } else {
             this.vertices[this.points] = new Vertex(point.x, this.vertices[lastIdx].y, 0);
@@ -728,6 +728,7 @@ Shape.prototype.update_text = function(text) {
     } else {
         this.width = this.baseWidth;
     }
+    this.name = text.replace(/ /g,'_');
     this.update_vertices();
 };
 

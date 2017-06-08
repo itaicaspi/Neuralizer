@@ -24,6 +24,7 @@ var Layer = function() {
     this.type = "Layer";
     this.subtype = "";
     this.description = "";
+    this.name = "";
 };
 
 Layer.prototype.updateOutputSize = function() {
@@ -37,6 +38,14 @@ Layer.prototype.setInput = function(inputTensor) {
     this.input = inputTensor;
     this.updateOutputSize();
     this.updateWeightSize();
+};
+
+Layer.prototype.toKeras = function() {
+    // returns a list of code lines
+    return {
+        dependencies: {},
+        code: [""]
+    };
 };
 
 ////////////////////////////////////////
@@ -58,10 +67,25 @@ var DataPlaceholder = function(width, height, depth) {
 
 inheritsFrom(DataPlaceholder, Layer);
 
+DataPlaceholder.prototype.toKeras = function(input_layers) {
+    if (input_layers.length == 0) {
+        return {
+            dependencies: {},
+            code: ["Input(shape=(" + this.output.width + "," + this.output.height + "," + this.output.depth + "))"]
+        };
+    } else {
+        var input = input_layers[0];
+        return {
+            dependencies: {},
+            code: [this.name + " = Lambda(lambda x: x + 0)(" + input + ")"]
+        };
+    }
+};
+
 ////////////////////////////////////////
 //  Convolution
 
-var Convolution = function(outputDepth, kernelWidth, kernelHeight, strideX, strideY, padX, padY) {
+var Convolution = function(outputDepth, kernelWidth, kernelHeight, strideX, strideY, padX, padY, dilationX, dilationY) {
     if (kernelWidth == undefined) {
         // copy constructor
         var layer = outputDepth;
@@ -76,6 +100,8 @@ var Convolution = function(outputDepth, kernelWidth, kernelHeight, strideX, stri
         this.strideY = strideY;
         this.padX = padX;
         this.padY = padY;
+        this.dilationX = (dilationX != undefined) ? dilationX : 1;
+        this.dilationY = (dilationY != undefined) ? dilationY : 1;
     }
     this.type = "Convolution";
     this.description = "Kernel " + this.kernelHeight + "x" + this.kernelWidth + " Stride " + this.strideX + " OFMs " + this.output.depth;
@@ -91,6 +117,25 @@ Convolution.prototype.updateOutputSize = function() {
 Convolution.prototype.toBox = function(center, color) {
     var outputCenter = new Vertex(center.x, center.y, center.z);
     return this.output.toBox(outputCenter, color);
+};
+
+Convolution.prototype.toKeras = function(input_layers) {
+    var input = input_layers[0];
+    if (this.dilationX > 1) {
+        // dilated convolution
+        return {
+            dependencies: {library: "keras.layers.convolutional", classes: ["AtrousConvolution2D"]},
+            code: [this.name + " = AtrousConvolution2D(" + this.output.depth + "," + this.kernelWidth + "," + this.kernelHeight
+                    + ", atrous_rate=(" + this.dilationX + "," + this.dilationY + ")"
+                    + ", subsample=(" + this.strideX + "," + this.strideY + "))(" + input + ")"]
+        };
+    } else {
+        return {
+            dependencies: {library: "keras.layers.convolutional", classes: ["Convolution2D"]},
+            code: [this.name + " = Convolution2D(" + this.output.depth + "," + this.kernelWidth + "," + this.kernelHeight
+            + ", subsample=(" + this.strideX + "," + this.strideY + "))(" + input + ")"]
+        };
+    }
 };
 
 ////////////////////////////////////////
@@ -114,6 +159,16 @@ InnerProduct.prototype.updateOutputSize = function() {
 
 inheritsFrom(InnerProduct, Layer);
 
+InnerProduct.prototype.toKeras = function(input_layers) {
+    var input = input_layers[0];
+    var dense_input = input + "_flatten";
+    return {
+        dependencies: {library: "keras.layers.core", classes: ["Dense", "Flatten"]},
+        code: [dense_input + " = Flatten()(" + input + ")",
+            this.name + " = Dense(" + this.output.depth + ")(" + dense_input + ")"]
+    };
+};
+
 ////////////////////////////////////////
 //  Pooling
 
@@ -127,7 +182,7 @@ var Pooling = function(kernelWidth, kernelHeight, strideX, strideY, padX, padY) 
         this.kernelHeight = kernelHeight;
         this.strideX = strideX;
         this.strideY = strideY;
-        this.padX = padX;
+        this.padX = padX; // TODO: change the padding to same or valid
         this.padY = padY;
         this.type = "Pooling";
         this.description = "Kernel " + this.kernelHeight + "x" + this.kernelWidth + " Stride " + this.strideX;
@@ -144,28 +199,47 @@ Pooling.prototype.updateOutputSize = function() {
 ////////////////////////////////////////
 //  Max Pooling
 
-var MaxPooling = function() {
-    Pooling.call(this);
+var MaxPooling = function(kernelWidth, kernelHeight, strideX, strideY, padX, padY) {
+    Pooling.call(this, kernelWidth, kernelHeight, strideX, strideY, padX, padY);
     this.subtype = "MaxPooling";
 };
 
 inheritsFrom(MaxPooling, Pooling);
 
+MaxPooling.prototype.toKeras = function(input_layers) {
+    var input = input_layers[0];
+
+    return {
+        dependencies: {library: "keras.layers.pooling", classes: ["MaxPooling2D"]},
+        code: [this.name + " = MaxPooling2D(pool_size=(" + this.kernelWidth + "," + this.kernelHeight
+               + "), strides=(" + this.strideX + "," + this.strideY + "))(" + input + ")"]
+    };
+};
+
 ////////////////////////////////////////
 //  Average Pooling
 
-var AveragePooling = function() {
-    Pooling.call(this);
+var AveragePooling = function(kernelWidth, kernelHeight, strideX, strideY, padX, padY) {
+    Pooling.call(this, kernelWidth, kernelHeight, strideX, strideY, padX, padY);
     this.subtype = "AveragePooling";
 };
 
 inheritsFrom(AveragePooling, Pooling);
 
+AveragePooling.prototype.toKeras = function(input_layers) {
+    var input = input_layers[0];
+
+    return {
+        dependencies: {library: "keras.layers.pooling", classes: ["AveragePooling2D"]},
+        code: [this.name + " = AveragePooling2D(pool_size=(" + this.kernelWidth + "," + this.kernelHeight + "), strides=(" + this.strideX + "," + this.strideY + "))(" + input + ")"]
+    };
+};
+
 ////////////////////////////////////////
 //  Stochastic Pooling
 
-var StochasticPooling = function() {
-    Pooling.call(this);
+var StochasticPooling = function(kernelWidth, kernelHeight, strideX, strideY, padX, padY) {
+    Pooling.call(this, kernelWidth, kernelHeight, strideX, strideY, padX, padY);
     this.subtype = "StochasticPooling";
 };
 
@@ -196,6 +270,17 @@ inheritsFrom(Deconvolution, Layer);
 Deconvolution.prototype.updateOutputSize = function() {
     this.output.width = (this.input.width - 1)*this.strideX - 2*this.padX + this.kernelWidth;
     this.output.height = (this.input.height - 1)*this.strideY - 2*this.padY + this.kernelHeight;
+};
+
+Deconvolution.prototype.toKeras = function(input_layers) {
+    var input = input_layers[0];
+
+    return {
+        dependencies: {library: "keras.layers.convolutional", classes: ["Deconvolution2D"]},
+        code: [this.name + " = Deconvolution2D(" + this.output.depth + "," + this.kernelWidth + "," + this.kernelHeight
+        + ", subsample=(" + this.strideX + "," + this.strideY + "))(" + input + ")"]
+    };
+
 };
 
 ////////////////////////////////////////

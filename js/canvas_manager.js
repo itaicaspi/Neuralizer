@@ -62,6 +62,8 @@ CanvasManager.prototype.fix_canvas_size = function(canvas) {
 };
 
 CanvasManager.prototype.zoom_canvas = function(delta, center_zoom) {
+    if (this.zoom <= 0.1 && delta < 0) return;
+
     delta = 1 + delta/this.zoom;
     if (center_zoom == undefined) {
         this.translate_canvas(-this.cursor_x + this.offset_x, -this.cursor_y + this.offset_y);
@@ -116,6 +118,9 @@ CanvasManager.prototype.paste_from_clipboard = function() {
 
         if (copiedObject.type != "Line") {
             copiedObject.highlight();
+            if (this.layer_name_is_in_use(copiedObject.name)) {
+                copiedObject.name = this.add_layer_counter(copiedObject.name);
+            }
             this.shapes.push(copiedObject);
             this.selected_shapes.push(copiedObject);
         } else {
@@ -125,6 +130,15 @@ CanvasManager.prototype.paste_from_clipboard = function() {
     this.save_state();
     this.draw_required = true;
 };
+
+CanvasManager.prototype.add_layer_counter = function(layer_name) {
+    var counter = 1;
+    while (canvas_manager.layer_name_is_in_use(layer_name + "_" + counter)) {
+        counter += 1;
+    }
+    return layer_name + "_" + counter;
+};
+
 
 /////////////////////////////////
 // Pointer and Selection Methods
@@ -842,6 +856,28 @@ CanvasManager.prototype.get_bounding_box_over_all_shapes = function() {
     return {min_x: min_x, max_x: max_x, min_y: min_y, max_y: max_y};
 };
 
+//////////////////////////////
+// Naming
+
+CanvasManager.prototype.count_layers_with_type = function(type, subtype) {
+    var counter = 0;
+    for (var i = 0; i < this.shapes.length; i++) {
+        if (this.shapes[i].layer.type == type && this.shapes[i].layer.subtype == subtype) {
+            counter += 1;
+        }
+    }
+    return counter;
+};
+
+CanvasManager.prototype.layer_name_is_in_use = function(name) {
+    for (var i = 0; i < this.shapes.length; i++) {
+        if (this.shapes[i].name == name) {
+            return true;
+        }
+    }
+    return false;
+};
+
 /////////////////////////////
 //  Building the graph
 
@@ -887,7 +923,7 @@ CanvasManager.prototype.find_preceding_shapes = function(shape) {
 
     // get all preceding shapes
     for (i = 0; i < preceding_arrows.length; i++) {
-        var arrow = this.arrows[i];
+        var arrow = preceding_arrows[i];
         var result = arrow.shapes_are_linked(this.shapes);
         if (result[0] && result[0].type != "Line") {
             preceding_shapes.push(result[0]);
@@ -903,11 +939,12 @@ CanvasManager.prototype.to_graph = function() {
     var graph = {};
     for (i = 0; i < this.shapes.length; i++) {
         var shape = this.shapes[i];
-        graph[shape.key] = shape.layer;
-        graph[shape.key].input_layers = [];
+        shape.layer.name = shape.name; // first time setting the layer name
+        graph[shape.name] = shape.layer;
+        graph[shape.name].input_layers = [];
         var preceding_shapes = this.find_preceding_shapes(shape);
         for (j = 0; j < preceding_shapes.length; j++) {
-            graph[shape.key].input_layers.push(preceding_shapes[j].key);
+            graph[shape.name].input_layers.push(preceding_shapes[j].name);
         }
     }
     return graph;

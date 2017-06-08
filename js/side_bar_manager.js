@@ -28,7 +28,8 @@ var layer_types = {
                     "properties": {
                         "Width": {"type": "number", "value": 1, "min": 1, "max": 10000},
                         "Height": {"type": "number", "value": 1, "min": 1, "max": 10000},
-                        "Stride": {"type": "number", "value": 1, "min": 1, "max": 10000}
+                        "Stride": {"type": "number", "value": 1, "min": 1, "max": 10000},
+                        "Padding": {"type": "number", "value": 0, "min": 0, "max": 10000}
                     }
                 }
             }
@@ -254,7 +255,9 @@ var SidebarManager = function() {
     this.layer_name = $("#layerName");
     this.full_details_switch = $("#fullDetails");
     this.layer_type = $("#layerType");
+    this.layer_name_changed_manually = false;
     this.available_models = 0;
+    this.user_models = []; // stores all the models owned by the user
     this.grid = false;
 };
 
@@ -287,6 +290,7 @@ SidebarManager.prototype.hide_remove_layer_button = function() {
 };
 
 SidebarManager.prototype.set_layer_name = function(text) {
+    $("#layerNameError").hide();
     $(this.layer_name).val(text);
 };
 
@@ -311,6 +315,9 @@ SidebarManager.prototype.set_full_details_switch = function(value) {
 
 
 SidebarManager.prototype.add_model_to_canvas_overlay = function(model) {
+    if (model.stars == undefined) {
+        model.stars = 0;
+    }
     var object =
         '<div class="grid-item grid-item--width2 animated"> ' +
             '<figure class="card"> ' +
@@ -323,7 +330,9 @@ SidebarManager.prototype.add_model_to_canvas_overlay = function(model) {
                 '<figcaption class="card-title-section"> ' +
                     '<div class="card-title editable" title="Inception v4">' + model.name + '</div> ' +
                     '<div class="card-title-owner">Itai Caspi ' +
-                        '<div class="stars"><span><i class="fa fa-star" aria-hidden="true"></i>' + model.stars + '</span></div> ' +
+                        '<a class="stars" onclick="sidebar_manager.toggle_model_star(' + model.id + ')"><span>' +
+                            '<i class="fa fa-star" aria-hidden="true" style="margin-right: 5px"></i>' + model.stars + '</span>' +
+                        '</a> ' +
                     '</div> ' +
                     '<div class="card-tags"> ' +
                         '<mark data-entity="detection"></mark> ' +
@@ -337,6 +346,17 @@ SidebarManager.prototype.add_model_to_canvas_overlay = function(model) {
     $(models_container).prepend($(object));
 };
 
+SidebarManager.prototype.show_filtered_models_in_canvas_overlay = function(filter_text) {
+    filter_text = filter_text.toLowerCase();
+    var models = [];
+    for (var i = 0; i < this.user_models.length; i++) {
+        if (this.user_models[i].name.toLowerCase().search(filter_text) != -1) {
+            models.push(this.user_models[i]);
+        }
+    }
+    this.show_models_in_canvas_overlay(models);
+};
+
 SidebarManager.prototype.show_models_in_canvas_overlay = function(models) {
     var grid = $('.grid');
     // add models to canvas overlay
@@ -347,6 +367,10 @@ SidebarManager.prototype.show_models_in_canvas_overlay = function(models) {
     for (var i = 0; i < models.length; i++) {
         this.add_model_to_canvas_overlay(models[i]);
     }
+    $('.grid-item').hover(
+        function(){ $(this).addClass('pulse') },
+        function(){ $(this).removeClass('pulse') }
+    );
     $(grid).imagesLoaded(function() {
         $(grid).masonry({
             // options
@@ -369,15 +393,16 @@ SidebarManager.prototype.load_model_from_server = function(json_state) {
     this.switch_sidebar_mode('designer');
 };
 
+SidebarManager.prototype.toggle_model_star = function(model_id) {
+    toggle_model_star(model_id);
+};
 
 SidebarManager.prototype.remove_model_from_server = function(model_id) {
     remove_model_from_server(model_id);
-    update_user_models_from_server();
 };
 
 SidebarManager.prototype.save_model_to_server = function() {
     upload_current_state_to_server();
-    update_user_models_from_server();
 };
 
 SidebarManager.prototype.show_canvas_explore = function() {
@@ -458,7 +483,7 @@ SidebarManager.prototype.start = function() {
     // $("#sidebar_icons_container").addClass("fadeInLeft");
     $("#sidebar_container").fadeIn("slow");
     $("#sidebar_container").addClass("fadeInLeft");
-    $("#canvas_zoom").show();
+    $("#canvas_zoom").fadeIn();
 };
 
 
@@ -583,9 +608,9 @@ SidebarManager.prototype.create_properties = function(container, properties, pre
         } else if (property_type == "number") {
             var row = $('<div class="row" style="margin-top: 10px"></div>');
             $(container).append($(row));
-            var input_label = $('<div class="col-xs-6"><label for="' + prefix + property + '">' + property + '</label></div>');
+            var input_label = $('<div class="col-xs-6"><label for="' + prefix + property.replace(/ /g,'') + '">' + property + '</label></div>');
             var input_col = $('<div class="col-xs-6"></div>');
-            var input = $('<input type="number" id="' + prefix + property + '" class="form-control">');
+            var input = $('<input type="number" id="' + prefix + property.replace(/ /g,'') + '" class="form-control">');
             for (var attribute in properties[property]) {
                 $(input).attr(attribute, properties[property][attribute]);
             }

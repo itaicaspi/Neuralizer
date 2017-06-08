@@ -5,6 +5,10 @@
 
 function upload_current_state_to_server() {
     var name = $("#filename").val();
+    if (name == "") {
+        name = "Neuralizer Topology";
+        $("filename").val(name);
+    }
     var text = {
         model_name: name,
         model_json: canvas_manager.stored_states[canvas_manager.current_timestep],
@@ -17,6 +21,7 @@ function upload_current_state_to_server() {
         data : text,
         success: function(){
             console.log("uploaded successfully");
+            update_user_models_from_server();
         }
     });
 }
@@ -26,6 +31,7 @@ function update_user_models_from_server() {
         url: "/mymodels",
         data : {},
         success: function(res){
+            sidebar_manager.user_models = res;
             sidebar_manager.show_models_in_canvas_overlay(res);
         }
     });
@@ -41,6 +47,7 @@ function remove_model_from_server(model_id) {
         type: "POST",
         data : data,
         success: function(res){
+            update_user_models_from_server();
         }
     });
 }
@@ -56,6 +63,21 @@ function load_model_from_server(json_state) {
         data : data,
         success: function(res){
             canvas_manager.load_state(res);
+        }
+    });
+}
+
+function toggle_model_star(model_id) {
+    var data = {
+        model_id: model_id
+    };
+
+    jQuery.post({
+        url: "/toggle_model_star",
+        type: "POST",
+        data : data,
+        success: function(res){
+            update_user_models_from_server();
         }
     });
 }

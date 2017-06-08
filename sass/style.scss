@@ -60,6 +60,16 @@ label {
   color: white;
 }
 
+.input-error {
+  border: 1px solid $danger-color;
+  color: $danger-color;
+}
+
+.error-label {
+  color: $danger-color;
+
+}
+
 .full-screen {
   position: absolute;
   left: 0;
@@ -179,8 +189,9 @@ label {
 }
 
 .form-control {
-  padding-right: 3px;
-  padding-left: 10px;
+  padding: 5px 3px 5px 10px;
+  border: none;
+  height: 30px;
 }
 
 .logo {
@@ -203,6 +214,13 @@ label {
   text-align: center;
   font-family: $primary-fonts;
   color: $primary-color;
+}
+
+.search-bar {
+  border: 1px solid #ccc;
+  box-shadow: none;
+  border-right: 0;
+  height: 32px;
 }
 
 .non-selectable {
@@ -356,6 +374,14 @@ label {
   border: 0px;
   //background-color: $secondary-color;
   color: #fff;
+}
+
+.white-bg {
+  background: white;
+  color: $secondary-color;
+  border: 0px;
+  //background-color: $secondary-color;
+  //color: #fff;
 }
 
 .icoRss, .icoFacebook, .icoTwitter,
@@ -582,6 +608,40 @@ a.thumbnail:hover, a.thumbnail:focus, a.thumbnail.active {
 .stylish-input-group button {
   border: 0;
   background: transparent;
+}
+
+/* For the "inset" look only */
+html {
+  overflow: auto;
+}
+body {
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  margin: 6px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+  margin: 6px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+  background: rgb(150,150,150);
+  //-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
+  margin: 6px;
+}
+::-webkit-scrollbar-thumb:window-inactive {
+  background: $plain-background-color;
 }
 
 .carousel-fade {
