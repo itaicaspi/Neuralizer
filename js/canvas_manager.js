@@ -3,6 +3,56 @@
  */
 
 
+/////////////////////////////////////
+//  Group
+
+var Group = function(name, shapes, margin) {
+    if (typeof name == "object") {
+        // copy constructor
+        Rectangle.call(this, name);
+    } else {
+        this.shapes = shapes;
+        this.margin = (typeof margin != 'undefined') ? margin : 20;
+        this.move_and_resize_to_fit_shapes(this.shapes);
+        Rectangle.call(this, this.x, this.y, this.width, this.height, 6, 0, 3, "", new Color(150, 150, 150, 0), new Color(150, 150, 150, 1), false, undefined, undefined, true, -1);
+    }
+    this.type = "Group";
+};
+
+inheritsFrom(Group, Rectangle);
+
+Group.prototype.move_and_resize_to_fit_shapes = function(shapes) {
+    bb = canvas_manager.get_bounding_box_over_shapes(shapes);
+    this.width = bb.max_x - bb.min_x + this.margin*2;
+    this.height = bb.max_y - bb.min_y + this.margin*2;
+    this.x = (bb.max_x + bb.min_x)/2;
+    this.y = (bb.max_y + bb.min_y)/2;
+};
+
+Group.prototype.update = function() {
+    this.move_and_resize_to_fit_shapes(this.shapes);
+    this.update_vertices();
+};
+
+Group.prototype.highlight = function() {
+    Object.getPrototypeOf(Group.prototype).highlight.call(this);
+    for (var i = 0; i < this.shapes.length; i++) {
+        this.shapes[i].highlight();
+    }
+};
+
+
+Group.prototype.darken = function() {
+    Object.getPrototypeOf(Group.prototype).darken.call(this);
+    for (var i = 0; i < this.shapes.length; i++) {
+        this.shapes[i].darken();
+    }
+};
+
+
+/////////////////////////////////////
+//  CanvasManager
+
 var CanvasManager = function(canvas) {
     this.zoom = 1;
     this.offset_x = 0;
@@ -211,6 +261,9 @@ CanvasManager.prototype.update_pointed_objects = function() {
 
 CanvasManager.prototype.select_shape = function(shape) {
     this.selected_shapes = [shape];
+    if (shape.type == "Group") {
+        this.selected_shapes = this.selected_shapes.concat(shape.shapes);
+    }
     this.highlight_selected_shapes();
 };
 
@@ -250,10 +303,12 @@ CanvasManager.prototype.change_selected_shapes_color = function(color_idx) {
         for (var a = 0; a < this.arrows.length; a++) {
             this.arrows[a].linked_shape_color_change(this.selected_shapes[s], this.arrows);
         }
+        this.selected_shapes[s].highlight();
     }
 
     this.save_state();
     this.draw_required = true;
+    this.draw_curr_state_if_necessary();
 };
 
 
@@ -277,6 +332,12 @@ CanvasManager.prototype.highlight_selected_shapes = function() {
     }
 
     this.draw_required = true;
+    this.draw_curr_state_if_necessary();
+};
+
+CanvasManager.prototype.group_selected_shapes = function() {
+    shape = new Group("", this.selected_shapes);
+    canvas_manager.add_shape(shape);
 };
 
 CanvasManager.prototype.remove_selected_shapes = function() {
@@ -298,19 +359,57 @@ CanvasManager.prototype.remove_selected_shapes = function() {
             }
         }
     }
+    groups = this.separate_groups_and_shapes(this.shapes)['groups'];
     for (var s = this.selected_shapes.length - 1; s >= 0; s--) {
-        var shape_index = this.get_shape_index(this.selected_shapes[s]);
+        for (var g = 0; g < groups.length; g++) {
+            // update all groups that include this shape
+            var shape_index = this.get_shape_index_in_list(groups[g].shapes, this.selected_shapes[s]);
+            if (shape_index != -1) {
+                groups[g].shapes.splice(shape_index, 1);
+                if (groups[g].shapes.length == 0) {
+                    // no shapes left in group
+                    var shape_index = this.get_shape_index_in_list(this.shapes, groups[g]);
+                    this.shapes.splice(shape_index, 1);
+                } else {
+                    groups[g].update();
+                }
+            }
+        }
+        var shape_index = this.get_shape_index_in_list(this.shapes, this.selected_shapes[s]);
         this.shapes.splice(shape_index, 1);
         this.selected_shapes.splice(s, 1);
     }
+
     this.draw_required = true;
+    // this.draw_curr_state_if_necessary();
 };
 
+
+CanvasManager.prototype.update_all_groups = function() {
+    groups = this.separate_groups_and_shapes(this.shapes)["groups"];
+    for (var i = 0; i < groups.length; i++) {
+        groups[i].update();
+    }
+};
+
+CanvasManager.prototype.separate_groups_and_shapes = function(shapes_list) {
+    var groups = [];
+    var shapes = [];
+    for (var i = 0; i < shapes_list.length; i++) {
+        if (shapes_list[i].type == "Group") {
+            groups.push(shapes_list[i]);
+        } else {
+            shapes.push(shapes_list[i]);
+        }
+    }
+    return {"groups": groups, "shapes": shapes};
+};
 
 CanvasManager.prototype.move_selected_shapes = function() {
     var diff_used = this.move_shapes_with_alignment(this.selected_shapes, this.cursor_diff_x + this.cursor_accum_x, this.cursor_diff_y + this.cursor_accum_y);
     this.cursor_accum_x = (this.cursor_diff_x + this.cursor_accum_x - diff_used.x);
     this.cursor_accum_y = (this.cursor_diff_y + this.cursor_accum_y - diff_used.y);
+    this.update_all_groups();
 };
 
 CanvasManager.prototype.align_selected_shapes = function(vertically, horizontally) {
@@ -410,14 +509,29 @@ CanvasManager.prototype.draw_curr_state_if_necessary = function() {
     }
 };
 
+CanvasManager.prototype.sort_shapes = function(shapes) {
+    function compare(a,b) {
+        if (a.z_index < b.z_index)
+            return -1;
+        if (a.z_index > b.z_index)
+            return 1;
+        return 0;
+    }
+    shapes.sort(compare);
+    return shapes;
+};
+
 CanvasManager.prototype.draw_curr_state = function() {
     this.clear_canvas();
 
     // draw everything
+    this.sort_shapes(this.shapes);
+    this.draw_array(this.separate_groups_and_shapes(this.shapes)["groups"]);
     this.draw_array(this.arrows);
     this.selection_box.draw(this.ctx);
     this.current_arrow.draw(this.ctx);
-    this.draw_array(this.shapes);
+    this.draw_array(this.separate_groups_and_shapes(this.shapes)["shapes"]);
+    // this.draw_array(this.sort_shapes(this.shapes));
     this.update_key_info();
     this.update_helpers();
 
@@ -495,47 +609,185 @@ CanvasManager.prototype.get_key_object = function(key) {
     return $(object).hide().fadeIn(fadeInTime);
 };
 
+CanvasManager.prototype.get_helper_object = function(key) {
+    var fadeInTime = 0;
+    var helpers = {
+        "UndoPoint": {
+            key: "backspace",
+            text: "Undo last point",
+            icon: "undo",
+            class: 'material-icons',
+            func: function() {
+                if (canvas_manager.current_arrow.points > 0) {
+                    canvas_manager.current_arrow.vertices.pop();
+                    canvas_manager.current_arrow.points--;
+                    canvas_manager.draw_required = true;
+                }
+            }},
+        "CancelEdge": {
+            key: "esc",
+            text: "Cancel edge",
+            icon: "cancel",
+            class: 'material-icons',
+            func: function() {
+                canvas_manager.reset_current_arrow();
+            }},
+        "Remove": {
+            key: "delete",
+            text: "Remove",
+            icon: "delete",
+            class: 'material-icons',
+            func: function() {
+                if ($("#removeLayerIcon").hasClass('rotated')) {
+                    canvas_manager.remove_selected_shapes();
+                    sidebar_manager.hide_remove_layer_button();
+                    canvas_manager.draw_required = true;
+                }
+            }},
+        "Copy": {
+            key: "ctrl-c",
+            text: "Copy",
+            icon: "content_copy",
+            class: 'material-icons',
+            func: function() {
+                canvas_manager.show_message("Copied to clipboard");
+                canvas_manager.copy_from_clipboard();
+                $("#layerName").blur();}
+            },
+        "Paste": {
+            key: "ctrl-v",
+            text: "Paste",
+            icon: "content_paste",
+            class: 'material-icons',
+            func: function() {
+                canvas_manager.paste_from_clipboard();
+            }},
+        "Undo": {
+            key: "ctrl-z",
+            text: "Undo",
+            icon: "undo",
+            class: 'material-icons',
+            func: function() {
+                if (canvas_manager.undo()) {
+                    canvas_manager.show_message("Undo changes");
+                }
+            }},
+        "Redo": {
+            key: "ctrl-y",
+            text: "Redo",
+            icon: "redo",
+            class: 'material-icons',
+            func: function() {
+                if (canvas_manager.redo()) {
+                    canvas_manager.show_message("Redo changes");
+                    canvas_manager.highlight_selected_shapes();
+                }
+            }},
+        "SelectAll": {
+            key: "ctrl-a",
+            text: "Select all",
+            icon: "select_all",
+            class: 'material-icons',
+            func: function() {
+                canvas_manager.select_all_shapes();
+                sidebar_manager.show_remove_layer_button();
+                var selected_shape = canvas_manager.get_primary_selected_shape();
+                if (selected_shape) {
+                    sidebar_manager.set_layer_name(selected_shape.text);
+                }
+            }},
+        "AlignVertically": {
+            key: "ctrl-[",
+            text: "Align Vertically",
+            icon: "vertical_align_center",
+            class: 'material-icons',
+            func: function() {
+                canvas_manager.align_selected_shapes(false, true);
+            }},
+        "AlignHorizontally": {
+            key: "ctrl-]",
+            text: "Align Horizontally",
+            icon: "vertical_align_center",
+            class: 'material-icons rotated-90',
+            func: function() {
+                canvas_manager.align_selected_shapes(true, false);
+            }},
+        "Group": {
+            key: "ctrl-g",
+            text: "Group",
+            icon: "group_work",
+            class: 'material-icons',
+            func: function() {
+                canvas_manager.group_selected_shapes();
+            }}
+    };
+    var object;
+    // console.log(key);
+    object =
+        '<a href="#" style="color: black; background: transparent;">' +
+        '<i class="' + helpers[key].class + '" id="' + key + '" style="margin: 10px" title="' + helpers[key].text + '">' + helpers[key].icon + '</i>' +
+        '</a>';
+    return $(object).hide().fadeIn(fadeInTime).click(function() {helpers[key].func(); canvas_manager.draw_curr_state_if_necessary();});
+};
+
 CanvasManager.prototype.update_key_info = function() {
     var keys_container = $("#canvas_keys");
     $(keys_container).empty();
-    // arrow is not currently being created
-    if (this.current_arrow.points > 0) {
-        $(keys_container).append(this.get_key_object("esc"));
-        $(keys_container).append(this.get_key_object("backspace"));
-    } else {
-        if (this.selected_shapes.length > 0) {
-            // shape is currently selected
-            $(keys_container).append(this.get_key_object("delete"));
-            $(keys_container).append(this.get_key_object("ctrl-c"));
-        }
-        if (this.clipboard.length > 0) {
-            $(keys_container).append(this.get_key_object("ctrl-v"));
-        }
-        if (this.current_timestep > 0) {
-            $(keys_container).append(this.get_key_object("ctrl-z"));
-        }
-        if (this.current_timestep < this.stored_states.length - 1) {
-            $(keys_container).append(this.get_key_object("ctrl-y"));
-        }
-        if (this.shapes.length > 0) {
-            $(keys_container).append(this.get_key_object("ctrl-a"));
-        }
-    }
+    // // arrow is not currently being created
+    // if (this.current_arrow.points > 0) {
+    //     $(keys_container).append(this.get_key_object("CancelEdge"));
+    //     $(keys_container).append(this.get_key_object("UndoPoint"));
+    // } else {
+    //     if (this.selected_shapes.length > 0) {
+    //         // shape is currently selected
+    //         $(keys_container).append(this.get_key_object("Remove"));
+    //         $(keys_container).append(this.get_key_object("Copy"));
+    //     }
+    //     if (this.clipboard.length > 0) {
+    //         $(keys_container).append(this.get_key_object("Paste"));
+    //     }
+    //     if (this.current_timestep > 0) {
+    //         $(keys_container).append(this.get_key_object("Undo"));
+    //     }
+    //     if (this.current_timestep < this.stored_states.length - 1) {
+    //         $(keys_container).append(this.get_key_object("Redo"));
+    //     }
+    //     if (this.shapes.length > 0) {
+    //         $(keys_container).append(this.get_key_object("SelectAll"));
+    //     }
+    // }
 };
 
 CanvasManager.prototype.update_helpers = function() {
     var helpers_container = $("#canvas_helpers");
-    //$(helpers_container).empty();
-
+    $(helpers_container).empty();
     if (this.selected_shapes.length > 1) {
-        if ($("#alignShapesVertically").length == 0) {
-            $(helpers_container).append('<i class="material-icons" id="alignShapesVertically" style="margin: 10px">vertical_align_center</i>');
-            $("#alignShapesVertically").click(function() {canvas_manager.align_selected_shapes(false, true)});
-            $(helpers_container).append('<i class="material-icons rotated-90" id="alignShapesHorizontally" style="margin: 10px">vertical_align_center</i>');
-            $("#alignShapesHorizontally").click(function() {canvas_manager.align_selected_shapes(true, false)});
-        }
+        $(helpers_container).append(this.get_helper_object('AlignVertically'));
+        $(helpers_container).append(this.get_helper_object('AlignHorizontally'));
+        $(helpers_container).append(this.get_helper_object('Group'));
+    }
+    // arrow is not currently being created
+    if (this.current_arrow.points > 0) {
+        $(helpers_container).append(this.get_helper_object("CancelEdge"));
+        $(helpers_container).append(this.get_helper_object("UndoPoint"));
     } else {
-        $(helpers_container).empty();
+        if (this.selected_shapes.length > 0) {
+            // shape is currently selected
+            $(helpers_container).append(this.get_helper_object("Remove"));
+            $(helpers_container).append(this.get_helper_object("Copy"));
+        }
+        if (this.clipboard.length > 0) {
+            $(helpers_container).append(this.get_helper_object("Paste"));
+        }
+        if (this.current_timestep > 0) {
+            $(helpers_container).append(this.get_helper_object("Undo"));
+        }
+        if (this.current_timestep < this.stored_states.length - 1) {
+            $(helpers_container).append(this.get_helper_object("Redo"));
+        }
+        if (this.shapes.length > 0) {
+            $(helpers_container).append(this.get_helper_object("SelectAll"));
+        }
     }
 };
 
@@ -581,6 +833,19 @@ CanvasManager.prototype.json_to_curr_state = function(json_state) {
             }
         }
         this.arrows[a] = new Line(this.arrows[a], start, end);
+    }
+
+    // parse groups
+    for (var s = this.shapes.length-1; s >= 0; s--) {
+        var group = this.shapes[s];
+        if (group.type == "Group") {
+            for (var i = 0; i < group.shapes.length; i++) {
+                var shape_idx = this.get_shape_index_in_list(this.shapes, group.shapes[i]);
+                if (shape_idx != -1) {
+                    group.shapes[i] = this.shapes[shape_idx];
+                }
+            }
+        }
     }
 
 };
@@ -646,10 +911,10 @@ CanvasManager.prototype.reset_current_arrow = function() {
 };
 
 
-CanvasManager.prototype.get_shape_index = function(shape) {
+CanvasManager.prototype.get_shape_index_in_list = function(shapes_list, shape) {
     var i;
-    for (i = 0; i < this.shapes.length; i++) {
-        if (this.shapes[i].key == shape.key) {
+    for (i = 0; i < shapes_list.length; i++) {
+        if (shapes_list[i].key == shape.key) {
             return i;
         }
     }
@@ -783,18 +1048,45 @@ CanvasManager.prototype.show_message = function(msg, slow) {
 };
 
 
+CanvasManager.prototype.update_shape_name = function() {
+    sidebar_manager.layer_name_changed_manually = true;
+    var selected_shape = canvas_manager.get_primary_selected_shape();
+    if (selected_shape) {
+        selected_shape.update_text($("#layerName").val());
+        groups = this.separate_groups_and_shapes(this.shapes)['groups'];
+        for (var g = 0; g < groups.length; g++) {
+            // update all groups that include this shape
+            var shape_index = this.get_shape_index_in_list(groups[g].shapes, selected_shape);
+            if (shape_index != -1) {
+                groups[g].update();
+            }
+        }
+        canvas_manager.draw_required = true;
+        canvas_manager.draw_curr_state_if_necessary();
+    }
+};
+
 CanvasManager.prototype.show_full_details = function(checked) {
+    groups = this.separate_groups_and_shapes(this.shapes)['groups'];
     for (var s = 0; s < this.selected_shapes.length; s++) {
         if (checked) {
             this.selected_shapes[s].full();
         } else {
             this.selected_shapes[s].partial();
         }
+        for (var g = 0; g < groups.length; g++) {
+            // update all groups that include this shape
+            var shape_index = this.get_shape_index_in_list(groups[g].shapes, this.selected_shapes[s]);
+            if (shape_index != -1) {
+                groups[g].update();
+            }
+        }
     }
     for (var i = 0; i < this.arrows.length; i++) {
         this.arrows[i].linked_shapes_moved(0, 0, this.selected_shapes);
     }
     this.draw_required = true;
+    this.draw_curr_state_if_necessary();
 };
 
 
@@ -816,44 +1108,33 @@ CanvasManager.prototype.nearest_shape_center = function(p) {
 };
 
 
-CanvasManager.prototype.get_bounding_box_over_all_shapes = function() {
+CanvasManager.prototype.get_bounding_box_over_shapes = function(shapes) {
     var min_x = this.canvas.width;
     var max_x = 0;
     var min_y = this.canvas.height;
     var max_y = 0;
-    for (var s = 0; s < this.shapes.length; s++) {
-        for (var v = 0; v < this.shapes[s].vertices.length; v++) {
-            if (this.shapes[s].vertices[v].x < min_x) {
-                min_x = this.shapes[s].vertices[v].x;
+    for (var s = 0; s < shapes.length; s++) {
+        for (var v = 0; v < shapes[s].vertices.length; v++) {
+            if (shapes[s].vertices[v].x < min_x) {
+                min_x = shapes[s].vertices[v].x;
             }
-            if (this.shapes[s].vertices[v].x > max_x) {
-                max_x = this.shapes[s].vertices[v].x;
+            if (shapes[s].vertices[v].x > max_x) {
+                max_x = shapes[s].vertices[v].x;
             }
-            if (this.shapes[s].vertices[v].y < min_y) {
-                min_y = this.shapes[s].vertices[v].y;
+            if (shapes[s].vertices[v].y < min_y) {
+                min_y = shapes[s].vertices[v].y;
             }
-            if (this.shapes[s].vertices[v].y > max_y) {
-                max_y = this.shapes[s].vertices[v].y;
-            }
-        }
-    }
-    for (var s = 0; s < this.arrows.length; s++) {
-        for (var v = 0; v < this.arrows[s].vertices.length; v++) {
-            if (this.arrows[s].vertices[v].x < min_x) {
-                min_x = this.arrows[s].vertices[v].x;
-            }
-            if (this.arrows[s].vertices[v].x > max_x) {
-                max_x = this.arrows[s].vertices[v].x;
-            }
-            if (this.arrows[s].vertices[v].y < min_y) {
-                min_y = this.arrows[s].vertices[v].y;
-            }
-            if (this.arrows[s].vertices[v].y > max_y) {
-                max_y = this.arrows[s].vertices[v].y;
+            if (shapes[s].vertices[v].y > max_y) {
+                max_y = shapes[s].vertices[v].y;
             }
         }
     }
     return {min_x: min_x, max_x: max_x, min_y: min_y, max_y: max_y};
+};
+
+
+CanvasManager.prototype.get_bounding_box_over_all_shapes = function() {
+    return this.get_bounding_box_over_shapes(this.shapes.concat(this.arrows));
 };
 
 //////////////////////////////

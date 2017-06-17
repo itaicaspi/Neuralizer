@@ -264,6 +264,11 @@ Line.prototype.draw = function(ctx) {
     }
     ctx.closePath();
     ctx.fillStyle = this.border_color.to_string();
+    // if (this.draw_separating_border) {
+    //     ctx.strokeStyle = "#EBECED";
+    //     ctx.lineWidth = this.stroke + 4;
+    //     ctx.stroke();
+    // }
     ctx.fill();
 
     if (this.linkStart.shape.type == "Line") {
@@ -582,7 +587,7 @@ Line.prototype.get_vertex_by_key = function(key) {
 //////////////////////////////////
 //  Shape
 
-var Shape = function(x, y, width, height, radius, stroke, text, color, border_color, dashedBorder, key, offset) {
+var Shape = function(x, y, width, height, radius, stroke, text, color, border_color, dashedBorder, key, offset, selectable, z_index) {
     if (typeof x == "object") {
         assign(this, x);
         this.default_color = new Color(this.default_color);
@@ -607,6 +612,8 @@ var Shape = function(x, y, width, height, radius, stroke, text, color, border_co
         this.dashedBorder = (typeof dashedBorder != 'undefined') ? dashedBorder : false;
         this.offset = (typeof offset != 'undefined') ? offset : 0;
         this.fillPattern = "full";
+        this.selectable = (typeof selectable != 'undefined') ? selectable : true;
+        this.z_index = (typeof z_index != 'undefined') ? z_index : 0;
         this.update_text((typeof text != 'undefined') ? text : "");
 
         this.expand = false;
@@ -651,6 +658,9 @@ Shape.prototype.has_border_line = function(line_points) {
 };
 
 Shape.prototype.pointer_is_inside = function(xm, ym) {
+    if (!this.selectable) {
+        return false;
+    }
     var j = this.vertices.length-1;
     var oddNodes = false;
 
@@ -670,6 +680,9 @@ Shape.prototype.pointer_is_inside = function(xm, ym) {
 
 
 Shape.prototype.pointer_is_on_the_border = function(xm, ym, ctx) {
+    if (!this.selectable) {
+        return false;
+    }
     var cursor = new Vertex(xm, ym, 0);
     // check if the pointer position is relevant by comparing the color under the cursor with the color of the line
     //if (!color_under_cursor_matches_given_color(this.border_color, ctx, cursor,this.stroke)) return false;
@@ -687,6 +700,9 @@ Shape.prototype.pointer_is_on_the_border = function(xm, ym, ctx) {
 
 
 Shape.prototype.pointer_is_on_the_border_line = function(xm, ym, ctx) {
+    if (!this.selectable) {
+        return false;
+    }
     var cursor = new Vertex(xm, ym, 0);
     // check if the pointer position is relevant by comparing the color under the cursor with the color of the line
     //if (!color_under_cursor_matches_given_color(this.border_color, ctx, cursor,this.stroke)) return false;
@@ -760,13 +776,17 @@ Shape.prototype.change_border_color = function(color) {
 
 
 Shape.prototype.highlight = function() {
-    this.color.a = 1;
-    this.textColor = "black";
+    if (this.selectable == true) {
+        this.color.a = 1;
+        this.textColor = "black";
+    }
 };
 
 Shape.prototype.darken = function() {
-    this.textColor = "rgb(50,50,50)";
-    this.color.a = 0.3;
+    if (this.selectable == true) {
+        this.textColor = "rgb(50,50,50)";
+        this.color.a = 0.3;
+    }
 };
 
 Shape.prototype.full = function() {
@@ -910,7 +930,7 @@ Shape.prototype.rotate = function() {
 /////////////////////////////////////
 //  Rectangle
 
-var Rectangle = function(x, y, width, height, radius, offset, stroke, text, color, border_color, dashedBorder, key, corner_anchor) {
+var Rectangle = function(x, y, width, height, radius, offset, stroke, text, color, border_color, dashedBorder, key, corner_anchor, selectable, z_index) {
     if (typeof x == "object") {
         // copy constructor
         var shape = x;
@@ -918,7 +938,7 @@ var Rectangle = function(x, y, width, height, radius, offset, stroke, text, colo
         this.clone_vertices(shape);
         this.offset = shape.offset;
     } else {
-        Shape.call(this, x, y, width, height, radius, stroke, text, color, border_color, dashedBorder, key, offset);
+        Shape.call(this, x, y, width, height, radius, stroke, text, color, border_color, dashedBorder, key, offset, selectable, z_index);
         this.offset = (typeof offset != 'undefined') ? offset : 10;
         this.corner_anchor = (typeof corner_anchor != 'undefined') ? corner_anchor : false;
     }
@@ -953,7 +973,7 @@ Rectangle.prototype.update_vertices = function() {
 /////////////////////////////////////
 //  Trapezoid
 
-var Trapezoid = function(x, y, width, height, radius, offset, stroke, text, color, border_color, dashedBorder, key) {
+var Trapezoid = function(x, y, width, height, radius, offset, stroke, text, color, border_color, dashedBorder, key, selectable, z_index) {
     if (typeof x == "object") {
         // copy constructor
         var shape = x;
@@ -961,7 +981,7 @@ var Trapezoid = function(x, y, width, height, radius, offset, stroke, text, colo
         this.clone_vertices(shape);
         this.offset = shape.offset;
     } else {
-        Shape.call(this, x, y, width, height, radius, stroke, text, color, border_color, dashedBorder, key, offset);
+        Shape.call(this, x, y, width, height, radius, stroke, text, color, border_color, dashedBorder, key, offset, selectable, z_index);
         this.offset = (typeof offset != 'undefined') ? offset : 10;
     }
     this.update_vertices();
@@ -988,14 +1008,14 @@ Trapezoid.prototype.update_vertices = function() {
 /////////////////////////////////////
 //  Triangle
 
-var Triangle = function(x, y, width, height, radius, stroke, text, color, border_color, key) {
+var Triangle = function(x, y, width, height, radius, stroke, text, color, border_color, key, selectable, z_index) {
     if (typeof x == "object") {
         // copy constructor
         var shape = x;
         Shape.call(this, shape);
         this.clone_vertices(shape);
     } else {
-        Shape.call(this, x, y, width, height, radius, stroke, text, color, border_color, key);
+        Shape.call(this, x, y, width, height, radius, stroke, text, color, border_color, key, selectable, z_index);
         this.update_vertices();
     }
     this.type = "Triangle";
@@ -1020,14 +1040,14 @@ Triangle.prototype.update_vertices = function() {
 /////////////////////////////////////
 //  Diamond
 
-var Diamond = function(x, y, width, height, radius, stroke, text, color, border_color, key) {
+var Diamond = function(x, y, width, height, radius, stroke, text, color, border_color, key, selectable, z_index) {
     if (typeof x == "object") {
         // copy constructor
         var shape = x;
         Shape.call(this, shape);
         this.clone_vertices(shape);
     } else {
-        Shape.call(this, x, y, width, height, radius, stroke, text, color, border_color, key);
+        Shape.call(this, x, y, width, height, radius, stroke, text, color, border_color, key, selectable, z_index);
         this.update_vertices();
     }
     this.type = "Diamond";
@@ -1051,14 +1071,14 @@ Diamond.prototype.update_vertices = function() {
 /////////////////////////////////////
 //  Hexagon
 
-var Hexagon = function(x, y, width, height, radius, stroke, text, color, border_color, key) {
+var Hexagon = function(x, y, width, height, radius, stroke, text, color, border_color, key, selectable, z_index) {
     if (typeof x == "object") {
         // copy constructor
         var shape = x;
         Shape.call(this, shape);
         this.clone_vertices(shape);
     } else {
-        Shape.call(this, x, y, width, height, radius, stroke, text, color, border_color, key);
+        Shape.call(this, x, y, width, height, radius, stroke, text, color, border_color, key, selectable, z_index);
         this.update_vertices();
     }
     this.type = "Hexagon";
@@ -1086,7 +1106,7 @@ Hexagon.prototype.update_vertices = function() {
 /////////////////////////////////////
 //  Step
 
-var Step = function(x, y, width, height, radius, offset, stroke, text, color, border_color, key) {
+var Step = function(x, y, width, height, radius, offset, stroke, text, color, border_color, key, selectable, z_index) {
     if (typeof x == "object") {
         // copy constructor
         var shape = x;
@@ -1094,7 +1114,7 @@ var Step = function(x, y, width, height, radius, offset, stroke, text, color, bo
         this.offset = shape.offset;
         this.clone_vertices(shape);
     } else {
-        Shape.call(this, x, y, width, height, radius, stroke, text, color, border_color, key);
+        Shape.call(this, x, y, width, height, radius, stroke, text, color, border_color, key, selectable, z_index);
         this.offset = (typeof offset != 'undefined') ? offset : 10;
         this.update_vertices();
     }
@@ -1121,14 +1141,14 @@ Step.prototype.update_vertices = function() {
 /////////////////////////////////////
 //  Ellipse
 
-var Ellipse = function(x, y, width, height, stroke, text, color, border_color, key) {
+var Ellipse = function(x, y, width, height, stroke, text, color, border_color, key, selectable, z_index) {
     if (typeof x == "object") {
         // copy constructor
         var shape = x;
         Shape.call(this, shape);
         this.clone_vertices(shape);
     } else {
-        Shape.call(this, x, y, width, height, 0, stroke, text, color, border_color, false, key);
+        Shape.call(this, x, y, width, height, 0, stroke, text, color, border_color, false, key, selectable, z_index);
         this.vertices = [];
         this.type = "Ellipse";
         this.update_vertices();
@@ -1153,14 +1173,14 @@ Ellipse.prototype.update_vertices = function() {
 /////////////////////////////////////
 //  HalfCircle
 
-var HalfCircle = function(x, y, width, height, stroke, text, color, border_color, key) {
+var HalfCircle = function(x, y, width, height, stroke, text, color, border_color, key, selectable, z_index) {
     if (typeof x == "object") {
         // copy constructor
         var shape = x;
         Shape.call(this, shape);
         this.clone_vertices(shape);
     } else {
-        Shape.call(this, x, y, width, height, 0, stroke, text, color, border_color, false, key);
+        Shape.call(this, x, y, width, height, 0, stroke, text, color, border_color, false, key, selectable, z_index);
         this.vertices = [];
         this.type = "HalfCircle";
         this.update_vertices();

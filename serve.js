@@ -5,11 +5,11 @@ var passport = require('passport'),
     LocalStrategy = require('passport-local').Strategy;
 var app = express();
 var path = require('path');
-var bodyParser = require('body-parser')
+var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
 var session = require('express-session');
 var fs = require('fs');
-var uniqueFilename = require('unique-filename')
+var uniqueFilename = require('unique-filename');
 var dataUriToBuffer = require('data-uri-to-buffer');
 var util = require('util');
 
@@ -17,17 +17,17 @@ var root = path.join(__dirname, "../public_html");
 var models_root = path.join(root, "models");
 var db = new sqlite3.Database('/home/neuraliz/neuralizer/Neuralizer.db');
 
-var log_file_path = path.join(__dirname, 'debug.log')
+var log_file_path = path.join(__dirname, 'debug.log');
 var log_file = fs.createWriteStream(log_file_path, {flags : 'a'});
 
 // create a lock file
-lockfile_exists = false
+lockfile_exists = false;
 if (fs.existsSync(log_file_path)) {
-  var stats = fs.statSync(log_file_path)
+  var stats = fs.statSync(log_file_path);
   var mtime = new Date(util.inspect(stats.mtime));
   if (new Date() - mtime < 60 * 1000) {
   	console.log('lock file exists');
-  	lockfile_exists = true
+  	lockfile_exists = true;
   }
 }
 

@@ -248,16 +248,6 @@
         }
 
 
-        function update_shape_name() {
-            sidebar_manager.layer_name_changed_manually = true;
-            var selected_shape = canvas_manager.get_primary_selected_shape();
-            if (selected_shape) {
-                selected_shape.update_text($("#layerName").val());
-                canvas_manager.draw_required = true;
-                canvas_manager.draw_curr_state_if_necessary();
-            }
-        }
-
 
         function add_layer() {
 
@@ -432,55 +422,35 @@
             function keyPress(evt) {
                 evt = evt || window.event;
                 if (evt.keyCode == 46) {
-                    // Del ==> Remove selected layers
-                    if ($("#removeLayerIcon").hasClass('rotated')) {
-                        canvas_manager.remove_selected_shapes();
-                        sidebar_manager.hide_remove_layer_button();
-                        canvas_manager.draw_required = true;
-                    }
+                    // Del ==> Remove
+                    $("#Remove").click();
                 } else if (evt.ctrlKey && evt.keyCode == 65) {
-                    // Ctrl + A ==> Select all
-                    canvas_manager.select_all_shapes();
-                    sidebar_manager.show_remove_layer_button();
-                    var selected_shape = canvas_manager.get_primary_selected_shape();
-                    if (selected_shape) {
-                        sidebar_manager.set_layer_name(selected_shape.text);
-                    }
-//                    evt.preventDefault();
-//                    evt.stopPropagation();
+                    // Ctrl + A ==> Select All
+                    $("#SelectAll").click();
                 } else if (evt.ctrlKey && evt.keyCode == 67) {
                     // Ctrl + C ==> Copy
-                    canvas_manager.show_message("Copied to clipboard");
-                    canvas_manager.copy_from_clipboard();
-                    $("#layerName").blur();
+                    $("#Copy").click();
                 } else if (evt.ctrlKey && evt.keyCode == 86) {
                     // Ctrl + V ==> Paste
-                    canvas_manager.paste_from_clipboard();
+                    $("#Paste").click();
                 } else if (evt.ctrlKey && evt.keyCode == 90 && !evt.shiftKey) {
-                    // Ctrl + Z ==> undo
-                    if (canvas_manager.undo()) {
-                        canvas_manager.show_message("Undo changes");
-                    }
+                    // Ctrl + Z ==> Undo
+                    $("#Undo").click();
                 } else if ((evt.ctrlKey && evt.keyCode == 89) || (evt.ctrlKey && evt.shiftKey && evt.keyCode == 90)) {
-                    // Ctrl + Y ==> redo
-                    if (canvas_manager.redo()) {
-                        canvas_manager.show_message("Redo changes");
-                        canvas_manager.highlight_selected_shapes();
-                    }
+                    // Ctrl + Y || Ctrl + Shift + Z ==> Redo
+                    $("#Redo").click();
                 } else if (evt.keyCode == 27) {
                     // Escape ==> Cancel current action
-                    canvas_manager.reset_current_arrow();
+                    $("#Cancel").click();
                 } else if (evt.keyCode == 8) {
                     // Backspace ==> Cancel last arrow point
-                    if (canvas_manager.current_arrow.points > 0) {
-                        canvas_manager.current_arrow.vertices.pop();
-                        canvas_manager.current_arrow.points--;
-                        canvas_manager.draw_required = true;
-                    }
+                    $("#UndoPoint").click();
+                } else if (evt.ctrlKey && evt.keyCode == 71) {
+                    // Ctrl + G ==> Group
+                    $("#Group").click();
+                    evt.preventDefault();
+                    evt.stopPropagation();
                 } else if (evt.ctrlKey && evt.keyCode == 88) {
-                    // Ctrl + X ==> Printing graph test
-                    console.log(canvas_manager.to_graph());
-                } else if (evt.keyCode == 38) {
                     // Ctrl + X ==> Printing graph test
                     console.log(canvas_manager.to_graph());
                 }
@@ -508,13 +478,14 @@
             jQuery.get('/loggedin',{}, function(user){
                 if (user != '0') {
                     $("#username").val(user.username);
+                    sidebar_manager.start(true);
                     sidebar_manager.logged_in_mode();
-                    //sidebar_manager.start();
+                    //
                 }
             });
 
-
         }
+
     </script>
 </head>
 <body onload="run()" style="overflow: hidden;" oncontextmenu="return false">
@@ -568,7 +539,7 @@
             <hr class="separator">
             <div class="form-group">
                 <label for="layerName" style="color:white">Layer Name</label>
-                <input type="text" id="layerName" class="form-control" placeholder="Layer name" onkeyup="update_shape_name()">
+                <input type="text" id="layerName" class="form-control" placeholder="Layer name" onkeyup="canvas_manager.update_shape_name()">
                 <span id="layerNameError" class='error-label collapse'>Layer name is already in use</span>
             </div>
             <div class="form-group" id="LayersSelector"></div>
@@ -656,8 +627,8 @@
             <form method="POST" class="form-signin animated" id="UserAuthenticationForm" style="text-align: center">
                 <input type="email" id="username" name="username" placeholder="Email" required="required" autofocus="autofocus" class="form-control vertical-margin"/>
                 <input type="password" name="password" placeholder="Password" required="required" class="form-control vertical-margin"/>
-                <button type="submit" class="btn rect-btn purple small-rect" onclick="sidebar_manager.login()">Log in</button>
-                <button type="submit" class="btn rect-btn purple-bg small-rect" onclick="sidebar_manager.signup()">Sign up</button>
+                <button type="submit" class="btn rect-btn purple small-rect" onclick="sidebar_manager.login('UserAuthenticationForm')">Log in</button>
+                <button type="submit" class="btn rect-btn purple-bg small-rect" onclick="sidebar_manager.signup('UserAuthenticationForm')">Sign up</button>
             </form>
             <form method="POST" class="form-signin collapse animated" id="UserDetails">
                 <div style="background: white; border-radius: 3px; color: #555; border-color: #222; padding: 15px;">
@@ -731,7 +702,7 @@
                 <button class="zoom-btn" onclick="canvas_manager.zoom_canvas(0.1, true);">+</button>
             </div>
         </div>
-        <div id="canvas_overlay" class="full-screen">
+        <div id="canvas_overlay">
             <div id="canvas_messages" class="centered">
                 <h1>Copied to clipboard</h1>
             </div>
@@ -764,34 +735,25 @@
 </span>
 
 <!-- Welcome Screen -->
-<div id="welcome_screen_container" class="full-screen animated centered stretched">
-    <div id="welcome_screen" class="centered">
-        <div id="welcome_screen_frame" class="stretched">
-            <div id="welcome_screen_background" class="stretched">
-                <div class="appName" style="padding-top: 3%">
+<div id="welcome_screen_container" class="full-screen animated centered stretched" style="background-color: rgb(52,60,63); ">
+    <div id="welcome_screen" class="centered" style="width: 750px">
+        <div id="welcome_screen_frame" class="stretched" style="background-image: none; background-color: transparent; box-shadow: none; text-align: left; overflow: hidden;">
+            <div id="welcome_screen_background" style="width: 450px; height: 100%; background-color: transparent; background-image: none;float: left">
+                <img src="images/welcome-blurred.gif" style="clip-path: circle(45% at 50% 50%); position: absolute"/>
+            </div>
+            <div id="welcome_login" style="width: 300px; float: right; text-align: center; background: none; height: 100%; padding: 20px">
+                <div class="appName animated fadeInUp" style="margin-top: 70px;">
                     <!--<h1 class="title">neuralizer</h1>-->
-                    <div class="logo" style="width: 300px; margin: auto">
-                        <img src="images/neuralizer-logo-green-slim.png" style="width: 100%; height: 100%">
-                    </div>
+                    <img src="images/neuralizer-logo-green-slim.png" class="logo" style="width: 90%; ">
                     <b class="title-subscript">visual neural network designer</b>
                 </div>
-
-                <div id="welcome_screen_content" style="text-align: center; margin-top: 1%">
-                    <div id="welcome-carousel" class="carousel slide carousel-fade" data-ride="carousel" style="height: 100%">
-                        <!-- Wrapper for slides -->
-                        <div class="carousel-inner stretched" role="listbox">
-                            <div class="item stretched active">
-                                <img class="img-responsive center-block" src="images/welcome-example.png" alt="..." style="max-height: 100%;">
-                            </div>
-                            <div class="item stretched">
-                                <img class="img-responsive center-block" src="images/welcome-frameworks.png" alt="..." style="max-height: 100%;">
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-                <a class="btn rect-btn big-rect white" onclick="sidebar_manager.start()"> Start </a>
-                <a class="btn rect-btn big-rect green"> Explore </a>
+                <form method="POST" class="form-signin animated" id="WelcomeUserAuthenticationForm" style="text-align: center; margin-top: 20px">
+                    <input type="email" name="username" placeholder="Email" required="required" autofocus="autofocus" class="form-control" style="margin: auto; margin-top: 5px; margin-bottom: 5px; width: 220px"/>
+                    <input type="password" name="password" placeholder="Password" required="required" class="form-control vertical-margin" style="margin: auto; margin-top: 5px; margin-bottom: 5px; width: 220px"/>
+                    <button type="submit" class="btn rect-btn purple small-rect" onclick="sidebar_manager.login('WelcomeUserAuthenticationForm');" style="margin: 5px; min-width: 100px">Log in</button>
+                    <button type="submit" class="btn rect-btn purple-bg small-rect" onclick="sidebar_manager.signup('WelcomeUserAuthenticationForm')" style="margin: 5px; min-width: 100px">Sign up</button>
+                </form>
+                <a class="" style="background-color: transparent; color: white" onclick="sidebar_manager.start(false)"> Login later </a>
             </div>
         </div>
     </div>
