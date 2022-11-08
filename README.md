@@ -9,4 +9,6 @@ Topologies can be shared and reused as building blocks in more complex models.
 Neuralizer has a version control system which simplifies working in groups and extending models by the community.
 
 
-![screenshot](images/neuralizer_reactor.png)
+[![screenshot](images/neuralizer_reactor.png)](https://youtu.be/zihazhCMXmE)
+
+[show full video demo](https://youtu.be/zihazhCMXmE)
